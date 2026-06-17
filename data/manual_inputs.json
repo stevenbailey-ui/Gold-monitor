@@ -1,0 +1,95 @@
+{
+  "_comment": "Low-frequency / judgment inputs. Update on the cadence shown. The scraper merges these into the composite. Values seeded from the model's Gold Thesis Dashboard (15 Jun 2026).",
+  "wgc_cb_purchases_t": {
+    "value": 243,
+    "cadence": "quarterly",
+    "note": "WGC central-bank net purchases, trailing 4-qtr avg (tonnes/qtr)"
+  },
+  "pboc_holdings_delta_t": {
+    "value": -42,
+    "cadence": "monthly",
+    "note": "PBoC reported holdings, monthly change (tonnes)"
+  },
+  "etf_aum_delta_t": {
+    "value": -16,
+    "cadence": "monthly",
+    "note": "Global gold ETF AUM change (tonnes/month)"
+  },
+  "cofer_usd_share_delta": {
+    "value": -0.16,
+    "cadence": "quarterly",
+    "note": "IMF COFER USD reserve share change (%pts)"
+  },
+  "gpr_index": {
+    "value": 180,
+    "cadence": "monthly",
+    "note": "Caldara-Iacoviello Geopolitical Risk Index (level)"
+  },
+  "cot_mm_net_pct_oi": {
+    "value": 0.318,
+    "cadence": "weekly",
+    "note": "COMEX Managed Money net longs (% of OI), CFTC disaggregated 088691"
+  },
+  "deficit_pct_gdp": {
+    "value": 6,
+    "cadence": "quarterly",
+    "note": "US federal deficit (% of GDP, annualised) \u2014 >6% = fiscal dominance = bull"
+  },
+  "gvz": {
+    "value": 25.8,
+    "cadence": "weekly",
+    "note": "CBOE Gold VIX (GVZ), level"
+  },
+  "jurisdiction": {
+    "THX": {
+      "score": 6,
+      "signal": "watch",
+      "note": "Senegal Faye govt contract review; Nigeria FX/security; EDTI improving"
+    },
+    "MTL": {
+      "score": 3,
+      "signal": "bear",
+      "note": "Ortega regime; OFAC escalation Apr-26; offtake/correspondent-bank de-risking"
+    }
+  },
+  "catalysts": [
+    {
+      "label": "Douta FID",
+      "date": "H1-26",
+      "pos": 0.08,
+      "live": true
+    },
+    {
+      "label": "La India first gold",
+      "date": "Dec-26",
+      "pos": 0.48,
+      "live": false
+    },
+    {
+      "label": "GUIA licence",
+      "date": "Jan-27",
+      "pos": 0.78,
+      "live": false
+    }
+  ],
+  "alerts": [
+    {
+      "tag": "OFAC",
+      "kind": "bear",
+      "text": "Nicaragua gold-sector sanctions escalation",
+      "date": "Apr-26"
+    },
+    {
+      "tag": "RNS",
+      "kind": "bull",
+      "text": "THX Q1 revenue strong; Segilola 20.3koz",
+      "date": "May-26"
+    },
+    {
+      "tag": "RNS",
+      "kind": "base",
+      "text": "Douta NI 43-101 technical report filed",
+      "date": "Mar-26"
+    }
+  ]
+}

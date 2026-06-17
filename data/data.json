@@ -1,0 +1,44 @@
+{
+  "as_of": "2026-06-17",
+  "gold": { "spot": 4354, "trailing24": 3408, "ratio": 1.27 },
+  "composite": 21,
+  "verdict": "Bullish",
+  "themes": [
+    { "id": "central_bank",    "label": "Central-bank bid",  "signal": "bull", "reading": "WGC 243 t/qtr" },
+    { "id": "macro_rates",     "label": "Macro & rates",     "signal": "base", "reading": "Fed hold; real-yield link broken" },
+    { "id": "usd_fx",          "label": "USD / FX",          "signal": "base", "reading": "DXY 99.7; COFER 56.8%" },
+    { "id": "geopolitics",     "label": "Geopolitics",       "signal": "base", "reading": "VIX 16.8; GPR 180; Brent $80" },
+    { "id": "mining_equities", "label": "Mining equities",   "signal": "bull", "reading": "GDXJ/gold catch-up" },
+    { "id": "positioning",     "label": "Positioning",       "signal": "base", "reading": "COT 31.8%; GVZ 25.8" }
+  ],
+  "portfolio": {
+    "current_value": 503741,
+    "value_2029_base": 1628909,
+    "income_2029_base": 55318,
+    "income_2029_yield": 0.029
+  },
+  "holdings": {
+    "THX": { "shares": 540819, "price_pence": 76, "npv": { "bear": 1.65, "base": 1.99, "bull": 3.15 },
+             "jurisdiction": { "score": 6, "signal": "watch" } },
+    "MTL": { "shares": 713218, "price_pence": 13, "npv": { "bear": 0.27, "base": 0.33, "bull": 0.55 },
+             "jurisdiction": { "score": 3, "signal": "bear" } }
+  },
+  "scenarios": {
+    "2026": { "bear": 915003,  "base": 1075376, "bull": 1625414 },
+    "2027": { "bear": 704188,  "base": 1275208, "bull": 2608317 },
+    "2028": { "bear": 979270,  "base": 1688938, "bull": 3030661 },
+    "2029": { "bear": 1192545, "base": 1628909, "bull": 3168233 },
+    "2030": { "bear": 1163059, "base": 1557124, "bull": 2935529 }
+  },
+  "catalysts": [
+    { "label": "Douta FID",           "date": "H1-26", "pos": 0.08, "live": true },
+    { "label": "La India first gold", "date": "Dec-26", "pos": 0.48, "live": false },
+    { "label": "GUIA licence",        "date": "Jan-27", "pos": 0.78, "live": false }
+  ],
+  "alerts": [
+    { "tag": "OFAC", "kind": "bear", "text": "Nicaragua gold-sector sanctions escalation", "date": "Apr-26" },
+    { "tag": "RNS",  "kind": "bull", "text": "THX Q1 revenue strong; Segilola 20.3koz",     "date": "May-26" },
+    { "tag": "RNS",  "kind": "base", "text": "Douta NI 43-101 technical report filed",       "date": "Mar-26" }
+  ],
+  "fetch_notes": []
+}

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Gold portfolio monitor</title>
+<style>
+:root{
+  --bg:#f4f3ee; --surface:#ffffff; --surface2:#eceae2; --tertiary:#e3e1d8;
+  --text:#26261f; --text2:#5f5e57; --text3:#8a897f; --border:rgba(0,0,0,.10);
+  --success-bg:#e1f5ee; --success-tx:#0f6e56;
+  --danger-bg:#fceaea;  --danger-tx:#a32d2d;
+  --warning-bg:#faeeda; --warning-tx:#854f0b;
+  --info-tx:#185fa5;
+  --radius:12px; --radius-sm:8px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1f1e1b; --surface:#2b2a26; --surface2:#33312c; --tertiary:#3a382f;
+    --text:#ecebe3; --text2:#b6b4a9; --text3:#86857b; --border:rgba(255,255,255,.12);
+    --success-bg:#0c3a30; --success-tx:#5dcaa5;
+    --danger-bg:#3d1717;  --danger-tx:#f09595;
+    --warning-bg:#3a2a10; --warning-tx:#ef9f27;
+    --info-tx:#85b7eb;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:720px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:18px;font-weight:500;margin:0}
+.muted{color:var(--text2)} .hint{color:var(--text3);font-size:11px}
+.lbl{font-size:12px;color:var(--text2);margin-bottom:6px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cards2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.metric{background:var(--surface);border-radius:var(--radius-sm);padding:12px}
+.metric .k{font-size:12px;color:var(--text2)}
+.metric .v{font-size:21px;font-weight:500;margin-top:2px}
+.metric .s{font-size:11px;color:var(--text3)}
+.pill{font-size:11px;padding:2px 8px;border-radius:var(--radius-sm);white-space:nowrap}
+.bull{background:var(--success-bg);color:var(--success-tx)}
+.bear{background:var(--danger-bg);color:var(--danger-tx)}
+.watch{background:var(--warning-bg);color:var(--warning-tx)}
+.base{background:var(--tertiary);color:var(--text2)}
+.row{display:grid;grid-template-columns:130px 1fr auto;align-items:center;gap:10px;padding:8px 0;border-top:.5px solid var(--border);font-size:13px}
+.section{margin-top:14px}
+.title{font-size:13px;font-weight:500;margin-bottom:8px}
+input.shares{width:96px;height:30px;padding:2px 8px;font-size:13px;border:.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text)}
+input.shares:focus{outline:none;box-shadow:0 0 0 2px var(--info-tx)}
+.band{position:relative;height:6px;background:var(--tertiary);border-radius:3px;margin:8px 4px}
+.band .dot{position:absolute;top:-3px;width:12px;height:12px;border-radius:50%;background:var(--success-tx)}
+.band-lbl{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);padding:0 2px}
+.sg{display:grid;grid-template-columns:64px 1fr 1fr 1fr;gap:8px;align-items:center}
+.sg .h{font-size:11px;color:var(--text2);text-align:right}
+.sg .c{text-align:right;font-size:14px;color:var(--text2)}
+.sg .yr{font-size:13px;color:var(--text2)}
+.sg .basev{font-weight:500;background:var(--success-bg);color:var(--success-tx);border-radius:var(--radius-sm);padding:2px 6px}
+.line{border-top:.5px solid var(--border);padding-top:7px;margin-top:7px}
+button.toggle{width:100%;border:none;background:none;padding:0;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-family:var(--font);color:var(--text)}
+.tl{position:relative;height:2px;background:var(--border);margin:0 8px 8px}
+.tl .n{position:absolute;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--text2)}
+.tl .n.live{top:-4px;width:10px;height:10px;background:var(--info-tx)}
+.alert{display:flex;gap:8px;align-items:center;font-size:12px;padding:6px 0;border-top:.5px solid var(--border)}
+.flag{font-size:12px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><p class="muted">Loading…</p></div>
+
+<script>
+const f0 = n => (n==null?'–':Math.round(n).toLocaleString('en-GB'));
+const gbp = n => (n==null?'–':'£'+Math.round(n).toLocaleString('en-GB'));
+const m2 = n => (n==null?'–':(n/1e6).toFixed(2));
+const pillClass = s => ({bull:'bull',bear:'bear',base:'base',watch:'watch'}[s]||'base');
+const cap = s => s? s.charAt(0).toUpperCase()+s.slice(1) : '';
+
+const LS = 'goldmon.shares';
+function loadOverrides(){ try{return JSON.parse(localStorage.getItem(LS))||{}}catch{return {}} }
+function saveOverride(t,v){ const o=loadOverrides(); o[t]=v; localStorage.setItem(LS,JSON.stringify(o)); }
+
+let DATA=null;
+
+function currentValue(){
+  const ov=loadOverrides();
+  const h=DATA.holdings;
+  const shThx = ov.THX ?? h.THX.shares, shMtl = ov.MTL ?? h.MTL.shares;
+  return Math.round(shThx*h.THX.price_pence/100 + shMtl*h.MTL.price_pence/100);
+}
+
+function render(){
+  const d=DATA, p=d.portfolio, g=d.gold;
+  const compPct = Math.min(100,Math.max(0,(d.composite+100)/2));
+  const ov=loadOverrides();
+  const sc=d.scenarios, yrs=Object.keys(sc);
+
+  const themeRows=d.themes.map(t=>`
+    <div class="row"><span>${t.label}</span><span class="muted" style="font-size:12px">${t.reading||''}</span>
+    <span class="pill ${pillClass(t.signal)}">${cap(t.signal)}</span></div>`).join('');
+
+  const holdCard=(tk)=>{ const h=d.holdings[tk]; const j=h.jurisdiction||{};
+    const shares = ov[tk] ?? h.shares;
+    return `<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <span style="font-size:15px;font-weight:500">${tk}</span>
+        <span class="pill ${pillClass(j.signal)}">Jurisdiction ${j.score}/10</span></div>
+      <div style="display:flex;align-items:baseline;gap:8px;margin:6px 0">
+        <span style="font-size:22px;font-weight:500">${h.price_pence}p</span><span class="muted" style="font-size:12px">EOD</span></div>
+      <div class="muted" style="font-size:12px">NPV range £${h.npv.bear} – £${h.npv.bull}</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:.5px solid var(--border)">
+        <span class="muted" style="font-size:12px">✎ Shares</span>
+        <input class="shares" inputmode="numeric" data-tk="${tk}" value="${Number(shares).toLocaleString('en-GB')}"/></div>
+    </div>`; };
+
+  const scenRows=yrs.map(y=>`<div class="sg line"><span class="yr">${y}</span>
+     <span class="c">${m2(sc[y].bear)}</span>
+     <span class="c" style="text-align:center"><span class="basev">${m2(sc[y].base)}</span></span>
+     <span class="c">${m2(sc[y].bull)}</span></div>`).join('');
+
+  const tlNodes=d.catalysts.map(c=>`<div class="n ${c.live?'live':''}" style="left:${c.pos*100}%"></div>`).join('');
+  const tlLbls=d.catalysts.map((c,i)=>`<span style="text-align:${i===0?'left':i===d.catalysts.length-1?'right':'center'}">${c.label}<br>${c.date}</span>`).join('');
+
+  const alerts=d.alerts.map(a=>`<div class="alert"><span class="pill ${pillClass(a.kind)}">${a.tag}</span>
+     <span class="muted">${a.text}</span><span class="hint" style="margin-left:auto">${a.date}</span></div>`).join('');
+
+  document.getElementById('app').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px">
+      <h1>Gold portfolio monitor</h1><span class="hint">EOD · ${d.as_of}</span></div>
+
+    <div class="lbl">Portfolio</div>
+    <div class="grid3" style="margin-bottom:12px">
+      <div class="metric"><div class="k">Current value</div><div class="v" id="curval">${gbp(currentValue())}</div><div class="s">holdings × EOD price</div></div>
+      <div class="metric"><div class="k">2029 value (base)</div><div class="v" style="color:var(--success-tx)">${gbp(p.value_2029_base)}</div><div class="s">blended forecast</div></div>
+      <div class="metric"><div class="k">2029 income (base)</div><div class="v">${gbp(p.income_2029_base)}</div><div class="s">${(p.income_2029_yield*100).toFixed(1)}% yield</div></div>
+    </div>
+
+    <div class="lbl">Gold</div>
+    <div class="grid3" style="margin-bottom:8px">
+      <div class="metric"><div class="k">Thesis</div><div class="v" style="color:var(--success-tx)">${d.verdict.split(' ')[0]}</div><div class="s">composite ${d.composite>=0?'+':''}${d.composite}</div></div>
+      <div class="metric"><div class="k">Spot</div><div class="v">$${f0(g.spot)}</div><div class="s">${g.ratio}× trailing</div></div>
+      <div class="metric"><div class="k">24m trailing avg</div><div class="v">$${f0(g.trailing24)}</div><div class="s">re-rating runway</div></div>
+    </div>
+
+    <div class="card" style="padding:8px 12px;margin-bottom:14px">
+      <div class="band"><div class="dot" style="left:${compPct}%"></div></div>
+      <div class="band-lbl"><span>Strongly bearish</span><span>Balanced</span><span>Strongly bullish</span></div>
+    </div>
+
+    <div class="card section"><div class="title">Gold thesis — six drivers</div>${themeRows}</div>
+
+    <div class="cards2 section">${holdCard('THX')}${holdCard('MTL')}</div>
+
+    <div class="card section">
+      <button class="toggle" id="sgbtn">
+        <span class="title" style="margin:0">Portfolio value by scenario (£m)</span>
+        <span class="hint"><span id="sgcap">Tap to expand 2026–2030</span> <span id="sgchev">▾</span></span></button>
+      <div id="sgsum" style="margin-top:10px">
+        <div class="sg line"><span class="yr">2029</span><span class="c">${m2(sc['2029'].bear)}</span>
+          <span class="c" style="text-align:center"><span class="basev">${m2(sc['2029'].base)}</span></span>
+          <span class="c">${m2(sc['2029'].bull)}</span></div>
+        <div class="sg" style="margin-top:4px"><span></span><span class="h">bear</span><span class="h" style="text-align:center">base</span><span class="h">bull</span></div>
+      </div>
+      <div id="sgextra" style="display:none;margin-top:10px">
+        <div class="sg" style="padding-bottom:4px"><span class="yr">Year</span><span class="h">Bear</span><span class="h">Base</span><span class="h">Bull</span></div>
+        ${scenRows}
+      </div>
+    </div>
+
+    <div class="card section"><div class="title">Catalyst timeline</div>
+      <div class="tl">${tlNodes}</div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);padding:0 4px">${tlLbls}</div></div>
+
+    <div class="card section"><div class="title">Latest alerts</div>${alerts}</div>
+
+    ${d.fetch_notes&&d.fetch_notes.length?`<p class="hint" style="margin-top:10px">${d.fetch_notes.length} source(s) used last-known values on the latest run.</p>`:''}
+  `;
+
+  document.getElementById('sgbtn').onclick=()=>{
+    const e=document.getElementById('sgextra'),s=document.getElementById('sgsum'),open=e.style.display==='none';
+    e.style.display=open?'block':'none'; s.style.display=open?'none':'block';
+    document.getElementById('sgcap').textContent=open?'Tap to collapse':'Tap to expand 2026–2030';
+    document.getElementById('sgchev').textContent=open?'▴':'▾';
+  };
+  document.querySelectorAll('input.shares').forEach(inp=>{
+    inp.addEventListener('input',()=>{
+      const n=parseInt(inp.value.replace(/[^0-9]/g,''))||0;
+      saveOverride(inp.dataset.tk,n);
+      document.getElementById('curval').textContent=gbp(currentValue());
+    });
+    inp.addEventListener('blur',()=>{ const n=parseInt(inp.value.replace(/[^0-9]/g,''))||0; inp.value=n.toLocaleString('en-GB'); });
+  });
+}
+
+const EMBEDDED = {"as_of":"2026-06-17","gold":{"spot":4354,"trailing24":3408,"ratio":1.27},"composite":21,"verdict":"Bullish","themes":[{"id":"central_bank","label":"Central-bank bid","signal":"bull","reading":"WGC 243 t/qtr"},{"id":"macro_rates","label":"Macro & rates","signal":"base","reading":"Fed hold; real-yield link broken"},{"id":"usd_fx","label":"USD / FX","signal":"base","reading":"DXY 99.7; COFER 56.8%"},{"id":"geopolitics","label":"Geopolitics","signal":"base","reading":"VIX 16.8; GPR 180; Brent $80"},{"id":"mining_equities","label":"Mining equities","signal":"bull","reading":"GDXJ/gold catch-up"},{"id":"positioning","label":"Positioning","signal":"base","reading":"COT 31.8%; GVZ 25.8"}],"portfolio":{"current_value":503741,"value_2029_base":1628909,"income_2029_base":55318,"income_2029_yield":0.029},"holdings":{"THX":{"shares":540819,"price_pence":76,"npv":{"bear":1.65,"base":1.99,"bull":3.15},"jurisdiction":{"score":6,"signal":"watch"}},"MTL":{"shares":713218,"price_pence":13,"npv":{"bear":0.27,"base":0.33,"bull":0.55},"jurisdiction":{"score":3,"signal":"bear"}}},"scenarios":{"2026":{"bear":915003,"base":1075376,"bull":1625414},"2027":{"bear":704188,"base":1275208,"bull":2608317},"2028":{"bear":979270,"base":1688938,"bull":3030661},"2029":{"bear":1192545,"base":1628909,"bull":3168233},"2030":{"bear":1163059,"base":1557124,"bull":2935529}},"catalysts":[{"label":"Douta FID","date":"H1-26","pos":0.08,"live":true},{"label":"La India first gold","date":"Dec-26","pos":0.48,"live":false},{"label":"GUIA licence","date":"Jan-27","pos":0.78,"live":false}],"alerts":[{"tag":"OFAC","kind":"bear","text":"Nicaragua gold-sector sanctions escalation","date":"Apr-26"},{"tag":"RNS","kind":"bull","text":"THX Q1 revenue strong; Segilola 20.3koz","date":"May-26"},{"tag":"RNS","kind":"base","text":"Douta NI 43-101 technical report filed","date":"Mar-26"}],"fetch_notes":[]};
+
+fetch('./data/data.json',{cache:'no-store'})
+  .then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); })
+  .then(d=>{DATA=d;render();})
+  .catch(()=>{ DATA=EMBEDDED; render(); });
+</script>
+</body>
+</html>
