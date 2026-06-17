@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Gold monitor — data editor</title>
+<style>
+:root{
+  --bg:#f4f3ee; --surface:#ffffff; --surface2:#eceae2; --tertiary:#e3e1d8;
+  --text:#26261f; --text2:#5f5e57; --text3:#8a897f; --border:rgba(0,0,0,.12);
+  --accent:#185fa5; --ok-bg:#e1f5ee; --ok-tx:#0f6e56; --err-bg:#fceaea; --err-tx:#a32d2d;
+  --radius:12px; --radius-sm:8px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#1f1e1b; --surface:#2b2a26; --surface2:#33312c; --tertiary:#3a382f;
+  --text:#ecebe3; --text2:#b6b4a9; --text3:#86857b; --border:rgba(255,255,255,.14);
+  --accent:#85b7eb; --ok-bg:#0c3a30; --ok-tx:#5dcaa5; --err-bg:#3d1717; --err-tx:#f09595;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.5}
+.wrap{max-width:760px;margin:0 auto;padding:20px 16px 64px}
+a{color:var(--accent)}
+h1{font-size:18px;font-weight:500;margin:0 0 4px}
+.sub{color:var(--text2);font-size:13px;margin-bottom:18px}
+.card{background:var(--surface);border:.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px}
+.card h2{font-size:14px;font-weight:500;margin:0 0 4px}
+.card .note{font-size:12px;color:var(--text3);margin-bottom:12px}
+.field{display:grid;grid-template-columns:1fr 130px;gap:10px;align-items:center;padding:7px 0;border-top:.5px solid var(--border)}
+.field:first-of-type{border-top:none}
+.field label{font-size:13px}
+.field label small{display:block;color:var(--text3);font-size:11px}
+input,select{font-family:var(--font);font-size:13px;height:32px;padding:2px 8px;border:.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);width:100%}
+input:focus,select:focus{outline:none;box-shadow:0 0 0 2px var(--accent)}
+.rows .r{display:grid;gap:8px;align-items:center;padding:8px 0;border-top:.5px solid var(--border)}
+.rows.cat .r{grid-template-columns:1fr 90px 70px 54px 32px}
+.rows.al  .r{grid-template-columns:74px 90px 1fr 80px 32px}
+.rows .hd{font-size:11px;color:var(--text3)}
+.del{border:none;background:none;color:var(--err-tx);cursor:pointer;font-size:16px;padding:0}
+.addbtn{margin-top:10px;background:none;border:.5px dashed var(--border);color:var(--text2);border-radius:var(--radius-sm);padding:6px 10px;cursor:pointer;font-size:12px}
+.btn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:9px 14px;font-size:13px;cursor:pointer;font-family:var(--font)}
+.btn.sec{background:var(--surface2);color:var(--text)}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+pre{background:var(--surface2);border-radius:var(--radius-sm);padding:10px;font-size:11px;overflow:auto;max-height:200px;margin:8px 0 0}
+.status{font-size:12px;padding:6px 10px;border-radius:var(--radius-sm);margin-top:8px;display:none}
+.status.ok{display:block;background:var(--ok-bg);color:var(--ok-tx)}
+.status.err{display:block;background:var(--err-bg);color:var(--err-tx)}
+details summary{cursor:pointer;font-size:13px;color:var(--text2)}
+.muted{color:var(--text2)}
+.gh{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.gh .full{grid-column:1/3}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><p class="muted">Loading current data…</p></div>
+
+<script>
+const SIGNALS = ["bull","base","watch","bear"];
+const KINDS = ["bull","base","watch","bear"];
+const LSGH = "goldmon.gh";
+
+const EMB_HOLDINGS = {"_comment":"Your share quantities.","THX":540819,"MTL":713218};
+const EMB_MANUAL = {"_comment":"Low-frequency / judgment inputs.","wgc_cb_purchases_t":{"value":243,"cadence":"quarterly","note":"WGC central-bank net purchases (tonnes/qtr)"},"pboc_holdings_delta_t":{"value":-42,"cadence":"monthly","note":"PBoC reported holdings, monthly change (tonnes)"},"etf_aum_delta_t":{"value":-16,"cadence":"monthly","note":"Global gold ETF AUM change (tonnes/month)"},"cofer_usd_share_delta":{"value":-0.16,"cadence":"quarterly","note":"IMF COFER USD reserve share change (%pts)"},"gpr_index":{"value":180,"cadence":"monthly","note":"Geopolitical Risk Index (level)"},"cot_mm_net_pct_oi":{"value":0.318,"cadence":"weekly","note":"COMEX Managed Money net longs (fraction of OI, e.g. 0.318 = 31.8%)"},"deficit_pct_gdp":{"value":6,"cadence":"quarterly","note":"US federal deficit (% of GDP) — >6% = bull"},"gvz":{"value":25.8,"cadence":"weekly","note":"CBOE Gold VIX (GVZ), level"},"jurisdiction":{"THX":{"score":6,"signal":"watch","note":"Senegal review; Nigeria FX/security"},"MTL":{"score":3,"signal":"bear","note":"Ortega regime; OFAC escalation"}},"catalysts":[{"label":"Douta FID","date":"H1-26","pos":0.08,"live":true},{"label":"La India first gold","date":"Dec-26","pos":0.48,"live":false},{"label":"GUIA licence","date":"Jan-27","pos":0.78,"live":false}],"alerts":[{"tag":"OFAC","kind":"bear","text":"Nicaragua gold-sector sanctions escalation","date":"Apr-26"},{"tag":"RNS","kind":"bull","text":"THX Q1 revenue strong; Segilola 20.3koz","date":"May-26"},{"tag":"RNS","kind":"base","text":"Douta NI 43-101 technical report filed","date":"Mar-26"}]};
+
+let H = null, M = null;
+
+const el = (t, attrs={}, kids=[]) => {
+  const e = document.createElement(t);
+  for (const k in attrs){ if(k==="class")e.className=attrs[k]; else if(k==="html")e.innerHTML=attrs[k]; else e.setAttribute(k,attrs[k]); }
+  (Array.isArray(kids)?kids:[kids]).forEach(c=>c&&e.append(c.nodeType?c:document.createTextNode(c)));
+  return e;
+};
+const num = (v) => { const n = parseFloat(String(v).replace(/,/g,"")); return isNaN(n)?0:n; };
+const opt = (v,sel)=>el("option",sel===v?{value:v,selected:"selected"}:{value:v},v);
+
+function load(){
+  return Promise.all([
+    fetch("./data/holdings.json",{cache:"no-store"}).then(r=>r.ok?r.json():EMB_HOLDINGS).catch(()=>EMB_HOLDINGS),
+    fetch("./data/manual_inputs.json",{cache:"no-store"}).then(r=>r.ok?r.json():EMB_MANUAL).catch(()=>EMB_MANUAL),
+  ]);
+}
+
+function metricKeys(){
+  return Object.keys(M).filter(k=>k!=="_comment" && M[k] && typeof M[k]==="object" && "value" in M[k]);
+}
+
+function render(){
+  const app = document.getElementById("app");
+  app.innerHTML = "";
+  app.append(el("h1",{},"Data editor"));
+  app.append(el("div",{class:"sub",html:'Edit your figures here — no JSON, no commas to break. Then copy/download the files, or save straight to GitHub. <a href="./index.html">← back to dashboard</a>'}));
+
+  // Shares
+  const cShares = el("div",{class:"card"});
+  cShares.append(el("h2",{},"Share quantities"));
+  cShares.append(el("div",{class:"note"},"Used to compute current portfolio value (shares × EOD price)."));
+  ["THX","MTL"].forEach(t=>{
+    const f=el("div",{class:"field"});
+    f.append(el("label",{},t+" shares"));
+    f.append(el("input",{type:"text",inputmode:"numeric","data-h":t,value:Number(H[t]||0).toLocaleString("en-GB")}));
+    cShares.append(f);
+  });
+  app.append(cShares);
+
+  // Metrics
+  const cM = el("div",{class:"card"});
+  cM.append(el("h2",{},"Gold thesis metrics"));
+  cM.append(el("div",{class:"note"},"Change the value only. Cadence note shows how often to refresh each one."));
+  metricKeys().forEach(k=>{
+    const m=M[k];
+    const f=el("div",{class:"field"});
+    const lab=el("label",{},m.note||k);
+    lab.append(el("small",{},(m.cadence||"")+(k==="cot_mm_net_pct_oi"?" · enter as fraction e.g. 0.318":"")));
+    f.append(lab);
+    f.append(el("input",{type:"number",step:"any","data-m":k,value:m.value}));
+    cM.append(f);
+  });
+  app.append(cM);
+
+  // Jurisdiction
+  const cJ = el("div",{class:"card"});
+  cJ.append(el("h2",{},"Jurisdiction signals"));
+  ["THX","MTL"].forEach(t=>{
+    const j=(M.jurisdiction&&M.jurisdiction[t])||{score:5,signal:"base",note:""};
+    const f1=el("div",{class:"field"});
+    f1.append(el("label",{},t+" score (0–10)"));
+    f1.append(el("input",{type:"number",min:"0",max:"10",step:"1","data-j":t+":score",value:j.score}));
+    cJ.append(f1);
+    const f2=el("div",{class:"field"});
+    f2.append(el("label",{},t+" signal"));
+    const s=el("select",{"data-j":t+":signal"}); SIGNALS.forEach(v=>s.append(opt(v,j.signal))); f2.append(s);
+    cJ.append(f2);
+    const f3=el("div",{class:"field"});
+    f3.append(el("label",{},t+" note"));
+    f3.append(el("input",{type:"text","data-j":t+":note",value:j.note||""}));
+    cJ.append(f3);
+  });
+  app.append(cJ);
+
+  // Catalysts
+  const cC = el("div",{class:"card"});
+  cC.append(el("h2",{},"Catalyst timeline"));
+  cC.append(el("div",{class:"note"},"Position = where it sits left→right on the timeline (0 = far left, 1 = far right). Live = the highlighted/imminent one."));
+  const cwrap=el("div",{class:"rows cat",id:"cats"});
+  const chd=el("div",{class:"r hd"}); ["Label","Date","Pos","Live",""].forEach(h=>chd.append(el("span",{},h))); cwrap.append(chd);
+  (M.catalysts||[]).forEach(c=>cwrap.append(catRow(c)));
+  cC.append(cwrap);
+  const addC=el("button",{class:"addbtn"},"+ add catalyst"); addC.onclick=()=>cwrap.append(catRow({label:"",date:"",pos:0.5,live:false})); cC.append(addC);
+  app.append(cC);
+
+  // Alerts
+  const cA = el("div",{class:"card"});
+  cA.append(el("h2",{},"Alerts feed"));
+  const awrap=el("div",{class:"rows al",id:"alerts"});
+  const ahd=el("div",{class:"r hd"}); ["Tag","Kind","Text","Date",""].forEach(h=>ahd.append(el("span",{},h))); awrap.append(ahd);
+  (M.alerts||[]).forEach(a=>awrap.append(alRow(a)));
+  cA.append(awrap);
+  const addA=el("button",{class:"addbtn"},"+ add alert"); addA.onclick=()=>awrap.append(alRow({tag:"RNS",kind:"base",text:"",date:""})); cA.append(addA);
+  app.append(cA);
+
+  // Save
+  const cS = el("div",{class:"card"});
+  cS.append(el("h2",{},"Save"));
+  const br=el("div",{class:"btn-row"});
+  const gen=el("button",{class:"btn"},"Generate files"); gen.onclick=generate; br.append(gen);
+  cS.append(br);
+  cS.append(el("div",{class:"status",id:"genstat"}));
+  cS.append(el("div",{id:"out"}));
+
+  const det=el("details");
+  det.append(el("summary",{},"Advanced: save directly to GitHub (one-time token setup)"));
+  const cfg = JSON.parse(localStorage.getItem(LSGH)||"{}");
+  const gh=el("div",{class:"gh"});
+  gh.append(ghInput("owner","Repo owner",cfg.owner||"stevenbailey-ui"));
+  gh.append(ghInput("repo","Repo name",cfg.repo||"Gold-monitor"));
+  gh.append(ghInput("branch","Branch",cfg.branch||"main"));
+  gh.append(ghInput("token","Access token (kept in this browser only)",cfg.token||"","password"));
+  det.append(gh);
+  det.append(el("div",{class:"note",html:'Create a fine-grained token at <a href="https://github.com/settings/personal-access-tokens" target="_blank">github.com/settings/personal-access-tokens</a> — scope it to only this repo, with <b>Contents: Read and write</b>.'}));
+  const sb=el("button",{class:"btn",style:"margin-top:8px"},"Save both files to GitHub"); sb.onclick=saveGitHub;
+  det.append(sb);
+  det.append(el("div",{class:"status",id:"ghstat"}));
+  cS.append(det);
+  app.append(cS);
+}
+
+function catRow(c){
+  const r=el("div",{class:"r"});
+  r.append(el("input",{type:"text","data-c":"label",value:c.label||""}));
+  r.append(el("input",{type:"text","data-c":"date",value:c.date||""}));
+  r.append(el("input",{type:"number",step:"0.01",min:"0",max:"1","data-c":"pos",value:c.pos??0.5}));
+  const chk=el("input",{type:"checkbox","data-c":"live"}); if(c.live)chk.checked=true;
+  r.append(chk);
+  const d=el("button",{class:"del"},"×"); d.onclick=()=>r.remove(); r.append(d);
+  return r;
+}
+function alRow(a){
+  const r=el("div",{class:"r"});
+  r.append(el("input",{type:"text","data-a":"tag",value:a.tag||""}));
+  const s=el("select",{"data-a":"kind"}); KINDS.forEach(v=>s.append(opt(v,a.kind))); r.append(s);
+  r.append(el("input",{type:"text","data-a":"text",value:a.text||""}));
+  r.append(el("input",{type:"text","data-a":"date",value:a.date||""}));
+  const d=el("button",{class:"del"},"×"); d.onclick=()=>r.remove(); r.append(d);
+  return r;
+}
+function ghInput(key,label,val,type){
+  const w=el("div",key==="token"?{class:"full"}:{});
+  w.append(el("label",{class:"note",style:"display:block"},label));
+  w.append(el("input",{type:type||"text","data-gh":key,value:val}));
+  return w;
+}
+
+function collect(){
+  // shares
+  document.querySelectorAll("[data-h]").forEach(i=>{ H[i.dataset.h]=Math.round(num(i.value)); });
+  // metrics
+  document.querySelectorAll("[data-m]").forEach(i=>{ M[i.dataset.m].value=num(i.value); });
+  // jurisdiction
+  if(!M.jurisdiction)M.jurisdiction={};
+  document.querySelectorAll("[data-j]").forEach(i=>{
+    const [t,f]=i.dataset.j.split(":"); if(!M.jurisdiction[t])M.jurisdiction[t]={};
+    M.jurisdiction[t][f] = f==="score"?Math.round(num(i.value)):i.value;
+  });
+  // catalysts
+  M.catalysts=[...document.querySelectorAll("#cats .r")].filter(r=>r.querySelector("[data-c]")).map(r=>({
+    label:r.querySelector('[data-c="label"]').value,
+    date:r.querySelector('[data-c="date"]').value,
+    pos:Math.max(0,Math.min(1,num(r.querySelector('[data-c="pos"]').value))),
+    live:r.querySelector('[data-c="live"]').checked
+  })).filter(c=>c.label);
+  // alerts
+  M.alerts=[...document.querySelectorAll("#alerts .r")].filter(r=>r.querySelector("[data-a]")).map(r=>({
+    tag:r.querySelector('[data-a="tag"]').value,
+    kind:r.querySelector('[data-a="kind"]').value,
+    text:r.querySelector('[data-a="text"]').value,
+    date:r.querySelector('[data-a="date"]').value
+  })).filter(a=>a.text);
+  return {holdings:JSON.stringify(H,null,2), manual:JSON.stringify(M,null,2)};
+}
+
+function dlBtn(name,text){
+  const b=el("button",{class:"btn sec"},"Download "+name);
+  b.onclick=()=>{ const blob=new Blob([text],{type:"application/json"}); const u=URL.createObjectURL(blob);
+    const a=el("a",{href:u,download:name}); document.body.append(a); a.click(); a.remove(); URL.revokeObjectURL(u); };
+  return b;
+}
+function copyBtn(text){
+  const b=el("button",{class:"btn sec"},"Copy");
+  b.onclick=()=>navigator.clipboard.writeText(text).then(()=>{b.textContent="Copied ✓";setTimeout(()=>b.textContent="Copy",1500);});
+  return b;
+}
+
+function generate(){
+  const {holdings,manual}=collect();
+  const out=document.getElementById("out"); out.innerHTML="";
+  [["holdings.json",holdings],["manual_inputs.json",manual]].forEach(([name,txt])=>{
+    out.append(el("div",{class:"note",style:"margin-top:12px;font-weight:500;color:var(--text)"},name));
+    const br=el("div",{class:"btn-row"}); br.append(copyBtn(txt)); br.append(dlBtn(name,txt)); out.append(br);
+    out.append(el("pre",{},txt));
+  });
+  const s=document.getElementById("genstat"); s.className="status ok"; s.textContent="Files generated below. Copy or download each, then upload/paste into the data folder on GitHub — or use the GitHub option for one-click saving.";
+}
+
+function b64(str){ const bytes=new TextEncoder().encode(str); let bin=""; bytes.forEach(b=>bin+=String.fromCharCode(b)); return btoa(bin); }
+
+async function ghPut(cfg,path,content,msg){
+  const base=`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${path}`;
+  const head={Authorization:`Bearer ${cfg.token}`,Accept:"application/vnd.github+json"};
+  let sha=null;
+  const g=await fetch(base+`?ref=${encodeURIComponent(cfg.branch)}`,{headers:head});
+  if(g.ok){ sha=(await g.json()).sha; } else if(g.status!==404){ throw new Error(`read ${path}: ${g.status}`); }
+  const body={message:msg,content:b64(content),branch:cfg.branch}; if(sha)body.sha=sha;
+  const p=await fetch(base,{method:"PUT",headers:{...head,"Content-Type":"application/json"},body:JSON.stringify(body)});
+  if(!p.ok) throw new Error(`write ${path}: ${p.status} ${(await p.text()).slice(0,160)}`);
+}
+
+async function saveGitHub(){
+  const cfg={}; document.querySelectorAll("[data-gh]").forEach(i=>cfg[i.dataset.gh]=i.value.trim());
+  localStorage.setItem(LSGH,JSON.stringify(cfg));
+  const s=document.getElementById("ghstat");
+  if(!cfg.owner||!cfg.repo||!cfg.branch||!cfg.token){ s.className="status err"; s.textContent="Fill in owner, repo, branch and token first."; return; }
+  const {holdings,manual}=collect();
+  s.className="status"; s.style.display="block"; s.textContent="Saving…";
+  try{
+    await ghPut(cfg,"data/holdings.json",holdings,"Update holdings via editor");
+    await ghPut(cfg,"data/manual_inputs.json",manual,"Update manual inputs via editor");
+    s.className="status ok"; s.textContent="Saved to GitHub ✓ — changes fold into the dashboard on the next scheduled run, or trigger Run workflow to apply now.";
+  }catch(e){ s.className="status err"; s.textContent="Failed: "+e.message+"  (check the token has Contents: Read and write on this repo)"; }
+}
+
+load().then(([h,m])=>{ H=h; M=m; render(); }).catch(()=>{ H=EMB_HOLDINGS; M=EMB_MANUAL; render(); });
+</script>
+</body>
+</html>
