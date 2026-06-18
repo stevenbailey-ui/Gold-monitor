@@ -1,9 +1,9 @@
 {
   "as_of": "2026-06-18",
   "gold": {
-    "spot": 4291,
-    "trailing24": 3354,
-    "ratio": 1.28
+    "spot": 4267,
+    "trailing24": 3353,
+    "ratio": 1.27
   },
   "composite": 30,
   "verdict": "Strongly bullish",
@@ -24,13 +24,13 @@
       "id": "usd_fx",
       "label": "USD / FX",
       "signal": "base",
-      "reading": "DXY 100.6; COFER -0.16"
+      "reading": "DXY 100.7; COFER -0.16"
     },
     {
       "id": "geopolitics",
       "label": "Geopolitics",
       "signal": "bull",
-      "reading": "VIX 17.1; GPR 180; Brent $78"
+      "reading": "VIX 17.4; GPR 180; Brent $79"
     },
     {
       "id": "mining_equities",
@@ -83,7 +83,7 @@
       "weight": 5
     },
     "dxy": {
-      "value": 0.0,
+      "value": 0.13000000000000966,
       "signal": "base",
       "theme": "usd_fx",
       "weight": 9
@@ -95,13 +95,13 @@
       "weight": 7
     },
     "brent": {
-      "value": 77.62,
+      "value": 78.71,
       "signal": "bull",
       "theme": "geopolitics",
       "weight": 6
     },
     "vix": {
-      "value": 17.13,
+      "value": 17.39,
       "signal": "base",
       "theme": "geopolitics",
       "weight": 2
@@ -113,19 +113,19 @@
       "weight": 2
     },
     "gdxj_gold_ratio": {
-      "value": 0.02558,
+      "value": 0.02573,
       "signal": "base",
       "theme": "mining_equities",
       "weight": 8
     },
     "gdx_gold_ratio": {
-      "value": 0.01966,
+      "value": 0.01977,
       "signal": "base",
       "theme": "mining_equities",
       "weight": 3
     },
     "spot_24m_ratio": {
-      "value": 1.2796,
+      "value": 1.2728,
       "signal": "bull",
       "theme": "mining_equities",
       "weight": 6
@@ -149,14 +149,14 @@
       "weight": 4
     },
     "dxy_level": {
-      "value": 100.594
+      "value": 100.724
     },
     "_gold": {
-      "value": 4291.4
+      "value": 4267.1
     }
   },
   "portfolio": {
-    "current_value": 433853,
+    "current_value": 433981,
     "value_2029_base": 1628909,
     "income_2029_base": 55318,
     "income_2029_yield": 0.029
@@ -164,7 +164,7 @@
   "holdings": {
     "THX": {
       "shares": 540819,
-      "price_pence": 62.58,
+      "price_pence": 62.6,
       "npv": {
         "bear": 1.65,
         "base": 1.99,
