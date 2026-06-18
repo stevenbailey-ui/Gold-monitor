@@ -1,0 +1,1 @@
+# No third-party deps — scraper uses the Python standard library only.

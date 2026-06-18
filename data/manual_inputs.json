@@ -1,95 +1,67 @@
 {
-  "_comment": "Low-frequency / judgment inputs. Update on the cadence shown. The scraper merges these into the composite. Values seeded from the model's Gold Thesis Dashboard (15 Jun 2026).",
-  "wgc_cb_purchases_t": {
-    "value": 243,
-    "cadence": "quarterly",
-    "note": "WGC central-bank net purchases, trailing 4-qtr avg (tonnes/qtr)"
+  "manual_as_of": "2026-06-15",
+  "trailing24": 3408,
+  "prices_fallback": { "thx_pence": 65.6, "mtl_pence": 13.9, "gold": 4360 },
+
+  "holdings": {
+    "THX": { "shares": 626559, "wrapper_note": "ISA 525,608 + SIPP 100,951" },
+    "MTL": { "shares": 487426, "wrapper_note": "ISA 40,446 + SIPP 446,980" }
   },
-  "pboc_holdings_delta_t": {
-    "value": -42,
-    "cadence": "monthly",
-    "note": "PBoC reported holdings, monthly change (tonnes)"
+
+  "valuation": {
+    "THX": { "npv_bear": 1.65, "npv_base": 1.99, "npv_bull": 3.15 },
+    "MTL": { "npv_bear": 0.27, "npv_base": 0.33, "npv_bull": 0.55 }
   },
-  "etf_aum_delta_t": {
-    "value": -16,
-    "cadence": "monthly",
-    "note": "Global gold ETF AUM change (tonnes/month)"
-  },
-  "cofer_usd_share_delta": {
-    "value": -0.16,
-    "cadence": "quarterly",
-    "note": "IMF COFER USD reserve share change (%pts)"
-  },
-  "gpr_index": {
-    "value": 180,
-    "cadence": "monthly",
-    "note": "Caldara-Iacoviello Geopolitical Risk Index (level)"
-  },
-  "cot_mm_net_pct_oi": {
-    "value": 0.318,
-    "cadence": "weekly",
-    "note": "COMEX Managed Money net longs (% of OI), CFTC disaggregated 088691"
-  },
-  "deficit_pct_gdp": {
-    "value": 6,
-    "cadence": "quarterly",
-    "note": "US federal deficit (% of GDP, annualised) \u2014 >6% = fiscal dominance = bull"
-  },
-  "gvz": {
-    "value": 25.8,
-    "cadence": "weekly",
-    "note": "CBOE Gold VIX (GVZ), level"
-  },
+
   "jurisdiction": {
-    "THX": {
-      "score": 6,
-      "signal": "watch",
-      "note": "Senegal Faye govt contract review; Nigeria FX/security; EDTI improving"
-    },
-    "MTL": {
-      "score": 3,
-      "signal": "bear",
-      "note": "Ortega regime; OFAC escalation Apr-26; offtake/correspondent-bank de-risking"
-    }
+    "THX": { "score": 6, "signal": "base", "note": "Senegal Faye govt contract review; Nigeria FX/security; EDTI improving" },
+    "MTL": { "score": 3, "signal": "bear", "note": "Ortega regime; OFAC escalation Apr-26; BHMB ICSID; La India gate risk" }
   },
+
+  "metrics": {
+    "wgc_cb_purchases_t":  { "value": 243,   "signal": "bull", "cadence": "quarterly", "note": "WGC net purchases, trailing 4-qtr avg (t/qtr)" },
+    "pboc_holdings_delta_t": { "value": -42, "signal": "bear", "cadence": "monthly",   "note": "PBoC reported holdings, monthly change (t)" },
+    "etf_aum_delta_t":     { "value": -16,   "signal": "base", "cadence": "monthly",   "note": "Global gold ETF AUM change (t/mo)" },
+    "deficit_pct_gdp":     { "value": 6,     "signal": "base", "cadence": "quarterly", "note": "US federal deficit (% GDP); >6% = fiscal dominance = bull" },
+    "cofer_usd_share":     { "value": 56.77, "signal": "base", "cadence": "quarterly", "note": "USD share of FX reserves, IMF COFER (%)" },
+    "gpr_index":           { "value": 180,   "signal": "base", "cadence": "monthly",   "note": "Caldara-Iacoviello Geopolitical Risk Index (level)" },
+    "brent":               { "value": 81,    "signal": "base", "cadence": "monthly",   "note": "Brent ($/bbl); non-monotonic: high+falling=bull" },
+    "cot_mm_net_pct_oi":   { "value": 0.318, "signal": "base", "cadence": "weekly",    "note": "COMEX Managed Money net longs (% OI), contrarian — enter as fraction" },
+    "gvz":                 { "value": 25.8,  "signal": "base", "cadence": "weekly",    "note": "CBOE Gold VIX (GVZ) level" },
+
+    "real_yield":          { "signal": "base", "note": "FRED DFII10 delta — last-known-good; scraper overwrites when live" },
+    "fed_funds":           { "signal": "base", "note": "FRED DFEDTARU delta — last-known-good" },
+    "dxy":                 { "signal": "base", "note": "Yahoo DXY delta — last-known-good" },
+    "vix":                 { "signal": "base", "note": "Yahoo VIX level — last-known-good" },
+    "gdxj_gold":           { "signal": "base", "note": "GDXJ/gold ratio — last-known-good" },
+    "gdx_gold":            { "signal": "bull", "note": "GDX/gold ratio — last-known-good" },
+    "spot_trailing":       { "signal": "bull", "note": "spot/24m ratio — last-known-good" },
+    "ndx_gdxj":            { "signal": "base", "note": "NDX/GDXJ ratio — last-known-good" }
+  },
+
+  "income_2029_base": 55318,
+  "income_2029_yield": 2.9,
+
+  "scenarios": {
+    "2026": { "bear": 0.92, "base": 1.08, "bull": 1.63 },
+    "2027": { "bear": 0.70, "base": 1.28, "bull": 2.61 },
+    "2028": { "bear": 0.98, "base": 1.69, "bull": 3.03 },
+    "2029": { "bear": 1.19, "base": 1.63, "bull": 3.17 },
+    "2030": { "bear": 1.16, "base": 1.56, "bull": 2.94 }
+  },
+
   "catalysts": [
-    {
-      "label": "Douta FID",
-      "date": "H1-26",
-      "pos": 0.08,
-      "live": true
-    },
-    {
-      "label": "La India first gold",
-      "date": "Dec-26",
-      "pos": 0.48,
-      "live": false
-    },
-    {
-      "label": "GUIA licence",
-      "date": "Jan-27",
-      "pos": 0.78,
-      "live": false
-    }
+    { "label": "Douta FID",          "date": "H1-26",  "pos": 8,  "live": true },
+    { "label": "La India 1st gold",  "date": "Dec-26", "pos": 50, "live": false },
+    { "label": "GUIA/Guitry licence","date": "Jan-27", "pos": 88, "live": false }
   ],
-  "alerts": [
-    {
-      "tag": "OFAC",
-      "kind": "bear",
-      "text": "Nicaragua gold-sector sanctions escalation",
-      "date": "Apr-26"
-    },
-    {
-      "tag": "RNS",
-      "kind": "bull",
-      "text": "THX Q1 revenue strong; Segilola 20.3koz",
-      "date": "May-26"
-    },
-    {
-      "tag": "RNS",
-      "kind": "base",
-      "text": "Douta NI 43-101 technical report filed",
-      "date": "Mar-26"
-    }
+
+  "actions": [
+    { "when": "Douta FID", "date": "H1-26", "tag": "IMMINENT", "cls": "p-amber",
+      "body": "Watch RNS for FID, financing close (Q2-26) and Senegal Mining Convention signature. FID confirmed = THX NPV de-risks. <b>Hold; no THX top-up until convention signed.</b>" },
+    { "when": "La India", "date": "Dec-26", "tag": "MONITOR", "cls": "p-bear",
+      "body": "Commissioning ~50% complete, on schedule. MTL re-rate gated on first pour <i>and</i> OFAC / correspondent-bank path clearing. <b>No MTL adds while OFAC escalation (Apr-26) live.</b>" },
+    { "when": "GUIA", "date": "Jan-27", "tag": "WATCH", "cls": "p-base",
+      "body": "C\u00f4te d\u2019Ivoire exploration optionality (Guitry/Marahui). Re-rate catalyst, not a base-case input. <b>No action until licence granted.</b>" }
   ]
 }
