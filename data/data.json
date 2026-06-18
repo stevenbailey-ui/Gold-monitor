@@ -1,12 +1,12 @@
 {
-  "as_of": "2026-06-17",
+  "as_of": "2026-06-18",
   "gold": {
-    "spot": 4354,
-    "trailing24": 3408,
+    "spot": 4291,
+    "trailing24": 3354,
     "ratio": 1.28
   },
-  "composite": 20,
-  "verdict": "Bullish",
+  "composite": 30,
+  "verdict": "Strongly bullish",
   "themes": [
     {
       "id": "central_bank",
@@ -24,13 +24,13 @@
       "id": "usd_fx",
       "label": "USD / FX",
       "signal": "base",
-      "reading": "DXY n/a; COFER -0.16"
+      "reading": "DXY 100.6; COFER -0.16"
     },
     {
       "id": "geopolitics",
       "label": "Geopolitics",
-      "signal": "base",
-      "reading": "VIX n/a; GPR 180; Brent $n/a"
+      "signal": "bull",
+      "reading": "VIX 17.1; GPR 180; Brent $78"
     },
     {
       "id": "mining_equities",
@@ -65,7 +65,7 @@
       "weight": 6
     },
     "us10y_real": {
-      "value": 2.15,
+      "value": 2.14,
       "signal": "bear",
       "theme": "macro_rates",
       "weight": 5
@@ -95,13 +95,13 @@
       "weight": 7
     },
     "brent": {
-      "value": null,
-      "signal": "base",
+      "value": 77.62,
+      "signal": "bull",
       "theme": "geopolitics",
       "weight": 6
     },
     "vix": {
-      "value": null,
+      "value": 17.13,
       "signal": "base",
       "theme": "geopolitics",
       "weight": 2
@@ -113,19 +113,19 @@
       "weight": 2
     },
     "gdxj_gold_ratio": {
-      "value": null,
+      "value": 0.02558,
       "signal": "base",
       "theme": "mining_equities",
       "weight": 8
     },
     "gdx_gold_ratio": {
-      "value": null,
+      "value": 0.01966,
       "signal": "base",
       "theme": "mining_equities",
       "weight": 3
     },
     "spot_24m_ratio": {
-      "value": 1.2776,
+      "value": 1.2796,
       "signal": "bull",
       "theme": "mining_equities",
       "weight": 6
@@ -143,20 +143,20 @@
       "weight": 2
     },
     "ndx_gdxj_ratio": {
-      "value": null,
-      "signal": "base",
+      "value": 270.25,
+      "signal": "bull",
       "theme": "positioning",
       "weight": 4
     },
     "dxy_level": {
-      "value": null
+      "value": 100.594
     },
     "_gold": {
-      "value": 4354.0
+      "value": 4291.4
     }
   },
   "portfolio": {
-    "current_value": 503741,
+    "current_value": 433853,
     "value_2029_base": 1628909,
     "income_2029_base": 55318,
     "income_2029_yield": 0.029
@@ -164,7 +164,7 @@
   "holdings": {
     "THX": {
       "shares": 540819,
-      "price_pence": 76,
+      "price_pence": 62.58,
       "npv": {
         "bear": 1.65,
         "base": 1.99,
@@ -178,7 +178,7 @@
     },
     "MTL": {
       "shares": 713218,
-      "price_pence": 13,
+      "price_pence": 13.38,
       "npv": {
         "bear": 0.27,
         "base": 0.33,
@@ -258,15 +258,5 @@
       "date": "Mar-26"
     }
   ],
-  "fetch_notes": [
-    "gold:HTTP Error 404: Not Found",
-    "dxy:HTTP Error 404: Not Found",
-    "vix:HTTP Error 404: Not Found",
-    "brent:HTTP Error 404: Not Found",
-    "gdx:HTTP Error 404: Not Found",
-    "gdxj:HTTP Error 404: Not Found",
-    "ndx:HTTP Error 404: Not Found",
-    "thx:HTTP Error 404: Not Found",
-    "mtl:HTTP Error 404: Not Found"
-  ]
+  "fetch_notes": []
 }
