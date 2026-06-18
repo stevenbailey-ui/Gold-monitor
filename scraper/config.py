@@ -11,7 +11,20 @@ composite is sum(weight * signal), range -100..+100. Weights sum to 100.
 Edit thresholds/weights here to recalibrate; nothing else needs to change.
 """
 
-# Free EOD price sources (Stooq CSV). Symbols verified for stooq.com.
+# Primary EOD price source: Yahoo Finance chart API (no key, works from CI).
+YAHOO = {
+    "gold":  "GC=F",       # COMEX gold front future ≈ spot
+    "dxy":   "DX-Y.NYB",   # ICE US dollar index
+    "vix":   "^VIX",
+    "brent": "BZ=F",       # Brent crude front future
+    "gdx":   "GDX",
+    "gdxj":  "GDXJ",
+    "ndx":   "^NDX",
+    "thx":   "THX.L",      # Thor Explorations, AIM (pence)
+    "mtl":   "MTL.L",      # Metals Exploration, AIM (pence)
+}
+
+# Fallback EOD price source (Stooq CSV). Used only if Yahoo fails for a symbol.
 STOOQ = {
     "gold":  "xauusd",
     "dxy":   "^dxy",     # US dollar index
