@@ -1,9 +1,9 @@
 {
-  "as_of": "2026-06-18",
+  "as_of": "2026-06-19",
   "gold": {
-    "spot": 4261,
-    "trailing24": 3354,
-    "ratio": 1.27
+    "spot": 4172,
+    "trailing24": 3350,
+    "ratio": 1.25
   },
   "composite": 11,
   "verdict": "Bullish",
@@ -24,13 +24,13 @@
       "id": "usd_fx",
       "label": "USD / FX",
       "signal": "base",
-      "reading": "DXY 100.7; COFER n/a"
+      "reading": "DXY 100.8; COFER n/a"
     },
     {
       "id": "geopolitics",
       "label": "Geopolitics",
       "signal": "bull",
-      "reading": "VIX 17.1; GPR n/a; Brent $78"
+      "reading": "VIX 17.1; GPR n/a; Brent $80"
     },
     {
       "id": "mining_equities",
@@ -65,7 +65,7 @@
       "weight": 6
     },
     "us10y_real": {
-      "value": 2.14,
+      "value": 2.23,
       "signal": "bear",
       "theme": "macro_rates",
       "weight": 5
@@ -83,7 +83,7 @@
       "weight": 5
     },
     "dxy": {
-      "value": 0.0,
+      "value": 0.09899999999998954,
       "signal": "base",
       "theme": "usd_fx",
       "weight": 9
@@ -95,13 +95,13 @@
       "weight": 7
     },
     "brent": {
-      "value": 78.32,
+      "value": 80.11,
       "signal": "bull",
       "theme": "geopolitics",
       "weight": 6
     },
     "vix": {
-      "value": 17.13,
+      "value": 17.14,
       "signal": "base",
       "theme": "geopolitics",
       "weight": 2
@@ -113,19 +113,19 @@
       "weight": 2
     },
     "gdxj_gold_ratio": {
-      "value": 0.02577,
+      "value": 0.0257,
       "signal": "base",
       "theme": "mining_equities",
       "weight": 8
     },
     "gdx_gold_ratio": {
-      "value": 0.0198,
+      "value": 0.01977,
       "signal": "base",
       "theme": "mining_equities",
       "weight": 3
     },
     "spot_24m_ratio": {
-      "value": 1.2706,
+      "value": 1.2456,
       "signal": "bull",
       "theme": "mining_equities",
       "weight": 6
@@ -143,20 +143,20 @@
       "weight": 2
     },
     "ndx_gdxj_ratio": {
-      "value": 270.25,
+      "value": 283.59,
       "signal": "bull",
       "theme": "positioning",
       "weight": 4
     },
     "dxy_level": {
-      "value": 100.668
+      "value": 100.767
     },
     "_gold": {
-      "value": 4261.0
+      "value": 4172.5
     }
   },
   "portfolio": {
-    "current_value": 437315,
+    "current_value": 416131,
     "value_2029_base": 1628909,
     "income_2029_base": 55318,
     "income_2029_yield": 0.029
@@ -164,7 +164,7 @@
   "holdings": {
     "THX": {
       "shares": 540819,
-      "price_pence": 63.26,
+      "price_pence": 59.55,
       "npv": {
         "bear": 1.65,
         "base": 1.99,
@@ -178,7 +178,7 @@
     },
     "MTL": {
       "shares": 713218,
-      "price_pence": 13.35,
+      "price_pence": 13.19,
       "npv": {
         "bear": 0.27,
         "base": 0.33,
