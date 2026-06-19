@@ -2,237 +2,209 @@
 """
 EOD updater for the gold portfolio monitor.
 
-Pulls end-of-day prices (Yahoo Finance chart API, with Stooq as fallback),
-rate series (FRED, free key), merges low-frequency manual inputs, scores the
-six-theme gold thesis composite, and writes data/data.json which the static
-front end reads. Every fetch degrades gracefully: an unreachable source falls
-back to its last known value so the dashboard never breaks.
+Pulls end-of-day prices (Yahoo Finance chart API, Stooq fallback), rate series
+(FRED, free key in env FRED_API_KEY), merges the hand-maintained manual_inputs.json,
+scores the six-theme gold-thesis composite, and writes data/data.json which index.html
+reads. Every fetch degrades gracefully: an unreachable source falls back to the manual
+signal / prior value so the dashboard never breaks and the composite stays reconcilable.
+
+Run:  python scraper/update_data.py
 """
-import csv, io, json, os, sys, urllib.request, urllib.parse, datetime, statistics
-from pathlib import Path
+import json, os, sys, datetime, urllib.request, urllib.error
+sys.path.insert(0, os.path.dirname(__file__))
 import config as C
 
-ROOT = Path(__file__).resolve().parents[1]
-DATA = ROOT / "data"
-UA = {"User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36")}
-TIMEOUT = 20
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA = os.path.join(ROOT, "data")
+SIG = {"bull": 1, "base": 0, "bear": -1}
 
 
-def _http(url):
-    req = urllib.request.Request(url, headers=UA)
-    with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
+def _get(url, timeout=15):
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 gold-monitor"})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.read().decode("utf-8", "replace")
 
 
-def load_json(name, default=None):
-    p = DATA / name
-    if p.exists():
-        return json.loads(p.read_text())
-    return default if default is not None else {}
+def yahoo_last(symbol):
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range=5d&interval=1d"
+    d = json.loads(_get(url))
+    res = d["chart"]["result"][0]
+    closes = [c for c in res["indicators"]["quote"][0]["close"] if c is not None]
+    return float(closes[-1])
 
 
-# ---------- price sources: Yahoo primary, Stooq fallback ----------
-def _yahoo_chart(symbol, rng, interval):
-    path = f"/v8/finance/chart/{urllib.parse.quote(symbol)}?interval={interval}&range={rng}"
-    last = None
-    for host in ("query1.finance.yahoo.com", "query2.finance.yahoo.com"):
+def stooq_last(symbol):
+    txt = _get(f"https://stooq.com/q/l/?s={symbol}&f=sd2t2c&h&e=csv")
+    line = txt.strip().splitlines()[-1].split(",")
+    return float(line[-1])
+
+
+def fetch_price(key, notes):
+    sym = C.PRICE_SYMBOLS[key]
+    for name, fn, s in (("yahoo", yahoo_last, sym), ("stooq", stooq_last, sym.lower().replace("^", "").replace("=f", ".f"))):
         try:
-            d = json.loads(_http(f"https://{host}{path}"))
-            return d["chart"]["result"][0]
+            return fn(s)
         except Exception as e:
-            last = e
-    raise last
+            notes.append(f"{key}:{name}:{type(e).__name__}")
+    return None
 
 
-def price_last(key):
-    ysym = C.YAHOO.get(key)
-    if ysym:
-        try:
-            res = _yahoo_chart(ysym, "5d", "1d")
-            mp = res.get("meta", {}).get("regularMarketPrice")
-            if mp is not None:
-                return float(mp)
-            closes = [c for c in res["indicators"]["quote"][0]["close"] if c is not None]
-            if closes:
-                return float(closes[-1])
-        except Exception:
-            pass
-    ssym = C.STOOQ.get(key)
-    if ssym:
-        txt = _http(f"https://stooq.com/q/l/?s={ssym}&f=sd2t2ohlcv&e=csv")
-        return float(list(csv.DictReader(io.StringIO(txt)))[0]["Close"])
-    raise RuntimeError("no source for " + key)
+def fetch_fred(series_id, notes):
+    key = os.environ.get("FRED_API_KEY")
+    if not key:
+        notes.append(f"{series_id}:no_FRED_key")
+        return None
+    try:
+        url = (f"https://api.stlouisfed.org/fred/series/observations?series_id={series_id}"
+               f"&api_key={key}&file_type=json&sort_order=desc&limit=1")
+        obs = json.loads(_get(url))["observations"][0]["value"]
+        return float(obs)
+    except Exception as e:
+        notes.append(f"{series_id}:FRED:{type(e).__name__}")
+        return None
 
 
-def price_monthly(key, months=24):
-    ysym = C.YAHOO.get(key)
-    if ysym:
-        try:
-            res = _yahoo_chart(ysym, "3y", "1mo")
-            closes = [c for c in res["indicators"]["quote"][0]["close"] if c is not None]
-            if closes:
-                return closes[-months:]
-        except Exception:
-            pass
-    ssym = C.STOOQ.get(key)
-    if ssym:
-        txt = _http(f"https://stooq.com/q/d/l/?s={ssym}&i=m")
-        rows = list(csv.DictReader(io.StringIO(txt)))
-        return [float(r["Close"]) for r in rows if r.get("Close") not in (None, "", "N/D")][-months:]
-    return []
+def score_metric(m, px, fred, manual, prev, notes):
+    """Return signal string. Live computation where possible, else manual fallback."""
+    man = manual.get("metrics", {}).get(m["id"], {})
+    fallback = man.get("signal", "base")
+    k = m["kind"]
 
+    if k == "manual":
+        # Non-fetchable judgment input; signal lives in manual_inputs.
+        return fallback
 
-def fred_last(series, api_key):
-    url = (f"https://api.stlouisfed.org/fred/series/observations?series_id={series}"
-           f"&api_key={api_key}&file_type=json&sort_order=desc&limit=2")
-    obs = json.loads(_http(url))["observations"]
-    vals = [float(o["value"]) for o in obs if o["value"] not in (".", "")]
-    return vals[0], (vals[0] - vals[1] if len(vals) > 1 else 0.0)
+    if k == "delta":
+        cur = fred.get(m["src"]) if m["src"] in C.FRED_SERIES else px.get(m["src"])
+        prior = prev.get("_raw", {}).get(m["id"])
+        if cur is None or prior is None:
+            return fallback
+        d = cur - prior
+        bull = d <= m["bull_at"] if not m["higher_is_bull"] else d >= m["bull_at"]
+        bear = d >= m["bear_at"] if not m["higher_is_bull"] else d <= m["bear_at"]
+        return "bull" if bull else "bear" if bear else "base"
 
+    if k == "level":
+        cur = px.get(m["src"])
+        if cur is None:
+            return fallback
+        if m["higher_is_bull"]:
+            return "bull" if cur >= m["bull_at"] else "bear" if cur <= m["bear_at"] else "base"
+        return "bull" if cur <= m["bull_at"] else "bear" if cur >= m["bear_at"] else "base"
 
-# ---------- scoring ----------
-def score_metric(meta, value):
-    if value is None:
-        return 0
-    bull, bear = meta["bull_at"], meta["bear_at"]
-    if meta.get("inverted"):
-        if value <= bull: return 1
-        if value >= bear: return -1
-        return 0
-    if value >= bull: return 1
-    if value <= bear: return -1
-    return 0
+    if k == "ratio":
+        n, dn = px.get(m["num"]), px.get(m["den"])
+        if not n or not dn:
+            return fallback
+        r = n / dn
+        if m["higher_is_bull"]:
+            return "bull" if r >= m["bull_at"] else "bear" if r <= m["bear_at"] else "base"
+        return "bull" if r <= m["bull_at"] else "bear" if r >= m["bear_at"] else "base"
 
+    if k == "ratio_trailing":
+        spot, trail = px.get("gold"), manual.get("trailing24")
+        if not spot or not trail:
+            return fallback
+        r = spot / trail
+        if r >= m["bear_at"]:
+            return "bear"
+        return "bull" if m["bull_lo"] <= r <= m["bull_hi"] else "base"
 
-SIGNAL_WORD = {1: "bull", 0: "base", -1: "bear"}
+    return fallback
 
 
 def main():
-    prev = load_json("data.json", {})
-    prev_metrics = prev.get("metrics", {})
-    manual = load_json("manual_inputs.json")
-    holdings = load_json("holdings.json")
-    scen = load_json("scenarios.json")
-    fred_key = os.environ.get("FRED_API_KEY", "")
-
-    raw, notes = {}, []
-
-    def remember(mid):
-        return prev_metrics.get(mid, {}).get("value")
-
+    manual = json.load(open(os.path.join(DATA, "manual_inputs.json")))
     try:
-        gold = price_last("gold")
-    except Exception as e:
-        gold = remember("_gold") or 4354.0; notes.append(f"gold:{e}")
-    try:
-        monthly = price_monthly("gold", 24)
-        trailing24 = round(statistics.mean(monthly), 1) if monthly else prev.get("gold", {}).get("trailing24", 3408.0)
-    except Exception as e:
-        trailing24 = prev.get("gold", {}).get("trailing24", 3408.0); notes.append(f"gold24m:{e}")
+        prev = json.load(open(os.path.join(DATA, "data.json")))
+    except Exception:
+        prev = {}
 
-    px = {}
-    for key in ("dxy", "vix", "brent", "gdx", "gdxj", "ndx", "thx", "mtl"):
-        try:
-            px[key] = price_last(key)
-        except Exception as e:
-            px[key] = None; notes.append(f"{key}:{e}")
+    notes = []
+    px = {k: fetch_price(k, notes) for k in C.PRICE_SYMBOLS}
+    fred = {k: fetch_fred(v, notes) for k, v in C.FRED_SERIES.items()}
 
-    for mid, meta in C.METRICS.items():
-        src = meta["src"]; val = None
-        try:
-            if src.startswith("manual:"):
-                val = manual.get(src.split(":")[1], {}).get("value")
-            elif src.startswith("fred:") and fred_key:
-                val, _ = fred_last(C.FRED[src.split(":")[1]], fred_key)
-            elif src.startswith("fred_delta:") and fred_key:
-                _, val = fred_last(C.FRED[src.split(":")[1]], fred_key)
-            elif src.startswith("stooq:") or src.startswith("price:"):
-                val = px.get(src.split(":")[1])
-            elif src.startswith("stooq_delta:") or src.startswith("price_delta:"):
-                cur = px.get(src.split(":")[1]); pr = remember(mid + "_level")
-                val = (cur - pr) if (cur is not None and pr is not None) else 0.0
-                raw[mid + "_level"] = cur
-            elif src.startswith("ratio:"):
-                expr = src.split(":")[1]
-                if expr == "spot24m":
-                    val = round(gold / trailing24, 4) if trailing24 else None
-                elif expr == "gdxj/gold":
-                    val = round(px["gdxj"] / gold, 5) if px.get("gdxj") and gold else None
-                elif expr == "gdx/gold":
-                    val = round(px["gdx"] / gold, 5) if px.get("gdx") and gold else None
-                elif expr == "ndx/gdxj":
-                    val = round(px["ndx"] / px["gdxj"], 2) if px.get("ndx") and px.get("gdxj") else None
-        except Exception as e:
-            notes.append(f"{mid}:{e}")
-        if val is None:
-            val = remember(mid)
-        raw[mid] = val
+    # Prices fall back to manual seed if both feeds fail.
+    pf = manual.get("prices_fallback", {})
+    thx_p = (px.get("thx") if px.get("thx") else pf.get("thx_pence", 65.6))
+    mtl_p = (px.get("mtl") if px.get("mtl") else pf.get("mtl_pence", 13.9))
+    gold = px.get("gold") or pf.get("gold", 4360)
+    px["gold"] = gold
+    trail = manual.get("trailing24", 3408)
 
-    metrics_out, theme_score, theme_max = {}, {}, {}
+    # Score metrics + roll up to themes.
+    raw_for_next = {}
+    theme_net = {t: 0.0 for t in C.THEMES}
+    theme_max = {t: 0.0 for t in C.THEMES}
     composite = 0
-    for mid, meta in C.METRICS.items():
-        v = raw.get(mid); sig = score_metric(meta, v)
-        composite += meta["weight"] * sig
-        metrics_out[mid] = {"value": v, "signal": SIGNAL_WORD[sig], "theme": meta["theme"], "weight": meta["weight"]}
-        t = meta["theme"]
-        theme_score[t] = theme_score.get(t, 0) + meta["weight"] * sig
-        theme_max[t] = theme_max.get(t, 0) + meta["weight"]
-    for k in list(raw):
-        if k.endswith("_level"):
-            metrics_out[k] = {"value": raw[k]}
-    metrics_out["_gold"] = {"value": gold}
+    for m in C.METRICS:
+        sig = score_metric(m, px, fred, manual, prev, notes)
+        composite += m["weight"] * SIG[sig]
+        theme_net[m["theme"]] += m["weight"] * SIG[sig]
+        theme_max[m["theme"]] += m["weight"]
+        # remember live raw values for next run's delta metrics
+        if m.get("kind") == "delta":
+            src = m["src"]
+            v = fred.get(src) if src in C.FRED_SERIES else px.get(src)
+            if v is not None:
+                raw_for_next[m["id"]] = v
 
-    def theme_signal(t):
-        s = theme_score[t]
-        if s > 0.15 * theme_max[t]: return "bull"
-        if s < -0.15 * theme_max[t]: return "bear"
-        return "base"
-
-    def rv(mid): return raw.get(mid)
-    def fmt(v, nd=0): return ("{:,.%df}" % nd).format(v) if isinstance(v, (int, float)) else "n/a"
+    composite = int(round(composite))
+    verdict, tag = C.verdict(composite)
 
     readings = {
-        "central_bank":    f"WGC {fmt(rv('wgc_cb_purchases_t'))} t/qtr",
+        "central_bank":    f"WGC {manual['metrics']['wgc_cb_purchases_t']['value']} t/qtr",
         "macro_rates":     "Fed hold; real-yield link broken",
-        "usd_fx":          f"DXY {fmt(rv('dxy_level'),1)}; COFER {fmt(manual.get('cofer_usd_share_delta',{}).get('value'),2)}",
-        "geopolitics":     f"VIX {fmt(rv('vix'),1)}; GPR {fmt(rv('gpr_index'))}; Brent ${fmt(rv('brent'))}",
-        "mining_equities": "GDXJ/gold catch-up",
-        "positioning":     f"COT {fmt((rv('cot_mm_net_pct_oi') or 0)*100,1)}%; GVZ {fmt(rv('gvz'),1)}",
+        "usd_fx":          f"DXY {round(px.get('dxy') or 0,1)} · COFER {manual['metrics']['cofer_usd_share']['value']}%",
+        "geopolitics":     f"VIX {round(px.get('vix') or 0,1)} · GPR {manual['metrics']['gpr_index']['value']} · Brent ${manual['metrics']['brent']['value']}",
+        "mining_equities": "GDX/gold confirm · GDXJ catch-up",
+        "positioning":     f"COT {round(manual['metrics']['cot_mm_net_pct_oi']['value']*100,1)}% OI · GVZ {manual['metrics']['gvz']['value']}",
     }
-    themes_out = [{"id": t, "label": C.THEME_LABELS[t], "signal": theme_signal(t), "reading": readings[t]} for t in C.THEMES]
+    themes = [{"id": t, "label": C.THEME_LABELS[t], "signal": C.theme_signal(theme_net[t], theme_max[t]),
+               "reading": readings[t]} for t in C.THEMES]
 
-    if composite >= 30:   verdict = "Strongly bullish"
-    elif composite >= 10: verdict = "Bullish"
-    elif composite > -10: verdict = "Balanced"
-    elif composite > -30: verdict = "Bearish"
-    else:                 verdict = "Strongly bearish"
+    # Portfolio mark-to-market (ISA + SIPP only).
+    H = manual["holdings"]
+    thx_val = round(H["THX"]["shares"] * thx_p / 100)
+    mtl_val = round(H["MTL"]["shares"] * mtl_p / 100)
+    total = thx_val + mtl_val
+    pct = lambda v: round(100 * v / total, 1) if total else 0
 
-    thx_p = px.get("thx") or prev.get("holdings", {}).get("THX", {}).get("price_pence", 76)
-    mtl_p = px.get("mtl") or prev.get("holdings", {}).get("MTL", {}).get("price_pence", 13)
-    cur_val = round(holdings.get("THX", 0) * thx_p / 100 + holdings.get("MTL", 0) * mtl_p / 100)
-
+    val = manual["valuation"]
+    jur = manual["jurisdiction"]
     out = {
         "as_of": datetime.date.today().isoformat(),
-        "gold": {"spot": round(gold), "trailing24": round(trailing24), "ratio": round(gold / trailing24, 2) if trailing24 else None},
-        "composite": composite, "verdict": verdict, "themes": themes_out, "metrics": metrics_out,
-        "portfolio": {
-            "current_value": cur_val,
-            "value_2029_base": scen.get("scenarios", {}).get("2029", {}).get("base"),
-            "income_2029_base": scen.get("income_2029_base"),
-            "income_2029_yield": scen.get("income_2029_yield"),
-        },
+        "manual_as_of": manual.get("manual_as_of"),
+        "gold": {"spot": round(gold), "trailing24": round(trail),
+                 "ratio": round(gold / trail, 2) if trail else None,
+                 "verdict": verdict, "tag": tag, "composite": composite},
+        "themes": themes,
+        "portfolio": {"current": total,
+                      "v2029_base": manual["scenarios"]["2029"]["base"],
+                      "income_2029": manual["income_2029_base"],
+                      "income_yield": manual["income_2029_yield"]},
         "holdings": {
-            "THX": {"shares": holdings.get("THX"), "price_pence": round(thx_p, 2),
-                    "npv": scen.get("npv_per_share", {}).get("THX"), "jurisdiction": manual.get("jurisdiction", {}).get("THX")},
-            "MTL": {"shares": holdings.get("MTL"), "price_pence": round(mtl_p, 2),
-                    "npv": scen.get("npv_per_share", {}).get("MTL"), "jurisdiction": manual.get("jurisdiction", {}).get("MTL")},
+            "THX": {"name": "Thor Explorations · Nigeria + Senegal",
+                    "price": round(thx_p / 100, 3), "shares": H["THX"]["shares"],
+                    "value": thx_val, "pct": pct(thx_val),
+                    "npv": f"{val['THX']['npv_bear']} – {val['THX']['npv_bull']}",
+                    "jur": f"{jur['THX']['score']}/10 · {jur['THX']['signal']}", "jsig": jur["THX"]["signal"],
+                    "next": manual["catalysts"][0]["label"] + " · " + manual["catalysts"][0]["date"]},
+            "MTL": {"name": "Metals Exploration · Nicaragua",
+                    "price": round(mtl_p / 100, 3), "shares": H["MTL"]["shares"],
+                    "value": mtl_val, "pct": pct(mtl_val),
+                    "npv": f"{val['MTL']['npv_bear']} – {val['MTL']['npv_bull']}",
+                    "jur": f"{jur['MTL']['score']}/10 · {jur['MTL']['signal']}", "jsig": jur["MTL"]["signal"],
+                    "next": manual["catalysts"][1]["label"] + " · " + manual["catalysts"][1]["date"]},
         },
-        "scenarios": scen.get("scenarios"), "catalysts": manual.get("catalysts"),
-        "alerts": manual.get("alerts"), "fetch_notes": notes,
+        "scenarios": manual["scenarios"],
+        "catalysts": manual["catalysts"],
+        "actions": manual["actions"],
+        "fetch_notes": notes,
+        "_raw": raw_for_next,
     }
-    (DATA / "data.json").write_text(json.dumps(out, indent=2))
-    print(f"wrote data.json — composite {composite:+d} ({verdict}); {len(notes)} fallbacks")
+    json.dump(out, open(os.path.join(DATA, "data.json"), "w"), indent=2)
+    print(f"wrote data.json — composite {composite:+d} ({verdict}); value £{total:,}; {len(notes)} fallbacks")
     if notes:
         print("fallbacks:", "; ".join(notes), file=sys.stderr)
 

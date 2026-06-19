@@ -1,54 +1,19 @@
 """
-Gold thesis metric configuration. Mirrors the portfolio model's Gold Thesis Dashboard.
-Each metric: theme, weight, how it is scored, and where its value comes from.
+Gold thesis metric configuration. Mirrors the portfolio model's Gold Thesis Dashboard
+(v20, post-2022 correlation-break regime). Weights sum to 100.
 
-Scoring: every metric resolves to a signal in {+1 bull, 0 base, -1 bear}; the
-composite is sum(weight * signal), range -100..+100. Weights sum to 100.
+Each metric resolves to a signal in {+1 bull, 0 base, -1 bear}. Composite = sum(weight*signal),
+range -100..+100. Six themes roll the metrics up for display.
 
-'kind':
-  'level_band'  -> bull if value >= bull_at (or <= for inverted); bear at the far side; else base
-  'manual'      -> signal supplied directly in manual_inputs (string), no threshold math
+kind:
+  'delta'  -> signal from (current - prior); bull if move past bull_at toward the bull side
+  'level'  -> signal from absolute level vs bands
+  'ratio'  -> value computed from two fetched prices, scored on level
+  'manual' -> signal supplied directly in manual_inputs (no live fetch)
 Edit thresholds/weights here to recalibrate; nothing else needs to change.
 """
 
-# Primary EOD price source: Yahoo Finance chart API (no key, works from CI).
-YAHOO = {
-    "gold":  "GC=F",       # COMEX gold front future ≈ spot
-    "dxy":   "DX-Y.NYB",   # ICE US dollar index
-    "vix":   "^VIX",
-    "brent": "BZ=F",       # Brent crude front future
-    "gdx":   "GDX",
-    "gdxj":  "GDXJ",
-    "ndx":   "^NDX",
-    "thx":   "THX.L",      # Thor Explorations, AIM (pence)
-    "mtl":   "MTL.L",      # Metals Exploration, AIM (pence)
-}
-
-# Fallback EOD price source (Stooq CSV). Used only if Yahoo fails for a symbol.
-STOOQ = {
-    "gold":  "xauusd",
-    "dxy":   "^dxy",     # US dollar index
-    "vix":   "^vix",
-    "brent": "cb.f",     # Brent crude front future
-    "gdx":   "gdx.us",
-    "gdxj":  "gdxj.us",
-    "ndx":   "^ndx",
-    "thx":   "thx.uk",   # Thor Explorations, AIM (pence)
-    "mtl":   "mtl.uk",   # Metals Exploration, AIM (pence)
-}
-
-# FRED series (needs free API key in env FRED_API_KEY).
-FRED = {
-    "us10y_nominal": "DGS10",
-    "us10y_real":    "DFII10",
-    "breakeven10y":  "T10YIE",
-    "fed_funds_upper": "DFEDTARU",
-    "deficit_pct_gdp_proxy": "MTSDS133FMS",
-}
-
-# Six themes -> ordered for display.
 THEMES = ["central_bank", "macro_rates", "usd_fx", "geopolitics", "mining_equities", "positioning"]
-
 THEME_LABELS = {
     "central_bank":    "Central-bank bid",
     "macro_rates":     "Macro & rates",
@@ -58,53 +23,78 @@ THEME_LABELS = {
     "positioning":     "Positioning",
 }
 
-# Metric definitions. 'src' tells the scraper where to read the live value.
-METRICS = {
-    # --- Central bank / structural demand ---
-    "wgc_cb_purchases_t":   {"theme": "central_bank", "weight": 19, "kind": "level_band",
-                             "bull_at": 200, "bear_at": 150, "src": "manual:wgc_cb_purchases_t"},
-    "pboc_holdings_delta_t":{"theme": "central_bank", "weight": 7,  "kind": "level_band",
-                             "bull_at": 15,  "bear_at": 5,   "src": "manual:pboc_holdings_delta_t"},
-    "etf_aum_delta_t":      {"theme": "central_bank", "weight": 6,  "kind": "level_band",
-                             "bull_at": 16,  "bear_at": -16, "src": "manual:etf_aum_delta_t"},
-
-    # --- Macro / rates (real-yield correlation broken post-2022; lightly weighted) ---
-    "us10y_real":           {"theme": "macro_rates", "weight": 5, "kind": "level_band", "inverted": True,
-                             "bull_at": -0.2, "bear_at": 0.2, "src": "fred:us10y_real"},
-    "fed_funds_upper":      {"theme": "macro_rates", "weight": 3, "kind": "level_band", "inverted": True,
-                             "bull_at": -0.25, "bear_at": 0.25, "src": "fred_delta:fed_funds_upper"},
-    "deficit_pct_gdp":      {"theme": "macro_rates", "weight": 5, "kind": "level_band",
-                             "bull_at": 6, "bear_at": 4, "src": "manual:deficit_pct_gdp"},
-
-    # --- USD / FX ---
-    "dxy":                  {"theme": "usd_fx", "weight": 9, "kind": "level_band", "inverted": True,
-                             "bull_at": -2, "bear_at": 2, "src": "stooq_delta:dxy"},
-    "cofer_usd_share_delta":{"theme": "usd_fx", "weight": 7, "kind": "level_band", "inverted": True,
-                             "bull_at": -0.5, "bear_at": 0.5, "src": "manual:cofer_usd_share_delta"},
-
-    # --- Geopolitics / tail risk ---
-    "brent":                {"theme": "geopolitics", "weight": 6, "kind": "level_band",
-                             "bull_at": 75, "bear_at": 45, "src": "stooq:brent"},
-    "vix":                  {"theme": "geopolitics", "weight": 2, "kind": "level_band",
-                             "bull_at": 25, "bear_at": 15, "src": "stooq:vix"},
-    "gpr_index":            {"theme": "geopolitics", "weight": 2, "kind": "level_band",
-                             "bull_at": 200, "bear_at": 75, "src": "manual:gpr_index"},
-
-    # --- Mining equity confirmation ---
-    "gdxj_gold_ratio":      {"theme": "mining_equities", "weight": 8, "kind": "level_band", "inverted": True,
-                             "bull_at": 0.016, "bear_at": 0.026, "src": "ratio:gdxj/gold"},
-    "gdx_gold_ratio":       {"theme": "mining_equities", "weight": 3, "kind": "level_band",
-                             "bull_at": 0.020, "bear_at": 0.012, "src": "ratio:gdx/gold"},
-    "spot_24m_ratio":       {"theme": "mining_equities", "weight": 6, "kind": "level_band", "inverted": True,
-                             "bull_at": 1.40, "bear_at": 1.55, "src": "ratio:spot24m"},
-
-    # --- Positioning (contrarian) ---
-    "cot_mm_net_pct_oi":    {"theme": "positioning", "weight": 6, "kind": "level_band",
-                             "bull_at": 0.25, "bear_at": 0.45, "src": "manual:cot_mm_net_pct_oi"},
-    "gvz":                  {"theme": "positioning", "weight": 2, "kind": "level_band",
-                             "bull_at": 15, "bear_at": 32, "src": "manual:gvz"},
-    "ndx_gdxj_ratio":       {"theme": "positioning", "weight": 4, "kind": "level_band", "inverted": True,
-                             "bull_at": 284, "bear_at": 334, "src": "ratio:ndx/gdxj"},
+# Yahoo Finance chart-API symbols (primary). Stooq symbols are the fallback in update_data.py.
+PRICE_SYMBOLS = {
+    "gold": "GC=F", "dxy": "DX-Y.NYB", "vix": "^VIX", "brent": "BZ=F",
+    "gdx": "GDX", "gdxj": "GDXJ", "ndx": "^NDX",
+    "thx": "THX.L", "mtl": "MTL.L",
 }
+# FRED series (free API key in env FRED_API_KEY; falls back to manual/prior if absent).
+FRED_SERIES = {"dgs10": "DGS10", "dfii10": "DFII10", "t10yie": "T10YIE", "dfedtaru": "DFEDTARU"}
 
-assert sum(m["weight"] for m in METRICS.values()) == 100, "weights must sum to 100"
+# id, theme, weight, kind, and scoring params. higher_is_bull governs delta/level direction.
+METRICS = [
+    {"id": "wgc_cb_purchases_t", "theme": "central_bank", "weight": 19, "kind": "manual",
+     "label": "WGC central-bank net purchases (t/qtr)"},
+    {"id": "pboc_holdings_delta_t", "theme": "central_bank", "weight": 7, "kind": "manual",
+     "label": "PBoC reported holdings (delta t)"},
+    {"id": "etf_aum_delta_t", "theme": "central_bank", "weight": 6, "kind": "manual",
+     "label": "Gold ETF AUM change (t/mo)"},
+
+    {"id": "real_yield", "theme": "macro_rates", "weight": 5, "kind": "delta",
+     "src": "dfii10", "bull_at": -0.2, "bear_at": 0.2, "higher_is_bull": False,
+     "label": "US 10Y real yield (delta %)"},
+    {"id": "fed_funds", "theme": "macro_rates", "weight": 3, "kind": "delta",
+     "src": "dfedtaru", "bull_at": -0.25, "bear_at": 0.25, "higher_is_bull": False,
+     "label": "Fed funds upper bound (delta %)"},
+    {"id": "deficit_pct_gdp", "theme": "macro_rates", "weight": 5, "kind": "manual",
+     "label": "US federal deficit (% GDP)"},
+
+    {"id": "dxy", "theme": "usd_fx", "weight": 9, "kind": "delta",
+     "src": "dxy", "bull_at": -2, "bear_at": 2, "higher_is_bull": False,
+     "label": "DXY (delta index pts)"},
+    {"id": "cofer_usd_share", "theme": "usd_fx", "weight": 7, "kind": "manual",
+     "label": "USD share of FX reserves (COFER %)"},
+
+    {"id": "brent", "theme": "geopolitics", "weight": 6, "kind": "manual",
+     "label": "Brent crude ($/bbl) [non-monotonic]"},
+    {"id": "vix", "theme": "geopolitics", "weight": 2, "kind": "level",
+     "src": "vix", "bull_at": 25, "bear_at": 15, "higher_is_bull": True,
+     "label": "VIX (level)"},
+    {"id": "gpr_index", "theme": "geopolitics", "weight": 2, "kind": "manual",
+     "label": "Geopolitical Risk Index (level)"},
+
+    {"id": "gdxj_gold", "theme": "mining_equities", "weight": 8, "kind": "ratio",
+     "num": "gdxj", "den": "gold", "bull_at": 0.022, "bear_at": 0.026, "higher_is_bull": False,
+     "label": "GDXJ / gold [inverted: low=bull]"},
+    {"id": "gdx_gold", "theme": "mining_equities", "weight": 3, "kind": "ratio",
+     "num": "gdx", "den": "gold", "bull_at": 0.020, "bear_at": 0.012, "higher_is_bull": True,
+     "label": "GDX / gold [senior confirmation]"},
+    {"id": "spot_trailing", "theme": "mining_equities", "weight": 6, "kind": "ratio_trailing",
+     "bull_lo": 0.90, "bull_hi": 1.40, "bear_at": 1.55,
+     "label": "Gold spot / 24m trailing [momentum]"},
+    {"id": "ndx_gdxj", "theme": "mining_equities", "weight": 4, "kind": "ratio",
+     "num": "ndx", "den": "gdxj", "bull_at": 284, "bear_at": 334, "higher_is_bull": False,
+     "label": "NDX / GDXJ [AI-rotation contra]"},
+
+    {"id": "cot_mm_net_pct_oi", "theme": "positioning", "weight": 6, "kind": "manual",
+     "label": "COMEX Managed Money net % OI [contrarian]"},
+    {"id": "gvz", "theme": "positioning", "weight": 2, "kind": "manual",
+     "label": "Gold volatility (GVZ)"},
+]
+
+assert sum(m["weight"] for m in METRICS) == 100, "weights must sum to 100"
+
+# Composite verdict bands (matches model scale).
+def verdict(composite):
+    if composite >= 30:  return "Strongly bullish", "BULL"
+    if composite >= 10:  return "Bullish", "BULL"
+    if composite > -10:  return "Balanced", "BASE"
+    if composite > -30:  return "Bearish", "BEAR"
+    return "Strongly bearish", "BEAR"
+
+# Theme signal: net weighted score vs 15% of theme's max weight.
+def theme_signal(net, max_w):
+    if net > 0.15 * max_w:  return "bull"
+    if net < -0.15 * max_w: return "bear"
+    return "base"

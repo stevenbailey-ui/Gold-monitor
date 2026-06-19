@@ -1,68 +1,48 @@
-# Gold portfolio monitor
+# Gold-miner portfolio monitor (THX / MTL)
 
-End-of-day monitoring dashboard for a THX / MTL gold-miner portfolio. Distils the
-portfolio model's Summary and Gold Thesis tabs into one readable screen: current
-and 2029 portfolio value, 2029 income, the six-driver gold thesis composite, the
-two holdings with editable share counts, a scenario range, a catalyst timeline and
-an alerts feed.
+Static dashboard with an automated data pipeline. ISA + SIPP basis (GIA excluded).
 
-Read-only with respect to the Excel model — it never writes back to the workbook.
-
-## How it works (zero running cost)
+## How it fits together
 
 ```
-GitHub Actions (daily cron)         GitHub Pages (static host)
-  └─ scraper/update_data.py            └─ index.html  ← reads data/data.json
-       fetches EOD prices + rates
-       scores the composite
-       commits data/data.json  ─────────────┘
+index.html          ← dashboard; reads data/data.json
+edit.html           ← form editor; reads + writes data/manual_inputs.json
+data/
+  manual_inputs.json  ← hand-maintained judgment inputs (you edit this)
+  data.json           ← generated; what the dashboard renders (never hand-edit)
+scraper/
+  config.py           ← metric registry: themes, weights, thresholds, tickers
+  update_data.py      ← fetches prices/rates, merges manual inputs, scores, writes data.json
+.github/workflows/
+  update.yml          ← runs the scraper on a schedule and commits data.json
 ```
 
-- The scraper runs in CI where the network is open, so API keys live in GitHub
-  Secrets and never reach the browser. No server, no proxy, no CORS problem.
-- The front end is a single static file that reads the committed `data/data.json`.
-- Everything stays inside free tiers: Actions minutes for one daily job, Pages for
-  a static site. Data sources (FRED, Stooq, manual inputs) are free.
+Flow: **you edit `manual_inputs.json` (via `edit.html`) → commit → the Action runs `update_data.py` → it fetches live prices + merges your inputs → writes `data/data.json` → the dashboard shows it.**
 
-## Deploy (about 10 minutes)
+## Data layers
 
-1. Create a new GitHub repo and push this folder.
-2. Get a free FRED API key: https://fredaccount.stlouisfed.org/apikeys
-   Add it under **Settings → Secrets and variables → Actions → New secret**,
-   named `FRED_API_KEY`.
-3. Enable Pages: **Settings → Pages → Source: Deploy from a branch → main / root.**
-   Your dashboard will be at `https://<you>.github.io/<repo>/`.
-4. Run the job once: **Actions → Update EOD data → Run workflow.** It refreshes
-   `data/data.json`; thereafter it runs automatically every weekday at 21:30 UTC.
+- **Auto-fetched (scraper):** gold spot, DXY, VIX, Brent, GDX, GDXJ, NDX, THX, MTL prices (Yahoo Finance, Stooq fallback); FRED rates DGS10 / DFII10 / T10YIE / DFEDTARU. These need no manual entry.
+- **Manual (you):** share counts, NPV ranges, scenario £m grid, income, jurisdiction scores, 24m trailing gold, catalysts, actions, and the judgment metrics (WGC purchases, PBoC, ETF, COFER, GPR, deficit, COT, GVZ, Brent reading). Every metric also carries a `signal` used as a last-known-good fallback so the composite always reconciles even if a feed is down.
 
-Before the first run, the dashboard already works off the seeded `data/data.json`.
-You can also just open `index.html` locally — it falls back to an embedded snapshot.
+## Composite scoring (must stay reproducible)
 
-## Updating your data
+16 scored metrics, weights sum to 100, each signal ∈ {bull +1, base 0, bear −1}; composite = Σ weight·signal (−100…+100). Six themes roll up for display. Seeded state: bull = WGC (19) + spot/24m (6) + GDX/gold (3) = 28; bear = PBoC (7); rest base → **composite +21 (Bullish)**. Verdict bands: ≥+30 Strongly bullish · +10…+30 Bullish · −10…+10 Balanced · −10…−30 Bearish · ≤−30 Strongly bearish.
 
-| What | Where | Cadence |
-|---|---|---|
-| Share quantities | edit live in the dashboard (saved in your browser), or `data/holdings.json` to change the committed value | when you trade |
-| Low-frequency / judgment metrics (WGC, PBoC, COFER, GPR, COT, GVZ, deficit, jurisdiction signals, catalysts, alerts) | `data/manual_inputs.json` | weekly–quarterly |
-| Scenario grid + 2029 income | `data/scenarios.json` | when you rerun the Excel model |
-| Composite weights / thresholds | `scraper/config.py` | as you recalibrate |
+## Run locally
 
-## Data sources
+```bash
+python scraper/update_data.py          # writes data/data.json
+python -m http.server 8000             # then open http://localhost:8000
+```
 
-- **Automated (EOD):** gold spot + 24-month trailing average, DXY, VIX, Brent, GDX,
-  GDXJ, NDX, THX.L, MTL.L via Stooq; 10Y nominal/real/breakeven, Fed funds, via FRED.
-- **Manual:** the structural and judgment metrics above — surfaced by RNS/OFAC alerts
-  but scored by you, exactly as the model's risk discipline intends.
+Offline / no FRED key: every fetch falls back to the manual signal, and the run still completes and reconciles to the seeded composite.
 
-## Composite scoring
+## GitHub setup
 
-Each metric resolves to bull (+1) / base (0) / bear (−1) against the bands in
-`config.py`, weighted, summed to a −100…+100 composite and the five-band verdict —
-the same logic as the Gold Thesis Dashboard. Every fetch degrades gracefully: an
-unreachable source falls back to its last value, so the dashboard never breaks.
+1. Push this folder to a repo; enable **Pages** (deploy from the branch root).
+2. Optional: add repo secret `FRED_API_KEY` (free from FRED) for live rate metrics. Without it, rate metrics use their manual fallback.
+3. The workflow runs weekdays at 21:30 UTC and on the **Run workflow** button. It commits `data/data.json`; Pages redeploys automatically.
 
-## Notes
+## Keeping future edits compatible
 
-- Prices for THX/MTL are in pence; current value = shares × pence ÷ 100.
-- `data.json` carries a `fetch_notes` list; if any source fell back, the dashboard
-  shows a small note so you know the figure is stale.
+`data/data.json` is the contract between scraper and dashboard. If you add a field, add it in **all three** of: the scraper output (`update_data.py`), the dashboard reader (`index.html`), and — if it's hand-set — the editor (`edit.html`) and `manual_inputs.json`. New scored metric → add to `config.py.METRICS` (keep weights summing to 100) and seed a fallback `signal` in `manual_inputs.json`. Do not hand-edit `data.json`; it is regenerated every run.
