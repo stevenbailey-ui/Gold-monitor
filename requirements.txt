@@ -1,1 +1,3 @@
-# No third-party deps — scraper uses the Python standard library only.
+# Scraper (GitHub Action) uses the Python standard library only — nothing to install.
+# Local model importer (scraper/import_model.py) needs openpyxl:
+#   pip install openpyxl

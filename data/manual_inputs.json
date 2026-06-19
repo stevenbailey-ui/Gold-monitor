@@ -1,21 +1,11 @@
 {
   "manual_as_of": "2026-06-15",
   "trailing24": 3408,
-  "prices_fallback": { "thx_pence": 65.6, "mtl_pence": 13.9, "gold": 4360 },
-
-  "holdings": {
-    "THX": { "shares": 626559, "wrapper_note": "ISA 525,608 + SIPP 100,951" },
-    "MTL": { "shares": 487426, "wrapper_note": "ISA 40,446 + SIPP 446,980" }
-  },
-
-  "valuation": {
-    "THX": { "npv_bear": 1.65, "npv_base": 1.99, "npv_bull": 3.15 },
-    "MTL": { "npv_bear": 0.27, "npv_base": 0.33, "npv_bull": 0.55 }
-  },
+  "gold_fallback": 4360,
 
   "jurisdiction": {
-    "THX": { "score": 6, "signal": "base", "note": "Senegal Faye govt contract review; Nigeria FX/security; EDTI improving" },
-    "MTL": { "score": 3, "signal": "bear", "note": "Ortega regime; OFAC escalation Apr-26; BHMB ICSID; La India gate risk" }
+    "africa": { "score": 6, "signal": "base" },
+    "asia":   { "score": 3, "signal": "bear" }
   },
 
   "metrics": {
@@ -24,44 +14,33 @@
     "etf_aum_delta_t":     { "value": -16,   "signal": "base", "cadence": "monthly",   "note": "Global gold ETF AUM change (t/mo)" },
     "deficit_pct_gdp":     { "value": 6,     "signal": "base", "cadence": "quarterly", "note": "US federal deficit (% GDP); >6% = fiscal dominance = bull" },
     "cofer_usd_share":     { "value": 56.77, "signal": "base", "cadence": "quarterly", "note": "USD share of FX reserves, IMF COFER (%)" },
-    "gpr_index":           { "value": 180,   "signal": "base", "cadence": "monthly",   "note": "Caldara-Iacoviello Geopolitical Risk Index (level)" },
+    "gpr_index":           { "value": 180,   "signal": "base", "cadence": "monthly",   "note": "Geopolitical Risk Index (level)" },
     "brent":               { "value": 81,    "signal": "base", "cadence": "monthly",   "note": "Brent ($/bbl); non-monotonic: high+falling=bull" },
-    "cot_mm_net_pct_oi":   { "value": 0.318, "signal": "base", "cadence": "weekly",    "note": "COMEX Managed Money net longs (% OI), contrarian — enter as fraction" },
+    "cot_mm_net_pct_oi":   { "value": 0.318, "signal": "base", "cadence": "weekly",    "note": "COMEX Managed Money net longs (% OI), contrarian - enter as fraction" },
     "gvz":                 { "value": 25.8,  "signal": "base", "cadence": "weekly",    "note": "CBOE Gold VIX (GVZ) level" },
 
-    "real_yield":          { "signal": "base", "note": "FRED DFII10 delta — last-known-good; scraper overwrites when live" },
-    "fed_funds":           { "signal": "base", "note": "FRED DFEDTARU delta — last-known-good" },
-    "dxy":                 { "signal": "base", "note": "Yahoo DXY delta — last-known-good" },
-    "vix":                 { "signal": "base", "note": "Yahoo VIX level — last-known-good" },
-    "gdxj_gold":           { "signal": "base", "note": "GDXJ/gold ratio — last-known-good" },
-    "gdx_gold":            { "signal": "bull", "note": "GDX/gold ratio — last-known-good" },
-    "spot_trailing":       { "signal": "bull", "note": "spot/24m ratio — last-known-good" },
-    "ndx_gdxj":            { "signal": "base", "note": "NDX/GDXJ ratio — last-known-good" }
-  },
-
-  "income_2029_base": 55318,
-  "income_2029_yield": 2.9,
-
-  "scenarios": {
-    "2026": { "bear": 0.92, "base": 1.08, "bull": 1.63 },
-    "2027": { "bear": 0.70, "base": 1.28, "bull": 2.61 },
-    "2028": { "bear": 0.98, "base": 1.69, "bull": 3.03 },
-    "2029": { "bear": 1.19, "base": 1.63, "bull": 3.17 },
-    "2030": { "bear": 1.16, "base": 1.56, "bull": 2.94 }
+    "real_yield":          { "signal": "base", "note": "FRED DFII10 delta - last-known-good; scraper overwrites when live" },
+    "fed_funds":           { "signal": "base", "note": "FRED DFEDTARU delta - last-known-good" },
+    "dxy":                 { "signal": "base", "note": "Yahoo DXY delta - last-known-good" },
+    "vix":                 { "signal": "base", "note": "Yahoo VIX level - last-known-good" },
+    "gdxj_gold":           { "signal": "base", "note": "GDXJ/gold ratio - last-known-good" },
+    "gdx_gold":            { "signal": "bull", "note": "GDX/gold ratio - last-known-good" },
+    "spot_trailing":       { "signal": "bull", "note": "spot/24m ratio - last-known-good" },
+    "ndx_gdxj":            { "signal": "base", "note": "NDX/GDXJ ratio - last-known-good" }
   },
 
   "catalysts": [
-    { "label": "Douta FID",          "date": "H1-26",  "pos": 8,  "live": true },
-    { "label": "La India 1st gold",  "date": "Dec-26", "pos": 50, "live": false },
-    { "label": "GUIA/Guitry licence","date": "Jan-27", "pos": 88, "live": false }
+    { "label": "New mine FID",       "date": "H1-26",  "pos": 8,  "live": true },
+    { "label": "Flagship first gold","date": "Dec-26", "pos": 50, "live": false },
+    { "label": "Exploration licence","date": "Jan-27", "pos": 88, "live": false }
   ],
 
   "actions": [
-    { "when": "Douta FID", "date": "H1-26", "tag": "IMMINENT", "cls": "p-amber",
-      "body": "Watch RNS for FID, financing close (Q2-26) and Senegal Mining Convention signature. FID confirmed = THX NPV de-risks. <b>Hold; no THX top-up until convention signed.</b>" },
-    { "when": "La India", "date": "Dec-26", "tag": "MONITOR", "cls": "p-bear",
-      "body": "Commissioning ~50% complete, on schedule. MTL re-rate gated on first pour <i>and</i> OFAC / correspondent-bank path clearing. <b>No MTL adds while OFAC escalation (Apr-26) live.</b>" },
-    { "when": "GUIA", "date": "Jan-27", "tag": "WATCH", "cls": "p-base",
-      "body": "C\u00f4te d\u2019Ivoire exploration optionality (Guitry/Marahui). Re-rate catalyst, not a base-case input. <b>No action until licence granted.</b>" }
+    { "when": "New mine FID", "date": "H1-26", "tag": "IMMINENT", "cls": "p-amber",
+      "body": "Watch for FID, financing close (Q2-26) and the mining convention signature. FID confirmed = producer NPV de-risks. <b>Hold; no top-up until convention signed.</b>" },
+    { "when": "Flagship", "date": "Dec-26", "tag": "MONITOR", "cls": "p-bear",
+      "body": "Commissioning ~50% complete, on schedule. Re-rate gated on first pour <i>and</i> the offtake / correspondent-bank path clearing. <b>No adds while the sanctions overhang is live.</b>" },
+    { "when": "Licence", "date": "Jan-27", "tag": "WATCH", "cls": "p-base",
+      "body": "Exploration optionality. Re-rate catalyst, not a base-case input. <b>No action until the licence is granted.</b>" }
   ]
 }

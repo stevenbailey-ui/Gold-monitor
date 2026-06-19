@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Edit manual inputs · gold monitor</title>
+<title>Edit inputs · gold monitor</title>
 <style>
   :root{--bg:#f7f6f2;--surface:#fff;--line:rgba(0,0,0,.14);--t1:#1c1c1a;--t2:#5f5e5a;--t3:#8a897f;--link:#185fa5;--ok:#3b6d11}
   @media(prefers-color-scheme:dark){:root{--bg:#1a1916;--surface:#26251f;--line:rgba(255,255,255,.16);--t1:#f3f1ea;--t2:#b4b2a9;--t3:#888780;--link:#85b7eb;--ok:#97c459}}
@@ -16,174 +16,84 @@
   .card{background:var(--surface);border:.5px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:12px}
   .field{display:grid;grid-template-columns:1fr 130px;gap:8px;align-items:center;margin:7px 0}
   .field.wide{grid-template-columns:1fr}
-  label{font-size:13px;color:var(--t2)}
-  label small{display:block;color:var(--t3);font-size:11px}
+  label{font-size:13px;color:var(--t2)}label small{display:block;color:var(--t3);font-size:11px}
   input,select,textarea{font:inherit;font-size:13px;padding:7px 9px;border:.5px solid var(--line);border-radius:7px;background:var(--bg);color:var(--t1);width:100%}
   textarea{min-height:54px;resize:vertical}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  @media(max-width:560px){.grid2{grid-template-columns:1fr}}
   .bar{position:sticky;bottom:0;background:var(--bg);padding:12px 0;border-top:.5px solid var(--line);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
   button{font:inherit;font-size:13px;font-weight:500;padding:9px 16px;border:.5px solid var(--line);border-radius:8px;background:var(--surface);color:var(--t1);cursor:pointer}
   button.primary{background:var(--link);color:#fff;border-color:var(--link)}
   .msg{font-size:12px;color:var(--ok)}
-  .hint{font-size:12px;color:var(--t3);margin:6px 0 0}
-  .hint code{font-family:ui-monospace,Menlo,Consolas,monospace}
+  .hint{font-size:12px;color:var(--t3);margin:6px 0 0}.hint code{font-family:ui-monospace,Menlo,Consolas,monospace}
   details{margin:6px 0}summary{cursor:pointer;font-size:13px;color:var(--link)}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Edit manual inputs</h1>
-  <p class="sub">The low-frequency, judgment inputs. Prices (gold, FX, THX, MTL, GDX/GDXJ, VIX, Brent) and FRED rates are fetched automatically by the scraper — you don't enter those here. Save, commit <code>data/manual_inputs.json</code>, and the GitHub Action regenerates <code>data/data.json</code>.</p>
-  <div id="form"><p class="sub">Loading manual_inputs.json…</p></div>
-
+  <h1>Edit inputs</h1>
+  <p class="sub">Judgment inputs only. Prices &amp; rates are auto-fetched by the scraper; the 24m trailing is auto-computed; NPV, scenarios and income come from the model importer; share counts live in the HOLDINGS secret. Edit here, download, commit <code>data/manual_inputs.json</code>, and the Action rebuilds the dashboard.</p>
+  <div id="form"><p class="sub">Loading manual_inputs.json...</p></div>
   <div class="bar">
     <button class="primary" id="download">Download manual_inputs.json</button>
     <button id="copy">Copy JSON</button>
-    <a href="./index.html"><button>← Dashboard</button></a>
+    <a href="./index.html"><button>&larr; Dashboard</button></a>
     <span class="msg" id="msg"></span>
   </div>
-  <p class="hint">After download: replace <code>data/manual_inputs.json</code> in your repo and commit. The scheduled Action (or a manual run) rebuilds the dashboard data.</p>
+  <p class="hint">After download: replace <code>data/manual_inputs.json</code> in your repo and commit. The scheduled (or manual) Action regenerates the dashboard data.</p>
 </div>
-
 <script>
-let M=null;
-const SIGNALS=["bull","base","bear"];
-const el=(t,a={},...kids)=>{const e=document.createElement(t);for(const k in a)k==="class"?e.className=a[k]:e.setAttribute(k,a[k]);kids.forEach(c=>e.append(c));return e;};
+let M=null;const SIGNALS=["bull","base","bear"];
+const el=(t,a={},...k)=>{const e=document.createElement(t);for(const x in a)x==="class"?e.className=a[x]:e.setAttribute(x,a[x]);k.forEach(c=>e.append(c));return e;};
 const opt=(v,sel)=>{const o=el("option",{value:v},v);if(v===sel)o.selected=true;return o;};
-
-function num(label,sub,val,setter,step="any"){
-  const f=el("div",{class:"field"}),l=el("label",{},label);
-  if(sub)l.append(el("small",{},sub));
-  const i=el("input",{type:"number",step});i.value=val;i.oninput=()=>setter(i.value===""?null:parseFloat(i.value));
-  f.append(l,i);return f;
-}
-function sigSel(label,val,setter){
-  const f=el("div",{class:"field"}),l=el("label",{},label);
-  const s=el("select");SIGNALS.forEach(v=>s.append(opt(v,val)));s.onchange=()=>setter(s.value);
-  f.append(l,s);return f;
-}
-function txt(label,val,setter){
-  const f=el("div",{class:"field wide"}),l=el("label",{},label);
-  const t=el("textarea");t.value=val||"";t.oninput=()=>setter(t.value);
-  f.append(l,t);return f;
-}
+function num(label,sub,val,setter,step="any"){const f=el("div",{class:"field"}),l=el("label",{},label);if(sub)l.append(el("small",{},sub));const i=el("input",{type:"number",step});i.value=val;i.oninput=()=>setter(i.value===""?null:parseFloat(i.value));f.append(l,i);return f;}
+function sigSel(label,val,setter){const f=el("div",{class:"field"}),l=el("label",{},label);const s=el("select");SIGNALS.forEach(v=>s.append(opt(v,val)));s.onchange=()=>setter(s.value);f.append(l,s);return f;}
+function txt(label,val,setter){const f=el("div",{class:"field wide"}),l=el("label",{},label);const t=el("textarea");t.value=val||"";t.oninput=()=>setter(t.value);f.append(l,t);return f;}
 
 function build(){
   const root=document.getElementById("form");root.innerHTML="";
 
-  // Header dates + trailing + fallback prices
-  let c=el("div",{class:"card"});
-  c.append(el("h2",{},"Snapshot"));
-  c.append(num("Manual data as-of (YYYY-MM-DD)","text date","",()=>{},"any")); // replaced below
-  c.lastChild.remove();
+  let c=el("div",{class:"card"});c.append(el("h2",{},"Snapshot & fallbacks"));
   const df=el("div",{class:"field"});df.append(el("label",{},"Manual data as-of"));
   const di=el("input",{type:"date"});di.value=M.manual_as_of||"";di.oninput=()=>M.manual_as_of=di.value;df.append(di);c.append(df);
-  c.append(num("24-month trailing gold ($/oz)","scraper computes spot/this ratio",M.trailing24,v=>M.trailing24=v));
-  c.append(num("Fallback gold ($/oz)","used only if live feed fails",M.prices_fallback.gold,v=>M.prices_fallback.gold=v));
-  c.append(num("Fallback THX (pence)","",M.prices_fallback.thx_pence,v=>M.prices_fallback.thx_pence=v));
-  c.append(num("Fallback MTL (pence)","",M.prices_fallback.mtl_pence,v=>M.prices_fallback.mtl_pence=v));
+  c.append(num("24m trailing fallback ($/oz)","auto-computed live; this is the fallback only",M.trailing24,v=>M.trailing24=v));
+  c.append(num("Gold spot fallback ($/oz)","used only if the live feed fails",M.gold_fallback,v=>M.gold_fallback=v));
   root.append(c);
 
-  // Holdings
-  c=el("div",{class:"card"});c.append(el("h2",{},"Holdings (ISA + SIPP)"));
-  ["THX","MTL"].forEach(t=>{
-    c.append(num(t+" shares",M.holdings[t].wrapper_note,M.holdings[t].shares,v=>M.holdings[t].shares=v,"1"));
-  });
+  c=el("div",{class:"card"});c.append(el("h2",{},"Jurisdiction risk (score + signal)"));
+  ["africa","asia"].forEach(t=>{const j=M.jurisdiction[t];
+    c.append(num(t[0].toUpperCase()+t.slice(1)+" score (0-10)","",j.score,v=>j.score=v,"1"));
+    c.append(sigSel(t[0].toUpperCase()+t.slice(1)+" signal",j.signal,v=>j.signal=v));});
   root.append(c);
 
-  // Valuation NPV
-  c=el("div",{class:"card"});c.append(el("h2",{},"NPV £/share (bear · base · bull)"));
-  ["THX","MTL"].forEach(t=>{
-    const g=el("div",{class:"grid2"});
-    g.append(num(t+" bear","",M.valuation[t].npv_bear,v=>M.valuation[t].npv_bear=v));
-    g.append(num(t+" base","",M.valuation[t].npv_base,v=>M.valuation[t].npv_base=v));
-    g.append(num(t+" bull","",M.valuation[t].npv_bull,v=>M.valuation[t].npv_bull=v));
-    c.append(g);
-  });
-  root.append(c);
-
-  // Jurisdiction
-  c=el("div",{class:"card"});c.append(el("h2",{},"Jurisdiction risk"));
-  ["THX","MTL"].forEach(t=>{
-    const j=M.jurisdiction[t];
-    c.append(num(t+" score (0–10)","",j.score,v=>j.score=v,"1"));
-    c.append(sigSel(t+" signal",j.signal,v=>j.signal=v));
-    c.append(txt(t+" note",j.note,v=>j.note=v));
-  });
-  root.append(c);
-
-  // Metrics (manual judgment ones with values; live ones show signal-only fallback)
   c=el("div",{class:"card"});c.append(el("h2",{},"Gold-thesis metrics"));
-  c.append(el("p",{class:"hint"},"Value-bearing metrics: enter the current reading and its signal. Signal-only rows are last-known-good fallbacks the scraper overwrites when the live feed is reachable."));
-  Object.keys(M.metrics).forEach(k=>{
-    const m=M.metrics[k];
-    if("value" in m){
-      c.append(num((m.note||k),(m.cadence||"")+(k==="cot_mm_net_pct_oi"?" · fraction e.g. 0.318":""),m.value,v=>m.value=v));
-    }
-    c.append(sigSel("   ↳ "+k+" signal",m.signal,v=>m.signal=v));
-  });
+  c.append(el("p",{class:"hint"},"Value-bearing metrics: enter the reading + signal. Signal-only rows are last-known-good fallbacks the scraper overwrites when the live feed is reachable."));
+  Object.keys(M.metrics).forEach(k=>{const m=M.metrics[k];
+    if("value" in m)c.append(num(m.note||k,(m.cadence||"")+(k==="cot_mm_net_pct_oi"?" . fraction e.g. 0.318":""),m.value,v=>m.value=v));
+    c.append(sigSel("   - "+k+" signal",m.signal,v=>m.signal=v));});
   root.append(c);
 
-  // Income + scenarios
-  c=el("div",{class:"card"});c.append(el("h2",{},"Income & scenarios"));
-  c.append(num("2029 base income (£)","",M.income_2029_base,v=>M.income_2029_base=v,"1"));
-  c.append(num("2029 income yield (%)","",M.income_2029_yield,v=>M.income_2029_yield=v));
-  Object.keys(M.scenarios).forEach(y=>{
-    const sc=M.scenarios[y],g=el("div",{class:"grid2"});
-    g.append(num(y+" bear (£m)","",sc.bear,v=>sc.bear=v));
-    g.append(num(y+" base (£m)","",sc.base,v=>sc.base=v));
-    g.append(num(y+" bull (£m)","",sc.bull,v=>sc.bull=v));
-    c.append(g);
-  });
-  root.append(c);
-
-  // Catalysts
   c=el("div",{class:"card"});c.append(el("h2",{},"Catalyst timeline"));
-  M.catalysts.forEach((cat,i)=>{
-    const d=el("details");d.append(el("summary",{},`${cat.label} · ${cat.date}`));
-    const f1=el("div",{class:"field"});f1.append(el("label",{},"Label"));
-    const li=el("input",{type:"text"});li.value=cat.label;li.oninput=()=>cat.label=li.value;f1.append(li);d.append(f1);
-    const f2=el("div",{class:"field"});f2.append(el("label",{},"Date"));
-    const di2=el("input",{type:"text"});di2.value=cat.date;di2.oninput=()=>cat.date=di2.value;f2.append(di2);d.append(f2);
-    d.append(num("Timeline position (0–100)","left→right",cat.pos,v=>cat.pos=v,"1"));
-    const f3=el("div",{class:"field"});f3.append(el("label",{},"Live / imminent"));
-    const ck=el("input",{type:"checkbox"});ck.checked=!!cat.live;ck.onchange=()=>cat.live=ck.checked;f3.append(ck);d.append(f3);
-    c.append(d);
-  });
+  M.catalysts.forEach(cat=>{const d=el("details");d.append(el("summary",{},`${cat.label} . ${cat.date}`));
+    const f1=el("div",{class:"field"});f1.append(el("label",{},"Label"));const li=el("input",{type:"text"});li.value=cat.label;li.oninput=()=>cat.label=li.value;f1.append(li);d.append(f1);
+    const f2=el("div",{class:"field"});f2.append(el("label",{},"Date"));const di2=el("input",{type:"text"});di2.value=cat.date;di2.oninput=()=>cat.date=di2.value;f2.append(di2);d.append(f2);
+    d.append(num("Timeline position (0-100)","left to right",cat.pos,v=>cat.pos=v,"1"));
+    const f3=el("div",{class:"field"});f3.append(el("label",{},"Live / imminent"));const ck=el("input",{type:"checkbox"});ck.checked=!!cat.live;ck.onchange=()=>cat.live=ck.checked;f3.append(ck);d.append(f3);
+    c.append(d);});
   root.append(c);
 
-  // Actions
   c=el("div",{class:"card"});c.append(el("h2",{},"Actions required on catalyst"));
-  M.actions.forEach((a,i)=>{
-    const d=el("details");d.append(el("summary",{},`${a.when} · ${a.tag}`));
-    const f1=el("div",{class:"field"});f1.append(el("label",{},"When (label)"));
-    const w=el("input",{type:"text"});w.value=a.when;w.oninput=()=>a.when=w.value;f1.append(w);d.append(f1);
-    const f2=el("div",{class:"field"});f2.append(el("label",{},"Date"));
-    const dt=el("input",{type:"text"});dt.value=a.date;dt.oninput=()=>a.date=dt.value;f2.append(dt);d.append(f2);
-    const f3=el("div",{class:"field"});f3.append(el("label",{},"Tag"));
-    const tg=el("input",{type:"text"});tg.value=a.tag;tg.oninput=()=>a.tag=tg.value;f3.append(tg);d.append(f3);
-    const f4=el("div",{class:"field"});f4.append(el("label",{},"Pill style"));
-    const ps=el("select");["p-amber","p-bear","p-base","p-bull"].forEach(v=>ps.append(opt(v,a.cls)));ps.onchange=()=>a.cls=ps.value;f4.append(ps);d.append(f4);
-    d.append(txt("Body (HTML <b> allowed)",a.body,v=>a.body=v));
-    c.append(d);
-  });
+  M.actions.forEach(a=>{const d=el("details");d.append(el("summary",{},`${a.when} . ${a.tag}`));
+    const f1=el("div",{class:"field"});f1.append(el("label",{},"When"));const w=el("input",{type:"text"});w.value=a.when;w.oninput=()=>a.when=w.value;f1.append(w);d.append(f1);
+    const f2=el("div",{class:"field"});f2.append(el("label",{},"Date"));const dt=el("input",{type:"text"});dt.value=a.date;dt.oninput=()=>a.date=dt.value;f2.append(dt);d.append(f2);
+    const f3=el("div",{class:"field"});f3.append(el("label",{},"Tag"));const tg=el("input",{type:"text"});tg.value=a.tag;tg.oninput=()=>a.tag=tg.value;f3.append(tg);d.append(f3);
+    const f4=el("div",{class:"field"});f4.append(el("label",{},"Pill style"));const ps=el("select");["p-amber","p-bear","p-base","p-bull"].forEach(v=>ps.append(opt(v,a.cls)));ps.onchange=()=>a.cls=ps.value;f4.append(ps);d.append(f4);
+    d.append(txt("Body (HTML <b> allowed) - keep it generic, no company/country names",a.body,v=>a.body=v));
+    c.append(d);});
   root.append(c);
 }
-
 function flash(t){const m=document.getElementById("msg");m.textContent=t;setTimeout(()=>m.textContent="",2500);}
-document.getElementById("download").onclick=()=>{
-  const blob=new Blob([JSON.stringify(M,null,2)],{type:"application/json"});
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="manual_inputs.json";a.click();
-  flash("Downloaded — commit to data/manual_inputs.json");
-};
-document.getElementById("copy").onclick=async()=>{
-  try{await navigator.clipboard.writeText(JSON.stringify(M,null,2));flash("Copied to clipboard");}
-  catch{flash("Copy failed — use Download");}
-};
-
-fetch("./data/manual_inputs.json",{cache:"no-store"}).then(r=>r.json()).then(j=>{M=j;build();})
-  .catch(()=>{document.getElementById("form").innerHTML='<p class="sub">Could not load data/manual_inputs.json.</p>';});
+document.getElementById("download").onclick=()=>{const b=new Blob([JSON.stringify(M,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="manual_inputs.json";a.click();flash("Downloaded - commit to data/manual_inputs.json");};
+document.getElementById("copy").onclick=async()=>{try{await navigator.clipboard.writeText(JSON.stringify(M,null,2));flash("Copied");}catch{flash("Copy failed - use Download");}};
+fetch("./data/manual_inputs.json",{cache:"no-store"}).then(r=>r.json()).then(j=>{M=j;build();}).catch(()=>{document.getElementById("form").innerHTML='<p class="sub">Could not load data/manual_inputs.json.</p>';});
 </script>
 </body>
 </html>

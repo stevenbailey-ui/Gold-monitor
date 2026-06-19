@@ -1,16 +1,10 @@
 """
-Gold thesis metric configuration. Mirrors the portfolio model's Gold Thesis Dashboard
-(v20, post-2022 correlation-break regime). Weights sum to 100.
+Gold-thesis metric configuration. Weights sum to 100. Each metric -> signal in
+{+1 bull, 0 base, -1 bear}; composite = sum(weight*signal) (-100..+100). Six themes roll up.
 
-Each metric resolves to a signal in {+1 bull, 0 base, -1 bear}. Composite = sum(weight*signal),
-range -100..+100. Six themes roll the metrics up for display.
-
-kind:
-  'delta'  -> signal from (current - prior); bull if move past bull_at toward the bull side
-  'level'  -> signal from absolute level vs bands
-  'ratio'  -> value computed from two fetched prices, scored on level
-  'manual' -> signal supplied directly in manual_inputs (no live fetch)
-Edit thresholds/weights here to recalibrate; nothing else needs to change.
+No holding identities live here. The two portfolio holdings (their tickers, share counts and
+prices) come from the HOLDINGS secret / data/holdings.local.json, never from this file. The
+symbols below are public gold-thesis instruments only.
 """
 
 THEMES = ["central_bank", "macro_rates", "usd_fx", "geopolitics", "mining_equities", "positioning"]
@@ -23,16 +17,17 @@ THEME_LABELS = {
     "positioning":     "Positioning",
 }
 
-# Yahoo Finance chart-API symbols (primary). Stooq symbols are the fallback in update_data.py.
+# Public gold-thesis instruments (Yahoo symbols). NOT the portfolio holdings.
 PRICE_SYMBOLS = {
     "gold": "GC=F", "dxy": "DX-Y.NYB", "vix": "^VIX", "brent": "BZ=F",
     "gdx": "GDX", "gdxj": "GDXJ", "ndx": "^NDX",
-    "thx": "THX.L", "mtl": "MTL.L",
 }
-# FRED series (free API key in env FRED_API_KEY; falls back to manual/prior if absent).
 FRED_SERIES = {"dgs10": "DGS10", "dfii10": "DFII10", "t10yie": "T10YIE", "dfedtaru": "DFEDTARU"}
 
-# id, theme, weight, kind, and scoring params. higher_is_bull governs delta/level direction.
+# Trailing-average gold: monthly average of daily closes, last 24 completed months.
+TRAILING_MONTHS = 24
+TRAILING_RANGE_DAYS = 800   # ~26 months of daily bars to cover 24 completed months
+
 METRICS = [
     {"id": "wgc_cb_purchases_t", "theme": "central_bank", "weight": 19, "kind": "manual",
      "label": "WGC central-bank net purchases (t/qtr)"},
@@ -82,10 +77,9 @@ METRICS = [
     {"id": "gvz", "theme": "positioning", "weight": 2, "kind": "manual",
      "label": "Gold volatility (GVZ)"},
 ]
-
 assert sum(m["weight"] for m in METRICS) == 100, "weights must sum to 100"
 
-# Composite verdict bands (matches model scale).
+
 def verdict(composite):
     if composite >= 30:  return "Strongly bullish", "BULL"
     if composite >= 10:  return "Bullish", "BULL"
@@ -93,7 +87,7 @@ def verdict(composite):
     if composite > -30:  return "Bearish", "BEAR"
     return "Strongly bearish", "BEAR"
 
-# Theme signal: net weighted score vs 15% of theme's max weight.
+
 def theme_signal(net, max_w):
     if net > 0.15 * max_w:  return "bull"
     if net < -0.15 * max_w: return "bear"

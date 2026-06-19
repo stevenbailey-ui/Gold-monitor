@@ -1,13 +1,15 @@
 {
   "as_of": "2026-06-19",
   "manual_as_of": "2026-06-15",
+  "model_as_of": "2026-06-15",
   "gold": {
-    "spot": 4167,
+    "spot": 4360,
     "trailing24": 3408,
-    "ratio": 1.22,
+    "ratio": 1.28,
+    "trailing_months": 0,
     "verdict": "Bullish",
     "tag": "BULL",
-    "composite": 17
+    "composite": 21
   },
   "themes": [
     {
@@ -26,55 +28,53 @@
       "id": "usd_fx",
       "label": "USD / FX",
       "signal": "base",
-      "reading": "DXY 100.8 \u00b7 COFER 56.77%"
+      "reading": "DXY 0 . COFER 56.77%"
     },
     {
       "id": "geopolitics",
       "label": "Geopolitics",
       "signal": "base",
-      "reading": "VIX 16.8 \u00b7 GPR 180 \u00b7 Brent $81"
+      "reading": "VIX 0 . GPR 180 . Brent $81"
     },
     {
       "id": "mining_equities",
       "label": "Mining equities",
       "signal": "bull",
-      "reading": "GDX/gold confirm \u00b7 GDXJ catch-up"
+      "reading": "GDX/gold confirm . GDXJ catch-up"
     },
     {
       "id": "positioning",
       "label": "Positioning",
       "signal": "base",
-      "reading": "COT 31.8% OI \u00b7 GVZ 25.8"
+      "reading": "COT 31.8% OI . GVZ 25.8"
     }
   ],
   "portfolio": {
-    "current": 434010,
+    "current": 478775,
     "v2029_base": 1.63,
     "income_2029": 55318,
     "income_yield": 2.9
   },
   "holdings": {
-    "THX": {
-      "name": "Thor Explorations \u00b7 Nigeria + Senegal",
-      "price": 0.59,
-      "shares": 626559,
-      "value": 369670,
-      "pct": 85.2,
-      "npv": "1.65 \u2013 3.15",
-      "jur": "6/10 \u00b7 base",
+    "africa": {
+      "name": "Africa",
+      "desc": "Gold producer + developer",
+      "value": 411023,
+      "pct": 85.8,
+      "npv": "1.65 - 3.15",
+      "jur": "6/10 . base",
       "jsig": "base",
-      "next": "Douta FID \u00b7 H1-26"
+      "next": "New mine FID"
     },
-    "MTL": {
-      "name": "Metals Exploration \u00b7 Nicaragua",
-      "price": 0.132,
-      "shares": 487426,
-      "value": 64340,
-      "pct": 14.8,
-      "npv": "0.27 \u2013 0.55",
-      "jur": "3/10 \u00b7 bear",
+    "asia": {
+      "name": "Asia",
+      "desc": "Gold developer (construction)",
+      "value": 67752,
+      "pct": 14.2,
+      "npv": "0.27 - 0.55",
+      "jur": "3/10 . bear",
       "jsig": "bear",
-      "next": "La India 1st gold \u00b7 Dec-26"
+      "next": "Flagship first gold"
     }
   },
   "scenarios": {
@@ -106,19 +106,19 @@
   },
   "catalysts": [
     {
-      "label": "Douta FID",
+      "label": "New mine FID",
       "date": "H1-26",
       "pos": 8,
       "live": true
     },
     {
-      "label": "La India 1st gold",
+      "label": "Flagship first gold",
       "date": "Dec-26",
       "pos": 50,
       "live": false
     },
     {
-      "label": "GUIA/Guitry licence",
+      "label": "Exploration licence",
       "date": "Jan-27",
       "pos": 88,
       "live": false
@@ -126,31 +126,49 @@
   ],
   "actions": [
     {
-      "when": "Douta FID",
+      "when": "New mine FID",
       "date": "H1-26",
       "tag": "IMMINENT",
       "cls": "p-amber",
-      "body": "Watch RNS for FID, financing close (Q2-26) and Senegal Mining Convention signature. FID confirmed = THX NPV de-risks. <b>Hold; no THX top-up until convention signed.</b>"
+      "body": "Watch for FID, financing close (Q2-26) and the mining convention signature. FID confirmed = producer NPV de-risks. <b>Hold; no top-up until convention signed.</b>"
     },
     {
-      "when": "La India",
+      "when": "Flagship",
       "date": "Dec-26",
       "tag": "MONITOR",
       "cls": "p-bear",
-      "body": "Commissioning ~50% complete, on schedule. MTL re-rate gated on first pour <i>and</i> OFAC / correspondent-bank path clearing. <b>No MTL adds while OFAC escalation (Apr-26) live.</b>"
+      "body": "Commissioning ~50% complete, on schedule. Re-rate gated on first pour <i>and</i> the offtake / correspondent-bank path clearing. <b>No adds while the sanctions overhang is live.</b>"
     },
     {
-      "when": "GUIA",
+      "when": "Licence",
       "date": "Jan-27",
       "tag": "WATCH",
       "cls": "p-base",
-      "body": "C\u00f4te d\u2019Ivoire exploration optionality (Guitry/Marahui). Re-rate catalyst, not a base-case input. <b>No action until licence granted.</b>"
+      "body": "Exploration optionality. Re-rate catalyst, not a base-case input. <b>No action until the licence is granted.</b>"
     }
   ],
-  "fetch_notes": [],
-  "_raw": {
-    "real_yield": 2.23,
-    "fed_funds": 3.75,
-    "dxy": 100.80799865722656
-  }
+  "fetch_notes": [
+    "gold:yahoo:HTTPError",
+    "gold:stooq:HTTPError",
+    "dxy:yahoo:HTTPError",
+    "dxy:stooq:HTTPError",
+    "vix:yahoo:HTTPError",
+    "vix:stooq:HTTPError",
+    "brent:yahoo:HTTPError",
+    "brent:stooq:HTTPError",
+    "gdx:yahoo:HTTPError",
+    "gdx:stooq:HTTPError",
+    "gdxj:yahoo:HTTPError",
+    "gdxj:stooq:HTTPError",
+    "ndx:yahoo:HTTPError",
+    "ndx:stooq:HTTPError",
+    "DGS10:no_FRED_key",
+    "DFII10:no_FRED_key",
+    "T10YIE:no_FRED_key",
+    "DFEDTARU:no_FRED_key",
+    "trailing:HTTPError",
+    "holding:HTTPError",
+    "holding:HTTPError"
+  ],
+  "_raw": {}
 }

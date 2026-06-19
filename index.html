@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gold-miner portfolio monitor · THX / MTL</title>
+<title>Gold-miner portfolio monitor</title>
 <style>
   :root{
     --bg:#f7f6f2;--surface:#fff;--surface2:#f1efe8;--line:rgba(0,0,0,.12);--line2:rgba(0,0,0,.22);
@@ -56,14 +56,12 @@
   table.full th:first-child,table.full td:first-child{text-align:left;color:var(--t2)}
   table.full th{color:var(--t3);font-weight:500;font-size:11px;border-top:none}
   .toggle{background:none;border:none;color:var(--link);font-size:12px;cursor:pointer;padding:8px 0 0}
-  .foot{font-size:10px;color:var(--t3);margin-top:18px;line-height:1.6}
-  .foot a{color:var(--link)}
+  .foot{font-size:10px;color:var(--t3);margin-top:18px;line-height:1.6}.foot a{color:var(--link)}
   .err{background:var(--bear-bg);color:var(--bear-tx);padding:10px 14px;border-radius:8px;font-size:13px}
 </style>
 </head>
 <body>
-<div class="wrap" id="app"><p class="sub">Loading…</p></div>
-
+<div class="wrap" id="app"><p class="sub">Loading...</p></div>
 <script>
 const f0=n=>Math.round(n).toLocaleString("en-GB");
 const m2=n=>"\u00a3"+Number(n).toFixed(2)+"m";
@@ -76,14 +74,12 @@ function render(D){
   const drivers=D.themes.map(t=>`<div class="driver"><div class="dt">${t.label}
     <span class="pill sm ${sigPill[t.signal]}">${sigTxt[t.signal]}</span></div>
     <div class="dd">${t.reading||""}</div></div>`).join("");
-  const hold=t=>{const x=h[t];const jc=sigPill[x.jsig]||"p-base";
-    return `<div class="card"><div class="row"><div style="font-size:15px;font-weight:600">${t}</div>
+  const hold=k=>{const x=h[k];const jc=sigPill[x.jsig]||"p-base";
+    return `<div class="card"><div class="row"><div style="font-size:15px;font-weight:600">${x.name}</div>
       <span class="pill ${jc}">${x.jur}</span></div>
-      <div style="font-size:11px;color:var(--t3);margin-top:1px">${x.name}</div>
-      <div class="kv"><span class="lbl">Price</span><span style="font-weight:600">\u00a3${Number(x.price).toFixed(3)}</span></div>
-      <div class="kv"><span class="lbl">Shares</span><span style="font-weight:600">${f0(x.shares)}</span></div>
+      <div style="font-size:11px;color:var(--t3);margin-top:1px">${x.desc||""}</div>
       <div class="kv top"><span class="lbl">\u00a3 value \u00b7 % of port.</span>
-        <span style="font-weight:600">\u00a3${f0(x.value)} \u00b7 <span style="color:var(--link)">${x.pct}%</span></span></div>
+        <span style="font-weight:600">${x.value!=null?"\u00a3"+f0(x.value):"\u2014"} \u00b7 <span style="color:var(--link)">${x.pct!=null?x.pct+"%":"\u2014"}</span></span></div>
       <div class="kv"><span class="lbl">NPV \u00a3/sh (bear\u2013bull)</span><span style="font-weight:600">${x.npv}</span></div>
       <div style="font-size:11px;color:var(--t3);margin-top:8px">Next: ${x.next}</div></div>`;};
   const acts=D.actions.map(a=>`<div class="act"><div class="when"><div class="wt">${a.when}</div>
@@ -94,16 +90,16 @@ function render(D){
   const yrs=Object.keys(s);
   const scenRows=yrs.map(y=>`<tr><td>${y}</td><td style="color:var(--neg)">${m2(s[y].bear)}</td>
     <td>${m2(s[y].base)}</td><td style="color:var(--pos)">${m2(s[y].bull)}</td></tr>`).join("");
-  const nb=(D.fetch_notes||[]).length;
+  const trailNote=g.trailing_months?` (${g.trailing_months}m avg)`:"";
 
   document.getElementById("app").innerHTML=`
     <div class="row" style="margin-bottom:12px">
-      <h1>Gold-miner portfolio monitor <span class="sub" style="font-weight:400">ISA + SIPP</span></h1>
-      <div class="sub">Manual data <b style="color:var(--t2)">${D.manual_as_of||"—"}</b> \u00b7 prices live <b style="color:var(--t2)">${D.as_of||"—"}</b></div>
+      <h1>Gold-miner portfolio monitor</h1>
+      <div class="sub">Model <b style="color:var(--t2)">${D.model_as_of||"\u2014"}</b> \u00b7 manual <b style="color:var(--t2)">${D.manual_as_of||"\u2014"}</b> \u00b7 prices <b style="color:var(--t2)">${D.as_of||"\u2014"}</b></div>
     </div>
     <div class="grid3">
-      <div class="metric"><div class="k">Current value (mark-to-market)</div><div class="v">\u00a3${f0(p.current)}</div>
-        <div class="s">${f0(h.THX.shares)} THX \u00b7 ${f0(h.MTL.shares)} MTL</div></div>
+      <div class="metric"><div class="k">Current value (mark-to-market)</div><div class="v">${p.current!=null?"\u00a3"+f0(p.current):"\u2014"}</div>
+        <div class="s">two holdings</div></div>
       <div class="metric"><div class="k">2029 value \u00b7 base</div><div class="v">\u00a3${Number(p.v2029_base).toFixed(2)}m</div>
         <div class="s">blended NPV / P-FCF</div></div>
       <div class="metric"><div class="k">2029 income \u00b7 base</div><div class="v">\u00a3${f0(p.income_2029)}</div>
@@ -119,8 +115,8 @@ function render(D){
         </div>
         <div style="display:flex;gap:18px">
           <div style="text-align:right"><div class="sub">Spot</div><div style="font-size:15px;font-weight:600">$${f0(g.spot)}</div></div>
-          <div style="text-align:right"><div class="sub">24m trailing</div><div style="font-size:15px;font-weight:600">$${f0(g.trailing24)}</div></div>
-          <div style="text-align:right"><div class="sub">Ratio</div><div style="font-size:15px;font-weight:600;color:var(--pos)">${g.ratio}\u00d7</div></div>
+          <div style="text-align:right"><div class="sub">24m trailing${trailNote}</div><div style="font-size:15px;font-weight:600">${g.trailing24?"$"+f0(g.trailing24):"\u2014"}</div></div>
+          <div style="text-align:right"><div class="sub">Ratio</div><div style="font-size:15px;font-weight:600;color:var(--pos)">${g.ratio?g.ratio+"\u00d7":"\u2014"}</div></div>
         </div>
       </div>
       <div class="band"><div class="dot" style="left:${compPct}%"></div></div>
@@ -128,7 +124,7 @@ function render(D){
     </div>
     <div class="sec">Six thesis drivers</div>
     <div class="grid6">${drivers}</div>
-    <div class="grid2">${hold("THX")}${hold("MTL")}</div>
+    <div class="grid2">${hold("africa")}${hold("asia")}</div>
     <div class="card" style="margin-bottom:14px">
       <div class="row"><span style="font-size:13px;font-weight:600">Portfolio value \u00b7 2029</span><span class="sub">blended \u00a3m</span></div>
       <div class="scn">
@@ -145,16 +141,14 @@ function render(D){
     <div class="card">
       <div style="font-size:13px;font-weight:600;margin-bottom:10px">Actions required on catalyst</div>${acts}
     </div>
-    <div class="foot">Basis: ISA + SIPP only (GIA excluded). ${nb?nb+" source(s) used last-known values on the latest run. ":""}<a href="./edit.html">Edit manual inputs \u2197</a> \u00b7 analysis of model scenarios, not investment advice.</div>`;
+    <div class="foot">Basis: ISA + SIPP. <a href="./edit.html">Edit inputs \u2197</a> \u00b7 analysis of model scenarios, not investment advice.</div>`;
   const tg=document.getElementById("tg"),ext=document.getElementById("ext");
   tg.onclick=()=>{const o=ext.style.display==="none";ext.style.display=o?"block":"none";
     tg.textContent=o?`Hide ${yrs[0]}\u2013${yrs[yrs.length-1]} \u25b4`:`Show ${yrs[0]}\u2013${yrs[yrs.length-1]} \u25be`;};
 }
-
-fetch("./data/data.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.json();})
-  .then(render)
+fetch("./data/data.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.json();}).then(render)
   .catch(()=>{document.getElementById("app").innerHTML=
-    '<div class="err">Could not load <code>data/data.json</code>. Run <code>python scraper/update_data.py</code> (or let the GitHub Action run) to generate it.</div>';});
+    '<div class="err">Could not load <code>data/data.json</code>. Run the scraper or the GitHub Action to generate it.</div>';});
 </script>
 </body>
 </html>
