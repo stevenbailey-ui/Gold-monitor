@@ -1,10 +1,13 @@
-name: Update EOD data
+name: Update dashboard data
+
 on:
   schedule:
-    - cron: "30 21 * * 1-5"
-  workflow_dispatch: {}
+    - cron: "30 21 * * 1-5"   # 21:30 UTC, weekdays — after US/LSE close
+  workflow_dispatch:           # manual "Run workflow" button
+
 permissions:
   contents: write
+
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -13,14 +16,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Run EOD updater
+      - name: Run scraper
         env:
-          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}   # optional; rates fall back if unset
         run: python scraper/update_data.py
       - name: Commit refreshed data
         run: |
-          git config user.name "eod-bot"
-          git config user.email "eod-bot@users.noreply.github.com"
+          git config user.name  "dashboard-bot"
+          git config user.email "actions@users.noreply.github.com"
           git add data/data.json
-          git diff --cached --quiet || git commit -m "EOD update"
+          git diff --cached --quiet || git commit -m "data: scheduled refresh"
           git push
