@@ -3,13 +3,13 @@
   "manual_as_of": "2026-06-15",
   "model_as_of": "2026-06-15",
   "gold": {
-    "spot": 4360,
-    "trailing24": 3408,
-    "ratio": 1.28,
-    "trailing_months": 0,
+    "spot": 4173,
+    "trailing24": 3456,
+    "ratio": 1.21,
+    "trailing_months": 24,
     "verdict": "Bullish",
     "tag": "BULL",
-    "composite": 21
+    "composite": 22
   },
   "themes": [
     {
@@ -28,13 +28,13 @@
       "id": "usd_fx",
       "label": "USD / FX",
       "signal": "base",
-      "reading": "DXY 0 . COFER 56.77%"
+      "reading": "DXY 100.7 . COFER 56.77%"
     },
     {
       "id": "geopolitics",
       "label": "Geopolitics",
       "signal": "base",
-      "reading": "VIX 0 . GPR 180 . Brent $81"
+      "reading": "VIX 16.8 . GPR 180 . Brent $81"
     },
     {
       "id": "mining_equities",
@@ -50,7 +50,7 @@
     }
   ],
   "portfolio": {
-    "current": 478775,
+    "current": 434010,
     "v2029_base": 1.63,
     "income_2029": 55318,
     "income_yield": 2.9
@@ -59,8 +59,8 @@
     "africa": {
       "name": "Africa",
       "desc": "Gold producer + developer",
-      "value": 411023,
-      "pct": 85.8,
+      "value": 369670,
+      "pct": 85.2,
       "npv": "1.65 - 3.15",
       "jur": "6/10 . base",
       "jsig": "base",
@@ -69,8 +69,8 @@
     "asia": {
       "name": "Asia",
       "desc": "Gold developer (construction)",
-      "value": 67752,
-      "pct": 14.2,
+      "value": 64340,
+      "pct": 14.8,
       "npv": "0.27 - 0.55",
       "jur": "3/10 . bear",
       "jsig": "bear",
@@ -147,28 +147,10 @@
       "body": "Exploration optionality. Re-rate catalyst, not a base-case input. <b>No action until the licence is granted.</b>"
     }
   ],
-  "fetch_notes": [
-    "gold:yahoo:HTTPError",
-    "gold:stooq:HTTPError",
-    "dxy:yahoo:HTTPError",
-    "dxy:stooq:HTTPError",
-    "vix:yahoo:HTTPError",
-    "vix:stooq:HTTPError",
-    "brent:yahoo:HTTPError",
-    "brent:stooq:HTTPError",
-    "gdx:yahoo:HTTPError",
-    "gdx:stooq:HTTPError",
-    "gdxj:yahoo:HTTPError",
-    "gdxj:stooq:HTTPError",
-    "ndx:yahoo:HTTPError",
-    "ndx:stooq:HTTPError",
-    "DGS10:no_FRED_key",
-    "DFII10:no_FRED_key",
-    "T10YIE:no_FRED_key",
-    "DFEDTARU:no_FRED_key",
-    "trailing:HTTPError",
-    "holding:HTTPError",
-    "holding:HTTPError"
-  ],
-  "_raw": {}
+  "fetch_notes": [],
+  "_raw": {
+    "real_yield": 2.23,
+    "fed_funds": 3.75,
+    "dxy": 100.72100067138672
+  }
 }
