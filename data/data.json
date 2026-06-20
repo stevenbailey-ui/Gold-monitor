@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-06-19",
+  "as_of": "2026-06-20",
   "manual_as_of": "2026-06-15",
   "model_as_of": "2026-06-15",
   "gold": {
@@ -28,13 +28,13 @@
       "id": "usd_fx",
       "label": "USD / FX",
       "signal": "base",
-      "reading": "DXY 100.7 . COFER 56.77%"
+      "reading": "DXY 100.8 . COFER 56.77%"
     },
     {
       "id": "geopolitics",
       "label": "Geopolitics",
       "signal": "base",
-      "reading": "VIX 16.8 . GPR 180 . Brent $81"
+      "reading": "VIX 18.4 . GPR 180 . Brent $81"
     },
     {
       "id": "mining_equities",
@@ -151,6 +151,6 @@
   "_raw": {
     "real_yield": 2.23,
     "fed_funds": 3.75,
-    "dxy": 100.72100067138672
+    "dxy": 100.8489990234375
   }
 }
