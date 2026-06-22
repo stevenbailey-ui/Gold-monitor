@@ -91,6 +91,31 @@ function render(D){
   const scenRows=yrs.map(y=>`<tr><td>${y}</td><td style="color:var(--neg)">${m2(s[y].bear)}</td>
     <td>${m2(s[y].base)}</td><td style="color:var(--pos)">${m2(s[y].bull)}</td></tr>`).join("");
   const trailNote=g.trailing_months?` (${g.trailing_months}m avg)`:"";
+  const dvBlock=(()=>{
+    const d=D.divergence,sgn=n=>(n>0?"+":"")+n;
+    if(!d) return `<div class="card" style="margin-bottom:12px"><div class="row">
+      <span style="font-size:13px;font-weight:600">Orthodox divergence</span>
+      <span class="pill sm p-base">N/A</span></div>
+      <div class="sub" style="margin-top:6px">Awaiting a second session to compute day-over-day deltas.</div></div>`;
+    const pill=d.signal==="structural_bid"?"p-bull":d.signal==="gold_lagging"?"p-bear":"p-base";
+    const lbl=d.signal==="structural_bid"?"STRUCTURAL BID":d.signal==="gold_lagging"?"GOLD LAGGING":"TEXTBOOK";
+    const rcol=d.residual_pp>0?"var(--pos)":d.residual_pp<0?"var(--neg)":"var(--t1)";
+    return `<div class="card" style="margin-bottom:12px">
+      <div class="row">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:13px;color:var(--t2)">Orthodox divergence</span>
+          <span class="pill ${pill}">${lbl}</span>
+          <span style="font-size:15px;font-weight:600">${d.verdict}</span>
+        </div>
+        <div style="text-align:right"><div class="sub">Residual</div>
+          <div style="font-size:15px;font-weight:600;color:${rcol}">${sgn(d.residual_pp)}pp</div></div>
+      </div>
+      <div class="grid3" style="margin-top:10px">
+        <div class="metric"><div class="k">&Delta; real yield</div><div class="v">${sgn(d.d_real_yield_bp)} bp</div><div class="s">10Y DFII10 \u00b7 d/d</div></div>
+        <div class="metric"><div class="k">&Delta; DXY</div><div class="v">${sgn(d.d_dxy_pct)}</div><div class="s">dollar index \u00b7 d/d</div></div>
+        <div class="metric"><div class="k">Gold expected \u00b7 actual</div><div class="v">${sgn(d.expected_gold_pct)}% \u00b7 ${sgn(d.actual_gold_pct)}%</div><div class="s">textbook \u03b2 vs realised</div></div>
+      </div></div>`;
+  })();
 
   document.getElementById("app").innerHTML=`
     <div class="row" style="margin-bottom:12px">
@@ -122,6 +147,7 @@ function render(D){
       <div class="band"><div class="dot" style="left:${compPct}%"></div></div>
       <div class="bandlbl"><span>Strongly bear \u221250</span><span>Balanced 0</span><span>Strongly bull +50</span></div>
     </div>
+    ${dvBlock}
     <div class="sec">Six thesis drivers</div>
     <div class="grid6">${drivers}</div>
     <div class="grid2">${hold("africa")}${hold("asia")}</div>
