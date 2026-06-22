@@ -1,17 +1,45 @@
 {
-  "model_as_of": "2026-06-15",
-  "source": "portfolio_v21.xlsx",
+  "model_as_of": "2026-06-22",
+  "source": "portfolio_v21_fixed__1_.xlsx",
   "valuation": {
-    "africa": { "npv_bear": 1.65, "npv_base": 1.99, "npv_bull": 3.15 },
-    "asia":   { "npv_bear": 0.27, "npv_base": 0.33, "npv_bull": 0.55 }
+    "africa": {
+      "npv_bull": 3.157,
+      "npv_base": 1.705,
+      "npv_bear": 1.657
+    },
+    "asia": {
+      "npv_bull": 0.552,
+      "npv_base": 0.278,
+      "npv_bear": 0.267
+    }
   },
   "scenarios": {
-    "2026": { "bear": 0.92, "base": 1.08, "bull": 1.63 },
-    "2027": { "bear": 0.70, "base": 1.28, "bull": 2.61 },
-    "2028": { "bear": 0.98, "base": 1.69, "bull": 3.03 },
-    "2029": { "bear": 1.19, "base": 1.63, "bull": 3.17 },
-    "2030": { "bear": 1.16, "base": 1.56, "bull": 2.94 }
+    "2026": {
+      "bear": 0.92,
+      "base": 0.94,
+      "bull": 1.63
+    },
+    "2027": {
+      "bear": 0.71,
+      "base": 1.11,
+      "bull": 2.61
+    },
+    "2028": {
+      "bear": 0.98,
+      "base": 1.46,
+      "bull": 3.03
+    },
+    "2029": {
+      "bear": 1.19,
+      "base": 1.4,
+      "bull": 3.17
+    },
+    "2030": {
+      "bear": 1.17,
+      "base": 1.34,
+      "bull": 2.94
+    }
   },
-  "income_2029_base": 55318,
+  "income_2029_base": 48111,
   "income_2029_yield": 2.9
 }
