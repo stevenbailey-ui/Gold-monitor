@@ -1,15 +1,15 @@
 {
-  "as_of": "2026-06-20",
+  "as_of": "2026-06-22",
   "manual_as_of": "2026-06-15",
   "model_as_of": "2026-06-15",
   "gold": {
-    "spot": 4173,
+    "spot": 4205,
     "trailing24": 3456,
-    "ratio": 1.21,
+    "ratio": 1.22,
     "trailing_months": 24,
     "verdict": "Bullish",
     "tag": "BULL",
-    "composite": 22
+    "composite": 18
   },
   "themes": [
     {
@@ -28,13 +28,13 @@
       "id": "usd_fx",
       "label": "USD / FX",
       "signal": "base",
-      "reading": "DXY 100.8 . COFER 56.77%"
+      "reading": "DXY 101.0 . COFER 56.77%"
     },
     {
       "id": "geopolitics",
       "label": "Geopolitics",
       "signal": "base",
-      "reading": "VIX 18.4 . GPR 180 . Brent $81"
+      "reading": "VIX 17.3 . GPR 180 . Brent $81"
     },
     {
       "id": "mining_equities",
@@ -50,7 +50,7 @@
     }
   ],
   "portfolio": {
-    "current": 434010,
+    "current": 445566,
     "v2029_base": 1.63,
     "income_2029": 55318,
     "income_yield": 2.9
@@ -59,8 +59,8 @@
     "africa": {
       "name": "Africa",
       "desc": "Gold producer + developer",
-      "value": 369670,
-      "pct": 85.2,
+      "value": 382201,
+      "pct": 85.8,
       "npv": "1.65 - 3.15",
       "jur": "6/10 . base",
       "jsig": "base",
@@ -69,8 +69,8 @@
     "asia": {
       "name": "Asia",
       "desc": "Gold developer (construction)",
-      "value": 64340,
-      "pct": 14.8,
+      "value": 63365,
+      "pct": 14.2,
       "npv": "0.27 - 0.55",
       "jur": "3/10 . bear",
       "jsig": "bear",
@@ -151,6 +151,6 @@
   "_raw": {
     "real_yield": 2.23,
     "fed_funds": 3.75,
-    "dxy": 100.8489990234375
+    "dxy": 101.04000091552734
   }
 }
