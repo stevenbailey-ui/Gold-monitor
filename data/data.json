@@ -1,9 +1,9 @@
 {
   "as_of": "2026-06-22",
   "manual_as_of": "2026-06-15",
-  "model_as_of": "2026-06-15",
+  "model_as_of": "2026-06-22",
   "gold": {
-    "spot": 4205,
+    "spot": 4210,
     "trailing24": 3456,
     "ratio": 1.22,
     "trailing_months": 24,
@@ -51,8 +51,8 @@
   ],
   "portfolio": {
     "current": 445566,
-    "v2029_base": 1.63,
-    "income_2029": 55318,
+    "v2029_base": 1.4,
+    "income_2029": 48111,
     "income_yield": 2.9
   },
   "holdings": {
@@ -61,7 +61,7 @@
       "desc": "Gold producer + developer",
       "value": 382201,
       "pct": 85.8,
-      "npv": "1.65 - 3.15",
+      "npv": "1.657 - 3.157",
       "jur": "6/10 . base",
       "jsig": "base",
       "next": "New mine FID"
@@ -71,7 +71,7 @@
       "desc": "Gold developer (construction)",
       "value": 63365,
       "pct": 14.2,
-      "npv": "0.27 - 0.55",
+      "npv": "0.267 - 0.552",
       "jur": "3/10 . bear",
       "jsig": "bear",
       "next": "Flagship first gold"
@@ -80,27 +80,27 @@
   "scenarios": {
     "2026": {
       "bear": 0.92,
-      "base": 1.08,
+      "base": 0.94,
       "bull": 1.63
     },
     "2027": {
-      "bear": 0.7,
-      "base": 1.28,
+      "bear": 0.71,
+      "base": 1.11,
       "bull": 2.61
     },
     "2028": {
       "bear": 0.98,
-      "base": 1.69,
+      "base": 1.46,
       "bull": 3.03
     },
     "2029": {
       "bear": 1.19,
-      "base": 1.63,
+      "base": 1.4,
       "bull": 3.17
     },
     "2030": {
-      "bear": 1.16,
-      "base": 1.56,
+      "bear": 1.17,
+      "base": 1.34,
       "bull": 2.94
     }
   },
@@ -149,8 +149,8 @@
   ],
   "fetch_notes": [],
   "_raw": {
-    "real_yield": 2.23,
+    "real_yield": 2.21,
     "fed_funds": 3.75,
-    "dxy": 101.04000091552734
+    "dxy": 101.00399780273438
   }
 }
