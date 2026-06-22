@@ -152,6 +152,40 @@ def score_metric(m, px, fred, manual, prev):
     return fb
 
 
+def divergence(px, fred, prev, notes):
+    """Orthodox Divergence Diagnostic, computed live from day-over-day deltas.
+    Reuses the prior session's stored real-yield/DXY (data.json _raw) and gold spot."""
+    pr = prev.get("_raw", {})
+    ry_now, ry_prev = fred.get("dfii10"), pr.get("real_yield")
+    dxy_now, dxy_prev = px.get("dxy"), pr.get("dxy")
+    g_now = px.get("gold")
+    g_prev = (prev.get("gold") or {}).get("spot")
+    if None in (ry_now, ry_prev, dxy_now, dxy_prev, g_now, g_prev) or not g_prev:
+        notes.append("divergence:insufficient_history")
+        return None
+    d_ry = ry_now - ry_prev                       # percentage points
+    d_dxy = dxy_now - dxy_prev                     # DXY index points
+    actual = (g_now - g_prev) / g_prev * 100.0     # realised gold move, %
+    expected = C.DIVERGENCE_BETA_REAL_YIELD * d_ry + C.DIVERGENCE_BETA_DXY * d_dxy
+    resid = actual - expected
+    band = C.DIVERGENCE_BAND_PP
+    if resid > band:
+        signal, verdict = "structural_bid", f"Gold outperforming textbook by {resid:.1f}pp"
+    elif resid < -band:
+        signal, verdict = "gold_lagging", f"Gold lagging textbook by {abs(resid):.1f}pp"
+    else:
+        signal, verdict = "textbook", f"Tracking textbook within {abs(resid):.1f}pp"
+    return {
+        "d_real_yield_bp": round(d_ry * 100, 1),
+        "d_dxy_pct": round(d_dxy, 2),
+        "expected_gold_pct": round(expected, 2),
+        "actual_gold_pct": round(actual, 2),
+        "residual_pp": round(resid, 2),
+        "verdict": verdict,
+        "signal": signal,
+    }
+
+
 def main():
     manual = json.load(open(os.path.join(DATA, "manual_inputs.json")))
     snap = json.load(open(os.path.join(DATA, "model_snapshot.json")))
@@ -224,6 +258,7 @@ def main():
                  "ratio": round(gold / trail, 2) if trail else None,
                  "trailing_months": n_months, "verdict": vname, "tag": tag, "composite": composite},
         "themes": themes,
+        "divergence": divergence(px, fred, prev, notes),
         "portfolio": {"current": total or None,
                       "v2029_base": snap["scenarios"]["2029"]["base"],
                       "income_2029": snap["income_2029_base"], "income_yield": snap["income_2029_yield"]},
