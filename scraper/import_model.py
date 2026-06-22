@@ -24,7 +24,7 @@ HOLD = ["africa", "asia"]
 
 # Cell map (Summary sheet). NPV rows: B=Bull C=Base D=Bear. Scenario Total Value = col H.
 NPV_ROW = {"africa": 44, "asia": 45}          # B/C/D = bull/base/bear
-SCEN_ROWS = {  # (bear,base,bull) row in section 47, Total Value col H
+SCEN_ROWS = {  # (bear,base,bull) row in section 47, Total Value (ISA+SIPP) = col I
     "2026": (49, 50, 51), "2027": (53, 54, 55), "2028": (57, 58, 59),
     "2029": (61, 62, 63), "2030": (65, 66, 67),
 }
@@ -69,7 +69,7 @@ def main():
     for yr, (rb, rba, rbu) in SCEN_ROWS.items():
         pp = ps.get(yr, {})
         def m(row, fb):
-            v = num(ws, f"H{row}", None)
+            v = num(ws, f"I{row}", None)
             return round(v / 1e6, 2) if v is not None else fb
         scen[yr] = {"bear": m(rb, pp.get("bear")), "base": m(rba, pp.get("base")),
                     "bull": m(rbu, pp.get("bull"))}
