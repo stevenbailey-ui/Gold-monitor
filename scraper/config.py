@@ -92,3 +92,7 @@ def theme_signal(net, max_w):
     if net > 0.15 * max_w:  return "bull"
     if net < -0.15 * max_w: return "bear"
     return "base"
+# --- Orthodox Divergence Diagnostic ---------------------------------------
+DIVERGENCE_BETA_REAL_YIELD = -10.0   # gold % per +1.00pp 10Y real yield
+DIVERGENCE_BETA_DXY        = -0.9    # gold % per +1.0 DXY point
+DIVERGENCE_BAND_PP         = 0.5     # |residual| within this = tracking textbook
