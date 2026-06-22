@@ -3,7 +3,7 @@
   "manual_as_of": "2026-06-15",
   "model_as_of": "2026-06-22",
   "gold": {
-    "spot": 4210,
+    "spot": 4209,
     "trailing24": 3456,
     "ratio": 1.22,
     "trailing_months": 24,
@@ -49,6 +49,15 @@
       "reading": "COT 31.8% OI . GVZ 25.8"
     }
   ],
+  "divergence": {
+    "d_real_yield_bp": 0.0,
+    "d_dxy_pct": 0.01,
+    "expected_gold_pct": -0.01,
+    "actual_gold_pct": -0.03,
+    "residual_pp": -0.02,
+    "verdict": "Tracking textbook within 0.0pp",
+    "signal": "textbook"
+  },
   "portfolio": {
     "current": 445566,
     "v2029_base": 1.4,
@@ -151,6 +160,6 @@
   "_raw": {
     "real_yield": 2.21,
     "fed_funds": 3.75,
-    "dxy": 101.00399780273438
+    "dxy": 101.01699829101562
   }
 }
