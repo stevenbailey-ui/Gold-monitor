@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gold-miner portfolio monitor</title>
+<style>
+  :root{
+    --bg:#f7f6f2;--surface:#fff;--surface2:#f1efe8;--line:rgba(0,0,0,.12);--line2:rgba(0,0,0,.22);
+    --t1:#1c1c1a;--t2:#5f5e5a;--t3:#8a897f;--bull-bg:#c0dd97;--bull-tx:#173404;--bear-bg:#f7c1c1;
+    --bear-tx:#791f1f;--base-bg:#d3d1c7;--base-tx:#444441;--amber-bg:#fac775;--amber-tx:#854f0b;
+    --pos:#3b6d11;--neg:#a32d2d;--link:#185fa5;
+  }
+  @media(prefers-color-scheme:dark){:root{
+    --bg:#1a1916;--surface:#26251f;--surface2:#2f2e27;--line:rgba(255,255,255,.12);--line2:rgba(255,255,255,.22);
+    --t1:#f3f1ea;--t2:#b4b2a9;--t3:#888780;--bull-bg:#27500a;--bull-tx:#c0dd97;--bear-bg:#791f1f;
+    --bear-tx:#f7c1c1;--base-bg:#444441;--base-tx:#d3d1c7;--amber-bg:#633806;--amber-tx:#fac775;
+    --pos:#97c459;--neg:#f09595;--link:#85b7eb;}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--t1);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:760px;margin:0 auto;padding:22px 18px 48px}
+  h1{font-size:19px;font-weight:600;margin:0}
+  .sub{font-size:11px;color:var(--t3)}
+  .row{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:6px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0 12px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+  .grid6{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+  @media(max-width:560px){.grid3,.grid6{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+  .metric{background:var(--surface2);border-radius:8px;padding:12px 14px}
+  .metric .k{font-size:12px;color:var(--t2)}.metric .v{font-size:23px;font-weight:600;margin-top:1px}.metric .s{font-size:11px;color:var(--t3)}
+  .card{background:var(--surface);border:.5px solid var(--line);border-radius:12px;padding:14px 16px}
+  .sec{font-size:12px;color:var(--t2);margin:0 2px 6px}
+  .pill{font-size:11px;font-weight:600;padding:2px 8px;border-radius:7px;display:inline-block}
+  .pill.sm{font-size:10px;padding:1px 6px;border-radius:4px}
+  .p-bull{background:var(--bull-bg);color:var(--bull-tx)}.p-bear{background:var(--bear-bg);color:var(--bear-tx)}
+  .p-base{background:var(--base-bg);color:var(--base-tx)}.p-amber{background:var(--amber-bg);color:var(--amber-tx)}
+  .kv{display:flex;justify-content:space-between;font-size:13px;margin-top:5px}.kv .lbl{color:var(--t2)}
+  .kv.top{border-top:.5px solid var(--line);padding-top:6px}
+  .band{position:relative;height:6px;border-radius:3px;margin:14px 0 4px;background:linear-gradient(90deg,#e24b4a,#ef9f27,#97c459)}
+  .band .dot{position:absolute;top:-3px;width:12px;height:12px;border-radius:50%;background:var(--t1);border:2px solid var(--surface)}
+  .bandlbl{display:flex;justify-content:space-between;font-size:10px;color:var(--t3)}
+  .driver{background:var(--surface);border:.5px solid var(--line);border-radius:8px;padding:10px 12px}
+  .driver .dt{font-size:12px;font-weight:600}.driver .dd{font-size:11px;color:var(--t2);margin-top:3px}
+  .tl{position:relative;height:2px;background:var(--line2);margin:18px 8px 6px}
+  .tl .node{position:absolute;top:-4px;width:10px;height:10px;border-radius:50%;background:var(--t3);border:2px solid var(--surface)}
+  .tl .node.live{top:-5px;width:12px;height:12px;background:#ba7517}
+  .tllbl{display:flex;justify-content:space-between;font-size:11px;color:var(--t2);padding:0 4px;margin-bottom:16px}
+  .act{display:flex;gap:10px;padding:8px 0;border-top:.5px solid var(--line)}
+  .act .when{flex-shrink:0;width:64px}.act .wt{font-size:11px;font-weight:600}.act .wd{font-size:10px;color:var(--t3)}
+  .act .body{flex:1;font-size:12px;color:var(--t2)}.act .body b{color:var(--t1);font-weight:600}
+  .act .tag{flex-shrink:0;height:fit-content}
+  .scn{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:8px;text-align:center}
+  .scn .sv{font-size:18px;font-weight:600}.scn .sl{font-size:11px;color:var(--t3)}
+  table.full{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
+  table.full th,table.full td{padding:5px 4px;text-align:right;border-top:.5px solid var(--line)}
+  table.full th:first-child,table.full td:first-child{text-align:left;color:var(--t2)}
+  table.full th{color:var(--t3);font-weight:500;font-size:11px;border-top:none}
+  .toggle{background:none;border:none;color:var(--link);font-size:12px;cursor:pointer;padding:8px 0 0}
+  .foot{font-size:10px;color:var(--t3);margin-top:18px;line-height:1.6}.foot a{color:var(--link)}
+  .err{background:var(--bear-bg);color:var(--bear-tx);padding:10px 14px;border-radius:8px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><p class="sub">Loading...</p></div>
+<script>
+const f0=n=>Math.round(n).toLocaleString("en-GB");
+const m2=n=>"\u00a3"+Number(n).toFixed(2)+"m";
+const sigPill={bull:"p-bull",base:"p-base",bear:"p-bear"};
+const sigTxt={bull:"BULL",base:"BASE",bear:"BEAR"};
+
+function render(D){
+  const g=D.gold,p=D.portfolio,h=D.holdings,s=D.scenarios;
+  const compPct=Math.max(0,Math.min(100,g.composite+50));
+  const drivers=D.themes.map(t=>`<div class="driver"><div class="dt">${t.label}
+    <span class="pill sm ${sigPill[t.signal]}">${sigTxt[t.signal]}</span></div>
+    <div class="dd">${t.reading||""}</div></div>`).join("");
+  const hold=k=>{const x=h[k];const jc=sigPill[x.jsig]||"p-base";
+    return `<div class="card"><div class="row"><div style="font-size:15px;font-weight:600">${x.name}</div>
+      <span class="pill ${jc}">${x.jur}</span></div>
+      <div style="font-size:11px;color:var(--t3);margin-top:1px">${x.desc||""}</div>
+      <div class="kv top"><span class="lbl">\u00a3 value \u00b7 % of port.</span>
+        <span style="font-weight:600">${x.value!=null?"\u00a3"+f0(x.value):"\u2014"} \u00b7 <span style="color:var(--link)">${x.pct!=null?x.pct+"%":"\u2014"}</span></span></div>
+      <div class="kv"><span class="lbl">NPV \u00a3/sh (bear\u2013bull)</span><span style="font-weight:600">${x.npv}</span></div>
+      <div style="font-size:11px;color:var(--t3);margin-top:8px">Next: ${x.next}</div></div>`;};
+  const acts=D.actions.map(a=>`<div class="act"><div class="when"><div class="wt">${a.when}</div>
+    <div class="wd">${a.date}</div></div><div class="body">${a.body}</div>
+    <span class="pill sm ${a.cls||"p-base"} tag">${a.tag}</span></div>`).join("");
+  const nodes=D.catalysts.map(c=>`<div class="node${c.live?" live":""}" style="left:${c.pos}%"></div>`).join("");
+  const tllbl=D.catalysts.map((c,i)=>`<span style="text-align:${i===0?"left":i===D.catalysts.length-1?"right":"center"}">${c.label}<br>${c.date}</span>`).join("");
+  const yrs=Object.keys(s);
+  const scenRows=yrs.map(y=>`<tr><td>${y}</td><td style="color:var(--neg)">${m2(s[y].bear)}</td>
+    <td>${m2(s[y].base)}</td><td style="color:var(--pos)">${m2(s[y].bull)}</td></tr>`).join("");
+  const trailNote=g.trailing_months?` (${g.trailing_months}m avg)`:"";
+  const dvBlock=(()=>{
+    const d=D.divergence,sgn=n=>(n>0?"+":"")+n;
+    if(!d) return `<div class="card" style="margin-bottom:12px"><div class="row">
+      <span style="font-size:13px;font-weight:600">Orthodox divergence</span>
+      <span class="pill sm p-base">N/A</span></div>
+      <div class="sub" style="margin-top:6px">Awaiting a second session to compute day-over-day deltas.</div></div>`;
+    const pill=d.signal==="structural_bid"?"p-bull":d.signal==="gold_lagging"?"p-bear":"p-base";
+    const lbl=d.signal==="structural_bid"?"STRUCTURAL BID":d.signal==="gold_lagging"?"GOLD LAGGING":"TEXTBOOK";
+    const rcol=d.residual_pp>0?"var(--pos)":d.residual_pp<0?"var(--neg)":"var(--t1)";
+    return `<div class="card" style="margin-bottom:12px">
+      <div class="row">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:13px;color:var(--t2)">Orthodox divergence</span>
+          <span class="pill ${pill}">${lbl}</span>
+          <span style="font-size:15px;font-weight:600">${d.verdict}</span>
+        </div>
+        <div style="text-align:right"><div class="sub">Residual</div>
+          <div style="font-size:15px;font-weight:600;color:${rcol}">${sgn(d.residual_pp)}pp</div></div>
+      </div>
+      <div class="grid3" style="margin-top:10px">
+        <div class="metric"><div class="k">&Delta; real yield</div><div class="v">${sgn(d.d_real_yield_bp)} bp</div><div class="s">10Y DFII10 \u00b7 d/d</div></div>
+        <div class="metric"><div class="k">&Delta; DXY</div><div class="v">${sgn(d.d_dxy_pct)}</div><div class="s">dollar index \u00b7 d/d</div></div>
+        <div class="metric"><div class="k">Gold expected \u00b7 actual</div><div class="v">${sgn(d.expected_gold_pct)}% \u00b7 ${sgn(d.actual_gold_pct)}%</div><div class="s">textbook \u03b2 vs realised</div></div>
+      </div></div>`;
+  })();
+
+  document.getElementById("app").innerHTML=`
+    <div class="row" style="margin-bottom:12px">
+      <h1>Gold-miner portfolio monitor</h1>
+      <div class="sub">Model <b style="color:var(--t2)">${D.model_as_of||"\u2014"}</b> \u00b7 manual <b style="color:var(--t2)">${D.manual_as_of||"\u2014"}</b> \u00b7 prices <b style="color:var(--t2)">${D.as_of||"\u2014"}</b></div>
+    </div>
+    <div class="grid3">
+      <div class="metric"><div class="k">Current value (mark-to-market)</div><div class="v">${p.current!=null?"\u00a3"+f0(p.current):"\u2014"}</div>
+        <div class="s">two holdings</div></div>
+      <div class="metric"><div class="k">2029 value \u00b7 base</div><div class="v">\u00a3${Number(p.v2029_base).toFixed(2)}m</div>
+        <div class="s">blended NPV / P-FCF</div></div>
+      <div class="metric"><div class="k">2029 income \u00b7 base</div><div class="v">\u00a3${f0(p.income_2029)}</div>
+        <div class="s">${p.income_yield}% yield on value</div></div>
+    </div>
+    <div class="card" style="margin-bottom:12px">
+      <div class="row">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:13px;color:var(--t2)">Gold thesis</span>
+          <span class="pill ${g.tag==="BULL"?"p-bull":g.tag==="BEAR"?"p-bear":"p-base"}">${g.tag}</span>
+          <span style="font-size:15px;font-weight:600">${g.verdict}</span>
+          <span style="font-size:13px;color:var(--t2)">composite <b style="color:var(--t1)">${g.composite>=0?"+":""}${g.composite}</b></span>
+        </div>
+        <div style="display:flex;gap:18px">
+          <div style="text-align:right"><div class="sub">Spot</div><div style="font-size:15px;font-weight:600">$${f0(g.spot)}</div></div>
+          <div style="text-align:right"><div class="sub">24m trailing${trailNote}</div><div style="font-size:15px;font-weight:600">${g.trailing24?"$"+f0(g.trailing24):"\u2014"}</div></div>
+          <div style="text-align:right"><div class="sub">2029 forecast</div><div style="font-size:15px;font-weight:600">${g.forecast_2029?"$"+f0(g.forecast_2029):"\u2014"}</div></div>
+          <div style="text-align:right"><div class="sub">Ratio</div><div style="font-size:15px;font-weight:600;color:var(--pos)">${g.ratio?g.ratio+"\u00d7":"\u2014"}</div></div>
+        </div>
+      </div>
+      <div class="band"><div class="dot" style="left:${compPct}%"></div></div>
+      <div class="bandlbl"><span>Strongly bear \u221250</span><span>Balanced 0</span><span>Strongly bull +50</span></div>
+    </div>
+    ${dvBlock}
+    <div class="sec">Six thesis drivers</div>
+    <div class="grid6">${drivers}</div>
+    <div class="grid2">${hold("africa")}${hold("asia")}</div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="row"><span style="font-size:13px;font-weight:600">Portfolio value \u00b7 2029</span><span class="sub">blended \u00a3m</span></div>
+      <div class="scn">
+        <div><div class="sv" style="color:var(--neg)">${m2(s["2029"].bear)}</div><div class="sl">bear</div></div>
+        <div><div class="sv">${m2(s["2029"].base)}</div><div class="sl">base</div></div>
+        <div><div class="sv" style="color:var(--pos)">${m2(s["2029"].bull)}</div><div class="sl">bull</div></div>
+      </div>
+      <button class="toggle" id="tg">Show ${yrs[0]}\u2013${yrs[yrs.length-1]} \u25be</button>
+      <div id="ext" style="display:none"><table class="full"><tr><th>Year</th><th>Bear</th><th>Base</th><th>Bull</th></tr>${scenRows}</table></div>
+    </div>
+    <div class="sec">Catalyst timeline</div>
+    <div class="tl">${nodes}</div>
+    <div class="tllbl">${tllbl}</div>
+    <div class="card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:10px">Actions required on catalyst</div>${acts}
+    </div>
+    <div class="foot">Basis: ISA + SIPP. <a href="./edit.html">Edit inputs \u2197</a> \u00b7 analysis of model scenarios, not investment advice.</div>`;
+  const tg=document.getElementById("tg"),ext=document.getElementById("ext");
+  tg.onclick=()=>{const o=ext.style.display==="none";ext.style.display=o?"block":"none";
+    tg.textContent=o?`Hide ${yrs[0]}\u2013${yrs[yrs.length-1]} \u25b4`:`Show ${yrs[0]}\u2013${yrs[yrs.length-1]} \u25be`;};
+}
+fetch("./data/data.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.json();}).then(render)
+  .catch(()=>{document.getElementById("app").innerHTML=
+    '<div class="err">Could not load <code>data/data.json</code>. Run the scraper or the GitHub Action to generate it.</div>';});
+</script>
+</body>
+</html>
