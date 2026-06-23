@@ -1,5 +1,5 @@
 {
-  "model_as_of": "2026-06-22",
+  "model_as_of": "2026-06-23",
   "source": "portfolio_v21_fixed__1_.xlsx",
   "valuation": {
     "africa": {
@@ -40,6 +40,7 @@
       "bull": 2.94
     }
   },
+  "gold_2029_forecast": 3934,
   "income_2029_base": 48111,
   "income_2029_yield": 2.9
 }
