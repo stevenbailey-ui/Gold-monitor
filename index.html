@@ -141,6 +141,7 @@ function render(D){
         <div style="display:flex;gap:18px">
           <div style="text-align:right"><div class="sub">Spot</div><div style="font-size:15px;font-weight:600">$${f0(g.spot)}</div></div>
           <div style="text-align:right"><div class="sub">24m trailing${trailNote}</div><div style="font-size:15px;font-weight:600">${g.trailing24?"$"+f0(g.trailing24):"\u2014"}</div></div>
+          <div style="text-align:right"><div class="sub">2029 forecast</div><div style="font-size:15px;font-weight:600">${g.forecast_2029?"$"+f0(g.forecast_2029):"\u2014"}</div></div>
           <div style="text-align:right"><div class="sub">Ratio</div><div style="font-size:15px;font-weight:600;color:var(--pos)">${g.ratio?g.ratio+"\u00d7":"\u2014"}</div></div>
         </div>
       </div>
