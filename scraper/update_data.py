@@ -256,6 +256,7 @@ def main():
         "model_as_of": snap.get("model_as_of"),
         "gold": {"spot": round(gold), "trailing24": round(trail) if trail else None,
                  "ratio": round(gold / trail, 2) if trail else None,
+                 "forecast_2029": snap.get("gold_2029_forecast"),
                  "trailing_months": n_months, "verdict": vname, "tag": tag, "composite": composite},
         "themes": themes,
         "divergence": divergence(px, fred, prev, notes),

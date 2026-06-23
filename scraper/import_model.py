@@ -29,6 +29,7 @@ SCEN_ROWS = {  # (bear,base,bull) row in section 47, Total Value (ISA+SIPP) = co
     "2029": (61, 62, 63), "2030": (65, 66, 67),
 }
 INCOME_ROW, INCOME_COL, YIELD_COL = 21, "J", "K"   # 2029 base
+GOLD_FC_SHEET, GOLD_FC_CELL = "24 month ave", "C31"  # "Target 2029 avg ($/oz)" (scenario-flexed)
 
 
 FELL_BACK = []
@@ -78,11 +79,15 @@ def main():
     yld = num(ws, f"{YIELD_COL}{INCOME_ROW}", None, allow_zero=False)
     yld = round(yld * 100, 1) if (yld is not None and yld < 1) else (yld if yld is not None else prior.get("income_2029_yield"))
 
+    gld = wb[GOLD_FC_SHEET]
+    gold_fc = num(gld, GOLD_FC_CELL, prior.get("gold_2029_forecast"), allow_zero=False)
+
     out = {
         "model_as_of": datetime.date.today().isoformat(),
         "source": os.path.basename(path),
         "valuation": val,
         "scenarios": scen,
+        "gold_2029_forecast": round(gold_fc) if gold_fc else prior.get("gold_2029_forecast"),
         "income_2029_base": int(inc) if inc else prior.get("income_2029_base"),
         "income_2029_yield": yld,
     }
