@@ -22,6 +22,7 @@ jobs:
       - name: Run EOD updater
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          HOLDINGS: ${{ secrets.HOLDINGS }}
         run: python scraper/update_data.py
 
       - name: Commit refreshed data
