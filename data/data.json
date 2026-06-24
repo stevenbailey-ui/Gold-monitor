@@ -3,9 +3,9 @@
   "manual_as_of": "2026-06-15",
   "model_as_of": "2026-06-23",
   "gold": {
-    "spot": 4100,
+    "spot": 4062,
     "trailing24": 3456,
-    "ratio": 1.19,
+    "ratio": 1.18,
     "forecast_2029": 3934,
     "trailing_months": 24,
     "verdict": "Bullish",
@@ -29,7 +29,7 @@
       "id": "usd_fx",
       "label": "USD / FX",
       "signal": "base",
-      "reading": "DXY 101.6 . COFER 56.77%"
+      "reading": "DXY 101.7 . COFER 56.77%"
     },
     {
       "id": "geopolitics",
@@ -51,13 +51,13 @@
     }
   ],
   "divergence": {
-    "d_real_yield_bp": 7.0,
-    "d_dxy_pct": 0.32,
-    "expected_gold_pct": -0.99,
-    "actual_gold_pct": -0.93,
-    "residual_pp": 0.05,
-    "verdict": "Tracking textbook within 0.1pp",
-    "signal": "textbook"
+    "d_real_yield_bp": 0.0,
+    "d_dxy_pct": 0.08,
+    "expected_gold_pct": -0.07,
+    "actual_gold_pct": -0.92,
+    "residual_pp": -0.85,
+    "verdict": "Gold lagging textbook by 0.8pp",
+    "signal": "gold_lagging"
   },
   "portfolio": {
     "current": null,
@@ -163,6 +163,6 @@
   "_raw": {
     "real_yield": 2.28,
     "fed_funds": 3.75,
-    "dxy": 101.58899688720703
+    "dxy": 101.66699981689453
   }
 }
