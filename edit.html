@@ -58,10 +58,8 @@ function build(){
   c.append(num("Gold spot fallback ($/oz)","used only if the live feed fails",M.gold_fallback,v=>M.gold_fallback=v));
   root.append(c);
 
-  c=el("div",{class:"card"});c.append(el("h2",{},"Jurisdiction risk (score + signal)"));
-  ["africa","asia"].forEach(t=>{const j=M.jurisdiction[t];
-    c.append(num(t[0].toUpperCase()+t.slice(1)+" score (0-10)","",j.score,v=>j.score=v,"1"));
-    c.append(sigSel(t[0].toUpperCase()+t.slice(1)+" signal",j.signal,v=>j.signal=v));});
+  c=el("div",{class:"card"});c.append(el("h2",{},"Jurisdiction risk"));
+  c.append(el("p",{class:"hint"},"Model-fed via the importer (NPV discount rate + P/FCF multiple + blend weight per holding) - no manual entry."));
   root.append(c);
 
   c=el("div",{class:"card"});c.append(el("h2",{},"Gold-thesis metrics"));

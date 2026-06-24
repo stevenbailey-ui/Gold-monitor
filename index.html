@@ -81,6 +81,7 @@ function render(D){
       <div class="kv top"><span class="lbl">\u00a3 value \u00b7 % of port.</span>
         <span style="font-weight:600">${x.value!=null?"\u00a3"+f0(x.value):"\u2014"} \u00b7 <span style="color:var(--link)">${x.pct!=null?x.pct+"%":"\u2014"}</span></span></div>
       <div class="kv"><span class="lbl">NPV \u00a3/sh (bear\u2013bull)</span><span style="font-weight:600">${x.npv}</span></div>
+      <div class="kv"><span class="lbl">Risk lens</span><span style="font-weight:600">${x.lens||"\u2014"}</span></div>
       <div style="font-size:11px;color:var(--t3);margin-top:8px">Next: ${x.next}</div></div>`;};
   const acts=D.actions.map(a=>`<div class="act"><div class="when"><div class="wt">${a.when}</div>
     <div class="wd">${a.date}</div></div><div class="body">${a.body}</div>
