@@ -3,10 +3,10 @@
   "manual_as_of": "2026-06-15",
   "model_as_of": "2026-06-23",
   "gold": {
-    "spot": 4060,
+    "spot": 4068,
     "trailing24": 3456,
-    "ratio": 1.17,
-    "forecast_2029": 3934,
+    "ratio": 1.18,
+    "forecast_2029": 4898,
     "trailing_months": 24,
     "verdict": "Bullish",
     "tag": "BULL",
@@ -35,7 +35,7 @@
       "id": "geopolitics",
       "label": "Geopolitics",
       "signal": "base",
-      "reading": "VIX 19.0 . GPR 180 . Brent $81"
+      "reading": "VIX 18.9 . GPR 180 . Brent $81"
     },
     {
       "id": "mining_equities",
@@ -52,17 +52,17 @@
   ],
   "divergence": {
     "d_real_yield_bp": 0.0,
-    "d_dxy_pct": -0.0,
-    "expected_gold_pct": 0.0,
-    "actual_gold_pct": -0.03,
-    "residual_pp": -0.03,
-    "verdict": "Tracking textbook within 0.0pp",
+    "d_dxy_pct": 0.02,
+    "expected_gold_pct": -0.02,
+    "actual_gold_pct": 0.19,
+    "residual_pp": 0.21,
+    "verdict": "Tracking textbook within 0.2pp",
     "signal": "textbook"
   },
   "portfolio": {
     "current": 427386,
-    "v2029_base": 1.4,
-    "income_2029": 48111,
+    "v2029_base": 1.94,
+    "income_2029": 65416,
     "income_yield": 2.9
   },
   "holdings": {
@@ -71,9 +71,10 @@
       "desc": "Gold producer + developer",
       "value": 365848,
       "pct": 85.6,
-      "npv": "1.657 - 3.157",
-      "jur": "6/10 . base",
+      "npv": "1.645 - 3.135",
+      "jur": "8% disc",
       "jsig": "base",
+      "lens": "10\u00d7 P/FCF \u00b7 20/80 NPV/P-FCF",
       "next": "New mine FID"
     },
     "asia": {
@@ -82,36 +83,37 @@
       "value": 61538,
       "pct": 14.4,
       "npv": "0.267 - 0.552",
-      "jur": "3/10 . bear",
+      "jur": "12% disc",
       "jsig": "bear",
+      "lens": "6\u00d7 P/FCF \u00b7 15/85 NPV/P-FCF",
       "next": "Flagship first gold"
     }
   },
   "scenarios": {
     "2026": {
-      "bear": 0.92,
-      "base": 0.94,
-      "bull": 1.63
+      "bear": 0.91,
+      "base": 1.27,
+      "bull": 1.62
     },
     "2027": {
-      "bear": 0.71,
-      "base": 1.11,
+      "bear": 0.7,
+      "base": 1.51,
       "bull": 2.61
     },
     "2028": {
       "bear": 0.98,
-      "base": 1.46,
+      "base": 2.01,
       "bull": 3.03
     },
     "2029": {
       "bear": 1.19,
-      "base": 1.4,
-      "bull": 3.17
+      "base": 1.94,
+      "bull": 3.16
     },
     "2030": {
-      "bear": 1.17,
-      "base": 1.34,
-      "bull": 2.94
+      "bear": 1.16,
+      "base": 1.86,
+      "bull": 2.93
     }
   },
   "catalysts": [
@@ -161,6 +163,6 @@
   "_raw": {
     "real_yield": 2.28,
     "fed_funds": 3.75,
-    "dxy": 101.6510009765625
+    "dxy": 101.6719970703125
   }
 }
