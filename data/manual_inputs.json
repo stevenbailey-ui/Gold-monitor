@@ -2,45 +2,135 @@
   "manual_as_of": "2026-06-15",
   "trailing24": 3408,
   "gold_fallback": 4360,
-
-  "jurisdiction": {
-    "africa": { "score": 6, "signal": "base" },
-    "asia":   { "score": 3, "signal": "bear" }
-  },
-
   "metrics": {
-    "wgc_cb_purchases_t":  { "value": 243,   "signal": "bull", "cadence": "quarterly", "note": "WGC net purchases, trailing 4-qtr avg (t/qtr)" },
-    "pboc_holdings_delta_t": { "value": -42, "signal": "bear", "cadence": "monthly",   "note": "PBoC reported holdings, monthly change (t)" },
-    "etf_aum_delta_t":     { "value": -16,   "signal": "base", "cadence": "monthly",   "note": "Global gold ETF AUM change (t/mo)" },
-    "deficit_pct_gdp":     { "value": 6,     "signal": "base", "cadence": "quarterly", "note": "US federal deficit (% GDP); >6% = fiscal dominance = bull" },
-    "cofer_usd_share":     { "value": 56.77, "signal": "base", "cadence": "quarterly", "note": "USD share of FX reserves, IMF COFER (%)" },
-    "gpr_index":           { "value": 180,   "signal": "base", "cadence": "monthly",   "note": "Geopolitical Risk Index (level)" },
-    "brent":               { "value": 81,    "signal": "base", "cadence": "monthly",   "note": "Brent ($/bbl); non-monotonic: high+falling=bull" },
-    "cot_mm_net_pct_oi":   { "value": 0.318, "signal": "base", "cadence": "weekly",    "note": "COMEX Managed Money net longs (% OI), contrarian - enter as fraction" },
-    "gvz":                 { "value": 25.8,  "signal": "base", "cadence": "weekly",    "note": "CBOE Gold VIX (GVZ) level" },
-
-    "real_yield":          { "signal": "base", "note": "FRED DFII10 delta - last-known-good; scraper overwrites when live" },
-    "fed_funds":           { "signal": "base", "note": "FRED DFEDTARU delta - last-known-good" },
-    "dxy":                 { "signal": "base", "note": "Yahoo DXY delta - last-known-good" },
-    "vix":                 { "signal": "base", "note": "Yahoo VIX level - last-known-good" },
-    "gdxj_gold":           { "signal": "base", "note": "GDXJ/gold ratio - last-known-good" },
-    "gdx_gold":            { "signal": "bull", "note": "GDX/gold ratio - last-known-good" },
-    "spot_trailing":       { "signal": "bull", "note": "spot/24m ratio - last-known-good" },
-    "ndx_gdxj":            { "signal": "base", "note": "NDX/GDXJ ratio - last-known-good" }
+    "wgc_cb_purchases_t": {
+      "value": 243,
+      "signal": "bull",
+      "cadence": "quarterly",
+      "note": "WGC net purchases, trailing 4-qtr avg (t/qtr)"
+    },
+    "pboc_holdings_delta_t": {
+      "value": -42,
+      "signal": "bear",
+      "cadence": "monthly",
+      "note": "PBoC reported holdings, monthly change (t)"
+    },
+    "etf_aum_delta_t": {
+      "value": -16,
+      "signal": "base",
+      "cadence": "monthly",
+      "note": "Global gold ETF AUM change (t/mo)"
+    },
+    "deficit_pct_gdp": {
+      "value": 6,
+      "signal": "base",
+      "cadence": "quarterly",
+      "note": "US federal deficit (% GDP); >6% = fiscal dominance = bull"
+    },
+    "cofer_usd_share": {
+      "value": 56.77,
+      "signal": "base",
+      "cadence": "quarterly",
+      "note": "USD share of FX reserves, IMF COFER (%)"
+    },
+    "gpr_index": {
+      "value": 180,
+      "signal": "base",
+      "cadence": "monthly",
+      "note": "Geopolitical Risk Index (level)"
+    },
+    "brent": {
+      "value": 81,
+      "signal": "base",
+      "cadence": "monthly",
+      "note": "Brent ($/bbl); non-monotonic: high+falling=bull"
+    },
+    "cot_mm_net_pct_oi": {
+      "value": 0.318,
+      "signal": "base",
+      "cadence": "weekly",
+      "note": "COMEX Managed Money net longs (% OI), contrarian - enter as fraction"
+    },
+    "gvz": {
+      "value": 25.8,
+      "signal": "base",
+      "cadence": "weekly",
+      "note": "CBOE Gold VIX (GVZ) level"
+    },
+    "real_yield": {
+      "signal": "base",
+      "note": "FRED DFII10 delta - last-known-good; scraper overwrites when live"
+    },
+    "fed_funds": {
+      "signal": "base",
+      "note": "FRED DFEDTARU delta - last-known-good"
+    },
+    "dxy": {
+      "signal": "base",
+      "note": "Yahoo DXY delta - last-known-good"
+    },
+    "vix": {
+      "signal": "base",
+      "note": "Yahoo VIX level - last-known-good"
+    },
+    "gdxj_gold": {
+      "signal": "base",
+      "note": "GDXJ/gold ratio - last-known-good"
+    },
+    "gdx_gold": {
+      "signal": "bull",
+      "note": "GDX/gold ratio - last-known-good"
+    },
+    "spot_trailing": {
+      "signal": "bull",
+      "note": "spot/24m ratio - last-known-good"
+    },
+    "ndx_gdxj": {
+      "signal": "base",
+      "note": "NDX/GDXJ ratio - last-known-good"
+    }
   },
-
   "catalysts": [
-    { "label": "New mine FID",       "date": "H1-26",  "pos": 8,  "live": true },
-    { "label": "Flagship first gold","date": "Dec-26", "pos": 50, "live": false },
-    { "label": "Exploration licence","date": "Jan-27", "pos": 88, "live": false }
+    {
+      "label": "New mine FID",
+      "date": "H1-26",
+      "pos": 8,
+      "live": true
+    },
+    {
+      "label": "Flagship first gold",
+      "date": "Dec-26",
+      "pos": 50,
+      "live": false
+    },
+    {
+      "label": "Exploration licence",
+      "date": "Jan-27",
+      "pos": 88,
+      "live": false
+    }
   ],
-
   "actions": [
-    { "when": "New mine FID", "date": "H1-26", "tag": "IMMINENT", "cls": "p-amber",
-      "body": "Watch for FID, financing close (Q2-26) and the mining convention signature. FID confirmed = producer NPV de-risks. <b>Hold; no top-up until convention signed.</b>" },
-    { "when": "Flagship", "date": "Dec-26", "tag": "MONITOR", "cls": "p-bear",
-      "body": "Commissioning ~50% complete, on schedule. Re-rate gated on first pour <i>and</i> the offtake / correspondent-bank path clearing. <b>No adds while the sanctions overhang is live.</b>" },
-    { "when": "Licence", "date": "Jan-27", "tag": "WATCH", "cls": "p-base",
-      "body": "Exploration optionality. Re-rate catalyst, not a base-case input. <b>No action until the licence is granted.</b>" }
+    {
+      "when": "New mine FID",
+      "date": "H1-26",
+      "tag": "IMMINENT",
+      "cls": "p-amber",
+      "body": "Watch for FID, financing close (Q2-26) and the mining convention signature. FID confirmed = producer NPV de-risks. <b>Hold; no top-up until convention signed.</b>"
+    },
+    {
+      "when": "Flagship",
+      "date": "Dec-26",
+      "tag": "MONITOR",
+      "cls": "p-bear",
+      "body": "Commissioning ~50% complete, on schedule. Re-rate gated on first pour <i>and</i> the offtake / correspondent-bank path clearing. <b>No adds while the sanctions overhang is live.</b>"
+    },
+    {
+      "when": "Licence",
+      "date": "Jan-27",
+      "tag": "WATCH",
+      "cls": "p-base",
+      "body": "Exploration optionality. Re-rate catalyst, not a base-case input. <b>No action until the licence is granted.</b>"
+    }
   ]
 }
