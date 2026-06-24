@@ -3,9 +3,9 @@
   "manual_as_of": "2026-06-15",
   "model_as_of": "2026-06-23",
   "gold": {
-    "spot": 4061,
+    "spot": 4060,
     "trailing24": 3456,
-    "ratio": 1.18,
+    "ratio": 1.17,
     "forecast_2029": 3934,
     "trailing_months": 24,
     "verdict": "Bullish",
@@ -35,7 +35,7 @@
       "id": "geopolitics",
       "label": "Geopolitics",
       "signal": "base",
-      "reading": "VIX 19.2 . GPR 180 . Brent $81"
+      "reading": "VIX 19.0 . GPR 180 . Brent $81"
     },
     {
       "id": "mining_equities",
@@ -52,15 +52,15 @@
   ],
   "divergence": {
     "d_real_yield_bp": 0.0,
-    "d_dxy_pct": -0.01,
-    "expected_gold_pct": 0.01,
-    "actual_gold_pct": -0.02,
+    "d_dxy_pct": -0.0,
+    "expected_gold_pct": 0.0,
+    "actual_gold_pct": -0.03,
     "residual_pp": -0.03,
     "verdict": "Tracking textbook within 0.0pp",
     "signal": "textbook"
   },
   "portfolio": {
-    "current": null,
+    "current": 427386,
     "v2029_base": 1.4,
     "income_2029": 48111,
     "income_yield": 2.9
@@ -69,8 +69,8 @@
     "africa": {
       "name": "Africa",
       "desc": "Gold producer + developer",
-      "value": null,
-      "pct": null,
+      "value": 365848,
+      "pct": 85.6,
       "npv": "1.657 - 3.157",
       "jur": "6/10 . base",
       "jsig": "base",
@@ -79,8 +79,8 @@
     "asia": {
       "name": "Asia",
       "desc": "Gold developer (construction)",
-      "value": null,
-      "pct": null,
+      "value": 61538,
+      "pct": 14.4,
       "npv": "0.267 - 0.552",
       "jur": "3/10 . bear",
       "jsig": "bear",
@@ -157,12 +157,10 @@
       "body": "Exploration optionality. Re-rate catalyst, not a base-case input. <b>No action until the licence is granted.</b>"
     }
   ],
-  "fetch_notes": [
-    "HOLDINGS:absent"
-  ],
+  "fetch_notes": [],
   "_raw": {
     "real_yield": 2.28,
     "fed_funds": 3.75,
-    "dxy": 101.65499877929688
+    "dxy": 101.6510009765625
   }
 }
