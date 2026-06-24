@@ -19,6 +19,7 @@ jobs:
       - name: Run scraper
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}   # optional; rates fall back if unset
+          HOLDINGS: ${{ secrets.HOLDINGS }}           # share counts; injected from secret, never committed
         run: python scraper/update_data.py
       - name: Commit refreshed data
         run: |
