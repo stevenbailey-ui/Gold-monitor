@@ -1,11 +1,11 @@
 {
-  "as_of": "2026-06-23",
+  "as_of": "2026-06-24",
   "manual_as_of": "2026-06-15",
   "model_as_of": "2026-06-23",
   "gold": {
-    "spot": 4138,
+    "spot": 4100,
     "trailing24": 3456,
-    "ratio": 1.2,
+    "ratio": 1.19,
     "forecast_2029": 3934,
     "trailing_months": 24,
     "verdict": "Bullish",
@@ -29,13 +29,13 @@
       "id": "usd_fx",
       "label": "USD / FX",
       "signal": "base",
-      "reading": "DXY 101.3 . COFER 56.77%"
+      "reading": "DXY 101.6 . COFER 56.77%"
     },
     {
       "id": "geopolitics",
       "label": "Geopolitics",
       "signal": "base",
-      "reading": "VIX 19.7 . GPR 180 . Brent $81"
+      "reading": "VIX 19.2 . GPR 180 . Brent $81"
     },
     {
       "id": "mining_equities",
@@ -51,16 +51,16 @@
     }
   ],
   "divergence": {
-    "d_real_yield_bp": 0.0,
-    "d_dxy_pct": 0.1,
-    "expected_gold_pct": -0.09,
-    "actual_gold_pct": -0.24,
-    "residual_pp": -0.14,
+    "d_real_yield_bp": 7.0,
+    "d_dxy_pct": 0.32,
+    "expected_gold_pct": -0.99,
+    "actual_gold_pct": -0.93,
+    "residual_pp": 0.05,
     "verdict": "Tracking textbook within 0.1pp",
     "signal": "textbook"
   },
   "portfolio": {
-    "current": 437975,
+    "current": null,
     "v2029_base": 1.4,
     "income_2029": 48111,
     "income_yield": 2.9
@@ -69,8 +69,8 @@
     "africa": {
       "name": "Africa",
       "desc": "Gold producer + developer",
-      "value": 375935,
-      "pct": 85.8,
+      "value": null,
+      "pct": null,
       "npv": "1.657 - 3.157",
       "jur": "6/10 . base",
       "jsig": "base",
@@ -79,8 +79,8 @@
     "asia": {
       "name": "Asia",
       "desc": "Gold developer (construction)",
-      "value": 62040,
-      "pct": 14.2,
+      "value": null,
+      "pct": null,
       "npv": "0.267 - 0.552",
       "jur": "3/10 . bear",
       "jsig": "bear",
@@ -157,10 +157,12 @@
       "body": "Exploration optionality. Re-rate catalyst, not a base-case input. <b>No action until the licence is granted.</b>"
     }
   ],
-  "fetch_notes": [],
+  "fetch_notes": [
+    "HOLDINGS:absent"
+  ],
   "_raw": {
-    "real_yield": 2.21,
+    "real_yield": 2.28,
     "fed_funds": 3.75,
-    "dxy": 101.27200317382812
+    "dxy": 101.58899688720703
   }
 }
