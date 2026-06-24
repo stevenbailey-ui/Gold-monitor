@@ -29,7 +29,10 @@ SCEN_ROWS = {  # (bear,base,bull) row in section 47, Total Value (ISA+SIPP) = co
     "2029": (61, 62, 63), "2030": (65, 66, 67),
 }
 INCOME_ROW, INCOME_COL, YIELD_COL = 21, "J", "K"   # 2029 base
-GOLD_FC_SHEET, GOLD_FC_CELL = "24 month ave", "C31"  # "Target 2029 avg ($/oz)" (scenario-flexed)
+GOLD_FC_SHEET, GOLD_FC_CELL = "Assumptions", "C6"   # active gold deck (24m avg over the 2029 forward window)
+DISC_CELL  = {"africa": "B4", "asia": "B5"}              # NPV Model — jurisdiction discount rate
+PFCF_CELL  = {"africa": "C11", "asia": "C13"}            # Assumptions — P/FCF multiple (2028 base)
+BLEND_COLS = {"africa": ("C", "D"), "asia": ("E", "F")}  # Assumptions blend wts (NPV, P/FCF); row = current year
 
 
 FELL_BACK = []
@@ -54,6 +57,10 @@ def main():
     wb = openpyxl.load_workbook(path, data_only=True)
     ws = wb["Summary"]
 
+    npvm = wb["NPV Model"]; asm = wb["Assumptions"]
+    yr_now = datetime.date.today().year
+    blend_row = next((r for r in range(105, 110) if asm[f"B{r}"].value == yr_now), 105)
+
     prior = json.load(open(SNAP)) if os.path.exists(SNAP) else {}
     pv = prior.get("valuation", {})
     ps = prior.get("scenarios", {})
@@ -67,6 +74,14 @@ def main():
             "npv_base": round(num(ws, f"C{r}", p.get("npv_base")), 3),
             "npv_bear": round(num(ws, f"D{r}", p.get("npv_bear")), 3),
         }
+        disc = num(npvm, DISC_CELL[key], p.get("disc"))
+        nw, fw = BLEND_COLS[key]
+        val[key].update({
+            "disc": round(disc, 4) if isinstance(disc, (int, float)) else disc,
+            "pfcf_mult": num(asm, PFCF_CELL[key], p.get("pfcf_mult")),
+            "npv_wt": num(asm, f"{nw}{blend_row}", p.get("npv_wt")),
+            "pfcf_wt": num(asm, f"{fw}{blend_row}", p.get("pfcf_wt")),
+        })
     for yr, (rb, rba, rbu) in SCEN_ROWS.items():
         pp = ps.get(yr, {})
         def m(row, fb):

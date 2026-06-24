@@ -238,7 +238,7 @@ def main():
     total = sum(v for v in vals.values() if v) or 0
     pct = lambda v: round(100 * v / total, 1) if (v and total) else None
 
-    val, jur = snap["valuation"], manual["jurisdiction"]
+    val = snap["valuation"]
     desc = {"africa": "Gold producer + developer", "asia": "Gold developer (construction)"}
     holdings = {}
     for key in ("africa", "asia"):
@@ -246,7 +246,10 @@ def main():
             "name": key.capitalize(), "desc": desc[key],
             "value": vals[key], "pct": pct(vals[key]),
             "npv": f"{val[key]['npv_bear']} - {val[key]['npv_bull']}",
-            "jur": f"{jur[key]['score']}/10 . {jur[key]['signal']}", "jsig": jur[key]["signal"],
+            "jur": (f"{round(val[key]['disc']*100)}% disc" if val[key].get("disc") is not None else "\u2014"),
+            "jsig": ("base" if (val[key].get("disc") or 0) <= 0.09 else "bear"),
+            "lens": (f"{val[key]['pfcf_mult']:g}\u00d7 P/FCF \u00b7 {round(val[key]['npv_wt']*100)}/{round(val[key]['pfcf_wt']*100)} NPV/P-FCF"
+                     if None not in (val[key].get("pfcf_mult"), val[key].get("npv_wt"), val[key].get("pfcf_wt")) else ""),
             "next": manual["catalysts"][0]["label"] if key == "africa" else manual["catalysts"][1]["label"],
         }
 
