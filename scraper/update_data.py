@@ -82,6 +82,35 @@ def fetch_fred(series_id, notes):
         notes.append(f"{series_id}:FRED:{type(e).__name__}"); return None
 
 
+def fetch_gpr(notes):
+    """Latest monthly AI-GPR level from Iacoviello CSV. Column GPR_AI, last row."""
+    url = "https://www.matteoiacoviello.com/ai_gpr_files/ai_gpr_data_monthly.csv"
+    try:
+        rows = [r for r in _get(url).splitlines() if r.strip()]
+        idx = rows[0].split(",").index("GPR_AI")
+        return float(rows[-1].split(",")[idx])
+    except Exception as e:
+        notes.append(f"gpr:{type(e).__name__}"); return None
+
+
+def fetch_cot(notes):
+    """COMEX gold (088691) Managed Money net long as fraction of OI, from CFTC
+    Disaggregated Futures-Only (Socrata 72hh-3qpy). No token required."""
+    url = ("https://publicreporting.cftc.gov/resource/72hh-3qpy.json"
+           "?cftc_contract_market_code=088691"
+           "&$order=report_date_as_yyyy_mm_dd%20DESC&$limit=1")
+    try:
+        rec = json.loads(_get(url))[0]
+        lo = float(rec["m_money_positions_long_all"])
+        sh = float(rec["m_money_positions_short_all"])
+        oi = float(rec["open_interest_all"])
+        if oi <= 0:
+            notes.append("cot:zero_oi"); return None
+        return (lo - sh) / oi
+    except Exception as e:
+        notes.append(f"cot:{type(e).__name__}"); return None
+
+
 def trailing_24m(manual, notes):
     """Monthly average of daily closes, last 24 completed months. Fallback to manual."""
     try:
@@ -131,7 +160,7 @@ def score_metric(m, px, fred, manual, prev):
         bear = d >= m["bear_at"] if not m["higher_is_bull"] else d <= m["bear_at"]
         return "bull" if bull else "bear" if bear else "base"
     if k == "level":
-        cur = px.get(m["src"])
+        cur = fred.get(m["src"]) if m["src"] in C.FRED_SERIES else px.get(m["src"])
         if cur is None: return fb
         if m["higher_is_bull"]:
             return "bull" if cur >= m["bull_at"] else "bear" if cur <= m["bear_at"] else "base"
@@ -204,6 +233,8 @@ def main():
     notes = []
     px = {k: fetch_price(k, notes) for k in C.PRICE_SYMBOLS}
     fred = {k: fetch_fred(v, notes) for k, v in C.FRED_SERIES.items()}
+    px["gpr"] = fetch_gpr(notes)
+    px["cot"] = fetch_cot(notes)
     gold = px.get("gold") or manual.get("gold_fallback", 4360)
     px["gold"] = gold
     trail, n_months = trailing_24m(manual, notes)
@@ -227,9 +258,9 @@ def main():
         "central_bank":    f"WGC {mm['wgc_cb_purchases_t']['value']} t/qtr",
         "macro_rates":     "Fed hold; real-yield link broken",
         "usd_fx":          f"DXY {round(px.get('dxy') or 0,1)} . COFER {mm['cofer_usd_share']['value']}%",
-        "geopolitics":     f"VIX {round(px.get('vix') or 0,1)} . GPR {mm['gpr_index']['value']} . Brent ${round(px.get('brent') or mm['brent']['value'])}",
+        "geopolitics":     f"VIX {round(px.get('vix') or 0,1)} . GPR {round(px.get('gpr') or mm['gpr_index']['value'])} . Brent ${round(px.get('brent') or mm['brent']['value'])}",
         "mining_equities": "GDX/gold confirm . GDXJ catch-up",
-        "positioning":     f"COT {round(mm['cot_mm_net_pct_oi']['value']*100,1)}% OI . GVZ {mm['gvz']['value']}",
+        "positioning":     f"COT {round((px.get('cot') or mm['cot_mm_net_pct_oi']['value'])*100,1)}% OI . GVZ {round(px.get('gvz') or mm['gvz']['value'],1)}",
     }
     themes = [{"id": t, "label": C.THEME_LABELS[t], "signal": C.theme_signal(theme_net[t], theme_max[t]),
                "reading": readings[t]} for t in C.THEMES]
