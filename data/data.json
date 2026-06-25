@@ -3,14 +3,14 @@
   "manual_as_of": "2026-06-15",
   "model_as_of": "2026-06-23",
   "gold": {
-    "spot": 4056,
+    "spot": 4041,
     "trailing24": 3456,
     "ratio": 1.17,
     "forecast_2029": 4898,
     "trailing_months": 24,
     "verdict": "Bullish",
     "tag": "BULL",
-    "composite": 12
+    "composite": 14
   },
   "themes": [
     {
@@ -29,13 +29,13 @@
       "id": "usd_fx",
       "label": "USD / FX",
       "signal": "base",
-      "reading": "DXY 101.3 . COFER 56.77%"
+      "reading": "DXY 101.4 . COFER 56.77%"
     },
     {
       "id": "geopolitics",
       "label": "Geopolitics",
       "signal": "bear",
-      "reading": "VIX 18.8 . GPR 180 . Brent $75"
+      "reading": "VIX 18.9 . GPR 195 . Brent $75"
     },
     {
       "id": "mining_equities",
@@ -46,18 +46,18 @@
     {
       "id": "positioning",
       "label": "Positioning",
-      "signal": "base",
-      "reading": "COT 31.8% OI . GVZ 25.8"
+      "signal": "bull",
+      "reading": "COT 33.5% OI . GVZ 29.6"
     }
   ],
   "divergence": {
-    "d_real_yield_bp": 0.0,
-    "d_dxy_pct": -0.17,
-    "expected_gold_pct": 0.15,
-    "actual_gold_pct": 1.13,
-    "residual_pp": 0.98,
-    "verdict": "Gold outperforming textbook by 1.0pp",
-    "signal": "structural_bid"
+    "d_real_yield_bp": -6.0,
+    "d_dxy_pct": 0.12,
+    "expected_gold_pct": 0.49,
+    "actual_gold_pct": -0.37,
+    "residual_pp": -0.87,
+    "verdict": "Gold lagging textbook by 0.9pp",
+    "signal": "gold_lagging"
   },
   "portfolio": {
     "current": 416118,
@@ -161,8 +161,8 @@
   ],
   "fetch_notes": [],
   "_raw": {
-    "real_yield": 2.29,
+    "real_yield": 2.23,
     "fed_funds": 3.75,
-    "dxy": 101.31300354003906
+    "dxy": 101.43000030517578
   }
 }
