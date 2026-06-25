@@ -26,6 +26,7 @@
   .hint{font-size:12px;color:var(--t3);margin:6px 0 0}.hint code{font-family:ui-monospace,Menlo,Consolas,monospace}
   details{margin:6px 0}summary{cursor:pointer;font-size:13px;color:var(--link)}
   a.src{color:var(--link);text-decoration:none;font-size:11px;white-space:nowrap}a.src:hover{text-decoration:underline}
+  h3.feedhdr{font-size:12px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 2px}
 </style>
 </head>
 <body>
@@ -64,15 +65,30 @@ function build(){
   c.append(el("p",{class:"hint"},"Model-fed via the importer (NPV discount rate + P/FCF multiple + blend weight per holding) - no manual entry."));
   root.append(c);
 
-  c=el("div",{class:"card"});c.append(el("h2",{},"Gold-thesis metrics"));
-  c.append(el("p",{class:"hint"},"Value-bearing metrics: enter the reading + signal. Signal-only rows are last-known-good fallbacks the scraper overwrites when the live feed is reachable. Each row links to its live source."));
-  Object.keys(M.metrics).forEach(k=>{const m=M.metrics[k];
-    if("value" in m){
-      c.append(num(m.note||k,(m.cadence||"")+(k==="cot_mm_net_pct_oi"?" . fraction e.g. 0.318":""),m.value,v=>m.value=v,"any",m.ref));
+  // Manual data feeds — the only rows requiring hand entry (WGC + COFER)
+  const manualGroups = M.manual_feeds || {};
+  const manualKeys = new Set(Object.values(manualGroups).flat());
+  c=el("div",{class:"card"});c.append(el("h2",{},"Manual data feeds"));
+  c.append(el("p",{class:"hint"},"The only metrics still entered by hand - 2 sources. Everything else is scraped live each run. Enter the reading + signal; each row links to its source."));
+  Object.keys(manualGroups).forEach(srcName=>{
+    c.append(el("h3",{class:"feedhdr"},srcName));
+    manualGroups[srcName].forEach(k=>{const m=M.metrics[k]; if(!m) return;
+      c.append(num(m.note||k,m.cadence||"",m.value,v=>m.value=v,"any",m.ref));
       c.append(sigSel("   - "+k+" signal",m.signal,v=>m.signal=v));
-    } else {
-      c.append(sigSel("   - "+k+" signal",m.signal,v=>m.signal=v,m.ref));
-    }});
+    });
+  });
+  root.append(c);
+
+  // Auto-fed metrics — scraper overwrites each run; entries here are feed-fail fallbacks only
+  c=el("div",{class:"card"});c.append(el("h2",{},"Auto-fed metrics"));
+  c.append(el("p",{class:"hint"},"Scraped each run (Yahoo, FRED, CFTC, AI-GPR). The values/signals below apply only if a feed is unreachable - normally untouched. Source links open the live feed."));
+  const dd=el("details");dd.append(el("summary",{},"Show feed-fail fallbacks"));
+  Object.keys(M.metrics).forEach(k=>{const m=M.metrics[k];
+    if(manualKeys.has(k)) return;
+    if("value" in m) dd.append(num(m.note||k,(m.cadence||"")+" - fallback only",m.value,v=>m.value=v,"any",m.ref));
+    dd.append(sigSel("   - "+k+" signal",m.signal,v=>m.signal=v,("value" in m)?null:m.ref));
+  });
+  c.append(dd);
   root.append(c);
 
   c=el("div",{class:"card"});c.append(el("h2",{},"Catalyst timeline"));
