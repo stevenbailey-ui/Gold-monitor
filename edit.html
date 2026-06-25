@@ -25,6 +25,7 @@
   .msg{font-size:12px;color:var(--ok)}
   .hint{font-size:12px;color:var(--t3);margin:6px 0 0}.hint code{font-family:ui-monospace,Menlo,Consolas,monospace}
   details{margin:6px 0}summary{cursor:pointer;font-size:13px;color:var(--link)}
+  a.src{color:var(--link);text-decoration:none;font-size:11px;white-space:nowrap}a.src:hover{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -44,8 +45,9 @@
 let M=null;const SIGNALS=["bull","base","bear"];
 const el=(t,a={},...k)=>{const e=document.createElement(t);for(const x in a)x==="class"?e.className=a[x]:e.setAttribute(x,a[x]);k.forEach(c=>e.append(c));return e;};
 const opt=(v,sel)=>{const o=el("option",{value:v},v);if(v===sel)o.selected=true;return o;};
-function num(label,sub,val,setter,step="any"){const f=el("div",{class:"field"}),l=el("label",{},label);if(sub)l.append(el("small",{},sub));const i=el("input",{type:"number",step});i.value=val;i.oninput=()=>setter(i.value===""?null:parseFloat(i.value));f.append(l,i);return f;}
-function sigSel(label,val,setter){const f=el("div",{class:"field"}),l=el("label",{},label);const s=el("select");SIGNALS.forEach(v=>s.append(opt(v,val)));s.onchange=()=>setter(s.value);f.append(l,s);return f;}
+function refLink(url){return el("a",{href:url,target:"_blank",rel:"noopener noreferrer",class:"src"},"source \u2197");}
+function num(label,sub,val,setter,step="any",ref){const f=el("div",{class:"field"}),l=el("label",{},label);if(sub)l.append(el("small",{},sub));if(ref){const rs=el("small",{});rs.append(refLink(ref));l.append(rs);}const i=el("input",{type:"number",step});i.value=val;i.oninput=()=>setter(i.value===""?null:parseFloat(i.value));f.append(l,i);return f;}
+function sigSel(label,val,setter,ref){const f=el("div",{class:"field"}),l=el("label",{},label);if(ref){const rs=el("small",{});rs.append(refLink(ref));l.append(rs);}const s=el("select");SIGNALS.forEach(v=>s.append(opt(v,val)));s.onchange=()=>setter(s.value);f.append(l,s);return f;}
 function txt(label,val,setter){const f=el("div",{class:"field wide"}),l=el("label",{},label);const t=el("textarea");t.value=val||"";t.oninput=()=>setter(t.value);f.append(l,t);return f;}
 
 function build(){
@@ -63,10 +65,14 @@ function build(){
   root.append(c);
 
   c=el("div",{class:"card"});c.append(el("h2",{},"Gold-thesis metrics"));
-  c.append(el("p",{class:"hint"},"Value-bearing metrics: enter the reading + signal. Signal-only rows are last-known-good fallbacks the scraper overwrites when the live feed is reachable."));
+  c.append(el("p",{class:"hint"},"Value-bearing metrics: enter the reading + signal. Signal-only rows are last-known-good fallbacks the scraper overwrites when the live feed is reachable. Each row links to its live source."));
   Object.keys(M.metrics).forEach(k=>{const m=M.metrics[k];
-    if("value" in m)c.append(num(m.note||k,(m.cadence||"")+(k==="cot_mm_net_pct_oi"?" . fraction e.g. 0.318":""),m.value,v=>m.value=v));
-    c.append(sigSel("   - "+k+" signal",m.signal,v=>m.signal=v));});
+    if("value" in m){
+      c.append(num(m.note||k,(m.cadence||"")+(k==="cot_mm_net_pct_oi"?" . fraction e.g. 0.318":""),m.value,v=>m.value=v,"any",m.ref));
+      c.append(sigSel("   - "+k+" signal",m.signal,v=>m.signal=v));
+    } else {
+      c.append(sigSel("   - "+k+" signal",m.signal,v=>m.signal=v,m.ref));
+    }});
   root.append(c);
 
   c=el("div",{class:"card"});c.append(el("h2",{},"Catalyst timeline"));
