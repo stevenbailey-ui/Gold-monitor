@@ -7,71 +7,84 @@
       "value": 243,
       "signal": "bull",
       "cadence": "quarterly",
-      "note": "WGC net purchases, trailing 4-qtr avg (t/qtr)"
+      "note": "WGC net purchases, trailing 4-qtr avg (t/qtr)",
+      "ref": "https://www.gold.org/goldhub/data/gold-reserves-by-country"
     },
     "pboc_holdings_delta_t": {
       "value": -42,
       "signal": "bear",
       "cadence": "monthly",
-      "note": "PBoC reported holdings, monthly change (t)"
+      "note": "PBoC reported holdings, monthly change (t)",
+      "ref": "https://www.gold.org/goldhub/data/gold-reserves-by-country"
     },
     "etf_aum_delta_t": {
       "value": -16,
       "signal": "base",
       "cadence": "monthly",
-      "note": "Global gold ETF AUM change (t/mo)"
+      "note": "Global gold ETF AUM change (t/mo)",
+      "ref": "https://www.gold.org/goldhub/data/gold-etfs-holdings-and-flows"
     },
     "deficit_pct_gdp": {
       "value": 6,
       "signal": "base",
       "cadence": "quarterly",
-      "note": "US federal deficit (% GDP); >6% = fiscal dominance = bull"
+      "note": "US federal deficit (% GDP); >6% = fiscal dominance = bull",
+      "ref": "https://fred.stlouisfed.org/series/FYFSGDA188S"
     },
     "cofer_usd_share": {
       "value": 56.77,
       "signal": "base",
       "cadence": "quarterly",
-      "note": "USD share of FX reserves, IMF COFER (%)"
+      "note": "USD share of FX reserves, IMF COFER (%)",
+      "ref": "https://data.imf.org/en/datasets/IMF.STA:COFER"
     },
     "gpr_index": {
       "value": 180,
       "signal": "base",
       "cadence": "monthly",
-      "note": "Geopolitical Risk Index (level)"
+      "note": "Geopolitical Risk Index (level)",
+      "ref": "https://www.matteoiacoviello.com/ai_gpr.html#chart-section"
     },
     "brent": {
       "value": 81,
       "signal": "base",
       "cadence": "monthly",
-      "note": "Brent ($/bbl); non-monotonic: high+falling=bull"
+      "note": "Brent ($/bbl); non-monotonic: high+falling=bull",
+      "ref": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm"
     },
     "cot_mm_net_pct_oi": {
       "value": 0.318,
       "signal": "base",
       "cadence": "weekly",
-      "note": "COMEX Managed Money net longs (% OI), contrarian - enter as fraction"
+      "note": "COMEX Managed Money net longs (% OI), contrarian - enter as fraction",
+      "ref": "https://www.cftc.gov/MarketReports/CommitmentsofTraders/index.htm"
     },
     "gvz": {
       "value": 25.8,
       "signal": "base",
       "cadence": "weekly",
-      "note": "CBOE Gold VIX (GVZ) level"
+      "note": "CBOE Gold VIX (GVZ) level",
+      "ref": "https://www.cboe.com/us/indices/dashboard/GVZ/"
     },
     "real_yield": {
       "signal": "base",
-      "note": "FRED DFII10 delta - last-known-good; scraper overwrites when live"
+      "note": "FRED DFII10 delta - last-known-good; scraper overwrites when live",
+      "ref": "https://fred.stlouisfed.org/series/DFII10"
     },
     "fed_funds": {
       "signal": "base",
-      "note": "FRED DFEDTARU delta - last-known-good"
+      "note": "FRED DFEDTARU delta - last-known-good",
+      "ref": "https://fred.stlouisfed.org/series/DFEDTARU"
     },
     "dxy": {
       "signal": "base",
-      "note": "Yahoo DXY delta - last-known-good"
+      "note": "Yahoo DXY delta - last-known-good",
+      "ref": "https://finance.yahoo.com/quote/DX-Y.NYB/"
     },
     "vix": {
       "signal": "base",
-      "note": "Yahoo VIX level - last-known-good"
+      "note": "Yahoo VIX level - last-known-good",
+      "ref": "https://www.cboe.com/us/indices/dashboard/VIX/"
     },
     "gdxj_gold": {
       "signal": "base",
