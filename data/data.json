@@ -3,14 +3,14 @@
   "manual_as_of": "2026-06-15",
   "model_as_of": "2026-06-23",
   "gold": {
-    "spot": 4011,
+    "spot": 4056,
     "trailing24": 3456,
-    "ratio": 1.16,
+    "ratio": 1.17,
     "forecast_2029": 4898,
     "trailing_months": 24,
     "verdict": "Bullish",
     "tag": "BULL",
-    "composite": 18
+    "composite": 12
   },
   "themes": [
     {
@@ -29,13 +29,13 @@
       "id": "usd_fx",
       "label": "USD / FX",
       "signal": "base",
-      "reading": "DXY 101.5 . COFER 56.77%"
+      "reading": "DXY 101.3 . COFER 56.77%"
     },
     {
       "id": "geopolitics",
       "label": "Geopolitics",
-      "signal": "base",
-      "reading": "VIX 18.1 . GPR 180 . Brent $81"
+      "signal": "bear",
+      "reading": "VIX 18.8 . GPR 180 . Brent $75"
     },
     {
       "id": "mining_equities",
@@ -51,16 +51,16 @@
     }
   ],
   "divergence": {
-    "d_real_yield_bp": 1.0,
-    "d_dxy_pct": -0.19,
-    "expected_gold_pct": 0.07,
-    "actual_gold_pct": -1.4,
-    "residual_pp": -1.47,
-    "verdict": "Gold lagging textbook by 1.5pp",
-    "signal": "gold_lagging"
+    "d_real_yield_bp": 0.0,
+    "d_dxy_pct": -0.17,
+    "expected_gold_pct": 0.15,
+    "actual_gold_pct": 1.13,
+    "residual_pp": 0.98,
+    "verdict": "Gold outperforming textbook by 1.0pp",
+    "signal": "structural_bid"
   },
   "portfolio": {
-    "current": 417069,
+    "current": 416118,
     "v2029_base": 1.94,
     "income_2029": 65416,
     "income_yield": 2.9
@@ -69,8 +69,8 @@
     "africa": {
       "name": "Africa",
       "desc": "Gold producer + developer",
-      "value": 356794,
-      "pct": 85.5,
+      "value": 357139,
+      "pct": 85.8,
       "npv": "1.645 - 3.135",
       "jur": "8% disc",
       "jsig": "base",
@@ -80,8 +80,8 @@
     "asia": {
       "name": "Asia",
       "desc": "Gold developer (construction)",
-      "value": 60275,
-      "pct": 14.5,
+      "value": 58979,
+      "pct": 14.2,
       "npv": "0.267 - 0.552",
       "jur": "12% disc",
       "jsig": "bear",
@@ -163,6 +163,6 @@
   "_raw": {
     "real_yield": 2.29,
     "fed_funds": 3.75,
-    "dxy": 101.4800033569336
+    "dxy": 101.31300354003906
   }
 }
