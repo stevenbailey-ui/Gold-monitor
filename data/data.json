@@ -1,11 +1,11 @@
 {
-  "as_of": "2026-06-24",
+  "as_of": "2026-06-25",
   "manual_as_of": "2026-06-15",
   "model_as_of": "2026-06-23",
   "gold": {
-    "spot": 4068,
+    "spot": 4011,
     "trailing24": 3456,
-    "ratio": 1.18,
+    "ratio": 1.16,
     "forecast_2029": 4898,
     "trailing_months": 24,
     "verdict": "Bullish",
@@ -29,13 +29,13 @@
       "id": "usd_fx",
       "label": "USD / FX",
       "signal": "base",
-      "reading": "DXY 101.7 . COFER 56.77%"
+      "reading": "DXY 101.5 . COFER 56.77%"
     },
     {
       "id": "geopolitics",
       "label": "Geopolitics",
       "signal": "base",
-      "reading": "VIX 18.9 . GPR 180 . Brent $81"
+      "reading": "VIX 18.1 . GPR 180 . Brent $81"
     },
     {
       "id": "mining_equities",
@@ -51,16 +51,16 @@
     }
   ],
   "divergence": {
-    "d_real_yield_bp": 0.0,
-    "d_dxy_pct": 0.02,
-    "expected_gold_pct": -0.02,
-    "actual_gold_pct": 0.19,
-    "residual_pp": 0.21,
-    "verdict": "Tracking textbook within 0.2pp",
-    "signal": "textbook"
+    "d_real_yield_bp": 1.0,
+    "d_dxy_pct": -0.19,
+    "expected_gold_pct": 0.07,
+    "actual_gold_pct": -1.4,
+    "residual_pp": -1.47,
+    "verdict": "Gold lagging textbook by 1.5pp",
+    "signal": "gold_lagging"
   },
   "portfolio": {
-    "current": 427386,
+    "current": 417069,
     "v2029_base": 1.94,
     "income_2029": 65416,
     "income_yield": 2.9
@@ -69,8 +69,8 @@
     "africa": {
       "name": "Africa",
       "desc": "Gold producer + developer",
-      "value": 365848,
-      "pct": 85.6,
+      "value": 356794,
+      "pct": 85.5,
       "npv": "1.645 - 3.135",
       "jur": "8% disc",
       "jsig": "base",
@@ -80,8 +80,8 @@
     "asia": {
       "name": "Asia",
       "desc": "Gold developer (construction)",
-      "value": 61538,
-      "pct": 14.4,
+      "value": 60275,
+      "pct": 14.5,
       "npv": "0.267 - 0.552",
       "jur": "12% disc",
       "jsig": "bear",
@@ -161,8 +161,8 @@
   ],
   "fetch_notes": [],
   "_raw": {
-    "real_yield": 2.28,
+    "real_yield": 2.29,
     "fed_funds": 3.75,
-    "dxy": 101.6719970703125
+    "dxy": 101.4800033569336
   }
 }
