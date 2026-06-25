@@ -136,6 +136,13 @@ def score_metric(m, px, fred, manual, prev):
         if m["higher_is_bull"]:
             return "bull" if cur >= m["bull_at"] else "bear" if cur <= m["bear_at"] else "base"
         return "bull" if cur <= m["bull_at"] else "bear" if cur >= m["bear_at"] else "base"
+    if k == "band":
+        cur = px.get(m["src"])
+        if cur is None: cur = man.get("value")   # feed fail -> last manual value
+        if cur is None: return fb                # no value at all -> manual signal
+        if cur >= m["hi"]: return m["above_hi"]
+        if cur < m["lo"]:  return m["below_lo"]
+        return m["mid"]
     if k == "ratio":
         n, dn = px.get(m["num"]), px.get(m["den"])
         if not n or not dn: return fb
@@ -220,7 +227,7 @@ def main():
         "central_bank":    f"WGC {mm['wgc_cb_purchases_t']['value']} t/qtr",
         "macro_rates":     "Fed hold; real-yield link broken",
         "usd_fx":          f"DXY {round(px.get('dxy') or 0,1)} . COFER {mm['cofer_usd_share']['value']}%",
-        "geopolitics":     f"VIX {round(px.get('vix') or 0,1)} . GPR {mm['gpr_index']['value']} . Brent ${mm['brent']['value']}",
+        "geopolitics":     f"VIX {round(px.get('vix') or 0,1)} . GPR {mm['gpr_index']['value']} . Brent ${round(px.get('brent') or mm['brent']['value'])}",
         "mining_equities": "GDX/gold confirm . GDXJ catch-up",
         "positioning":     f"COT {round(mm['cot_mm_net_pct_oi']['value']*100,1)}% OI . GVZ {mm['gvz']['value']}",
     }

@@ -51,8 +51,10 @@ METRICS = [
     {"id": "cofer_usd_share", "theme": "usd_fx", "weight": 7, "kind": "manual",
      "label": "USD share of FX reserves (COFER %)"},
 
-    {"id": "brent", "theme": "geopolitics", "weight": 6, "kind": "manual",
-     "label": "Brent crude ($/bbl) [non-monotonic]"},
+    {"id": "brent", "theme": "geopolitics", "weight": 6, "kind": "band",
+     "src": "brent", "lo": 50, "hi": 70,
+     "below_lo": "bear", "mid": "base", "above_hi": "bear",
+     "label": "Brent crude ($/bbl) [band: <50 or >=70 bear, else base]"},
     {"id": "vix", "theme": "geopolitics", "weight": 2, "kind": "level",
      "src": "vix", "bull_at": 25, "bear_at": 15, "higher_is_bull": True,
      "label": "VIX (level)"},
