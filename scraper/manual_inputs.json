@@ -1,7 +1,7 @@
 {
   "manual_as_of": "2026-06-15",
-  "trailing24": 3408,
-  "gold_fallback": 4050,
+  "trailing24": 3456,
+  "gold_fallback": 4067,
   "metrics": {
     "wgc_cb_purchases_t": {
       "value": 243,
