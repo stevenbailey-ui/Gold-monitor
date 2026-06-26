@@ -20,7 +20,7 @@ THEME_LABELS = {
 # Public gold-thesis instruments (Yahoo symbols). NOT the portfolio holdings.
 PRICE_SYMBOLS = {
     "gold": "GC=F", "dxy": "DX-Y.NYB", "vix": "^VIX", "brent": "BZ=F",
-    "gdx": "GDX", "gdxj": "GDXJ", "ndx": "^NDX", "gvz": "^GVZ",
+    "gdx": "GDX", "gdxj": "GDXJ", "ndx": "^NDX",
 }
 FRED_SERIES = {"dgs10": "DGS10", "dfii10": "DFII10", "t10yie": "T10YIE", "dfedtaru": "DFEDTARU",
                "deficit_gdp": "FYFSGDA188S"}
@@ -30,59 +30,56 @@ TRAILING_MONTHS = 24
 TRAILING_RANGE_DAYS = 800   # ~26 months of daily bars to cover 24 completed months
 
 METRICS = [
-    {"id": "wgc_cb_purchases_t", "theme": "central_bank", "weight": 19, "kind": "manual",
+    {"id": "wgc_cb_purchases_t", "theme": "central_bank", "weight": 20, "kind": "manual",
      "label": "WGC central-bank net purchases (t/qtr)"},
     {"id": "pboc_holdings_delta_t", "theme": "central_bank", "weight": 7, "kind": "manual",
      "label": "PBoC reported holdings (delta t)"},
     {"id": "etf_aum_delta_t", "theme": "central_bank", "weight": 6, "kind": "manual",
      "label": "Gold ETF holdings change / demand (t/mo)"},
 
-    {"id": "real_yield", "theme": "macro_rates", "weight": 5, "kind": "delta",
+    {"id": "real_yield", "theme": "macro_rates", "weight": 3, "kind": "delta",
      "src": "dfii10", "bull_at": -0.2, "bear_at": 0.2, "higher_is_bull": False,
-     "label": "US 10Y real yield (delta %)"},
+     "label": "US 10Y real yield (delta %) [regime-check; link treated broken]"},
     {"id": "fed_funds", "theme": "macro_rates", "weight": 3, "kind": "delta",
      "src": "dfedtaru", "bull_at": -0.25, "bear_at": 0.25, "higher_is_bull": False,
      "label": "Fed funds upper bound (delta %)"},
-    {"id": "deficit_pct_gdp", "theme": "macro_rates", "weight": 5, "kind": "level",
+    {"id": "deficit_pct_gdp", "theme": "macro_rates", "weight": 7, "kind": "level",
      "src": "deficit_gdp", "bull_at": -6, "bear_at": -3, "higher_is_bull": False,
      "label": "US federal deficit (% GDP) [FRED signed: -6=6% deficit; bull <=-6, bear >=-3]"},
 
-    {"id": "dxy", "theme": "usd_fx", "weight": 9, "kind": "delta",
+    {"id": "dxy", "theme": "usd_fx", "weight": 8, "kind": "delta",
      "src": "dxy", "bull_at": -2, "bear_at": 2, "higher_is_bull": False,
      "label": "DXY (delta index pts)"},
-    {"id": "cofer_usd_share", "theme": "usd_fx", "weight": 7, "kind": "manual",
+    {"id": "cofer_usd_share", "theme": "usd_fx", "weight": 9, "kind": "manual",
      "label": "USD share of FX reserves (COFER %)"},
 
-    {"id": "brent", "theme": "geopolitics", "weight": 6, "kind": "band",
+    {"id": "brent", "theme": "geopolitics", "weight": 4, "kind": "band",
      "src": "brent", "lo": 50, "hi": 70,
      "below_lo": "bear", "mid": "base", "above_hi": "bear",
      "label": "Brent crude ($/bbl) [band: <50 or >=70 bear, else base]"},
     {"id": "vix", "theme": "geopolitics", "weight": 2, "kind": "level",
      "src": "vix", "bull_at": 25, "bear_at": 15, "higher_is_bull": True,
      "label": "VIX (level)"},
-    {"id": "gpr_index", "theme": "geopolitics", "weight": 2, "kind": "level",
+    {"id": "gpr_index", "theme": "geopolitics", "weight": 4, "kind": "level",
      "src": "gpr", "bull_at": 200, "bear_at": 100, "higher_is_bull": True,
      "label": "Geopolitical Risk Index (AI-GPR level)"},
 
-    {"id": "gdxj_gold", "theme": "mining_equities", "weight": 8, "kind": "ratio",
+    {"id": "gdxj_gold", "theme": "mining_equities", "weight": 4, "kind": "ratio",
      "num": "gdxj", "den": "gold", "bull_at": 0.022, "bear_at": 0.026, "higher_is_bull": False,
      "label": "GDXJ / gold [inverted: low=bull]"},
-    {"id": "gdx_gold", "theme": "mining_equities", "weight": 3, "kind": "ratio",
+    {"id": "gdx_gold", "theme": "mining_equities", "weight": 2, "kind": "ratio",
      "num": "gdx", "den": "gold", "bull_at": 0.020, "bear_at": 0.012, "higher_is_bull": True,
      "label": "GDX / gold [senior confirmation]"},
-    {"id": "spot_trailing", "theme": "mining_equities", "weight": 6, "kind": "ratio_trailing",
+    {"id": "spot_trailing", "theme": "mining_equities", "weight": 7, "kind": "ratio_trailing",
      "bull_lo": 0.90, "bull_hi": 1.40, "bear_at": 1.55,
      "label": "Gold spot / 24m trailing [momentum]"},
-    {"id": "ndx_gdxj", "theme": "mining_equities", "weight": 4, "kind": "ratio",
-     "num": "ndx", "den": "gdxj", "bull_at": 284, "bear_at": 334, "higher_is_bull": False,
-     "label": "NDX / GDXJ [AI-rotation contra]"},
+    {"id": "opp_cost", "theme": "mining_equities", "weight": 6, "kind": "opp_cost",
+     "t1": 7, "t3": 15,
+     "label": "Opportunity cost: NDX vs gold return gap [contrarian, 1m+3m]"},
 
-    {"id": "cot_mm_net_pct_oi", "theme": "positioning", "weight": 6, "kind": "level",
+    {"id": "cot_mm_net_pct_oi", "theme": "positioning", "weight": 8, "kind": "level",
      "src": "cot", "bull_at": 0.10, "bear_at": 0.35, "higher_is_bull": False,
      "label": "COMEX Managed Money net % OI [contrarian: <=0.10 bull, >=0.35 bear]"},
-    {"id": "gvz", "theme": "positioning", "weight": 2, "kind": "level",
-     "src": "gvz", "bull_at": 22, "bear_at": 14, "higher_is_bull": True,
-     "label": "Gold volatility (GVZ level)"},
 ]
 assert sum(m["weight"] for m in METRICS) == 100, "weights must sum to 100"
 

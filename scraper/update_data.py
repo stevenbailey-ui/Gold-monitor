@@ -185,6 +185,16 @@ def score_metric(m, px, fred, manual, prev):
         r = spot / trail
         if r >= m["bear_at"]: return "bear"
         return "bull" if m["bull_lo"] <= r <= m["bull_hi"] else "base"
+    if k == "opp_cost":
+        g1, g3 = px.get("oc_gap_1m"), px.get("oc_gap_3m")
+        if g1 is None or g3 is None: return fb
+        t1, t3 = m["t1"], m["t3"]
+        # Contrarian: fade the recent winner. Tech out-earning gold on BOTH windows
+        # (gaps positive & extreme) = stretched -> mean-reversion favours gold = bull.
+        # Gold out-earning tech on both = gold stretched = bear.
+        if g3 >= t3 and g1 >= t1:    return "bull"
+        if g3 <= -t3 and g1 <= -t1:  return "bear"
+        return "base"
     return fb
 
 
@@ -222,6 +232,45 @@ def divergence(px, fred, prev, notes):
     }
 
 
+def opportunity_cost(notes):
+    """Return-competition (opportunity cost) of holding gold vs the AI/tech complex.
+    Contrarian: a large tech-over-gold return gap = stretched -> mean-reversion
+    favours gold. Headline gap is NDX vs gold; GDXJ leg shown for the portfolio read."""
+    out = {"gap_1m": None, "gap_3m": None, "ndx_1m": None, "gold_1m": None,
+           "ndx_3m": None, "gold_3m": None, "gdxj_3m": None,
+           "verdict": "insufficient history", "signal": "base"}
+    try:
+        def ret(bars, n):
+            return None if len(bars) < n + 1 else (bars[-1][1] / bars[-1 - n][1] - 1.0) * 100.0
+        n1, n3 = 21, 63                                   # ~1m and ~3m trading days
+        ndx = yahoo_daily(C.PRICE_SYMBOLS["ndx"], 150)
+        gld = yahoo_daily(C.PRICE_SYMBOLS["gold"], 150)
+        gdxj = yahoo_daily(C.PRICE_SYMBOLS["gdxj"], 150)
+        out["ndx_1m"], out["gold_1m"] = ret(ndx, n1), ret(gld, n1)
+        out["ndx_3m"], out["gold_3m"] = ret(ndx, n3), ret(gld, n3)
+        out["gdxj_3m"] = ret(gdxj, n3)
+        if None not in (out["ndx_1m"], out["gold_1m"]):
+            out["gap_1m"] = round(out["ndx_1m"] - out["gold_1m"], 1)
+        if None not in (out["ndx_3m"], out["gold_3m"]):
+            out["gap_3m"] = round(out["ndx_3m"] - out["gold_3m"], 1)
+        g1, g3 = out["gap_1m"], out["gap_3m"]
+        oc_m = next((x for x in C.METRICS if x["id"] == "opp_cost"), None)
+        t1, t3 = (oc_m["t1"], oc_m["t3"]) if oc_m else (7, 15)
+        if g1 is not None and g3 is not None:
+            if g3 >= t3 and g1 >= t1:
+                out["signal"], out["verdict"] = "bull", f"Tech stretched vs gold (+{g3:.0f}pp 3m) - contrarian bid"
+            elif g3 <= -t3 and g1 <= -t1:
+                out["signal"], out["verdict"] = "bear", f"Gold stretched vs tech ({g3:.0f}pp 3m) - contrarian fade"
+            else:
+                out["signal"], out["verdict"] = "base", f"Gap {g3:+.0f}pp 3m / {g1:+.0f}pp 1m - no extreme"
+        for k in ("ndx_1m", "gold_1m", "ndx_3m", "gold_3m", "gdxj_3m"):
+            if out[k] is not None: out[k] = round(out[k], 1)
+        return out
+    except Exception as e:
+        notes.append(f"oppcost:{type(e).__name__}")
+        return out
+
+
 def main():
     manual = json.load(open(os.path.join(DATA, "manual_inputs.json")))
     snap = json.load(open(os.path.join(DATA, "model_snapshot.json")))
@@ -235,6 +284,8 @@ def main():
     fred = {k: fetch_fred(v, notes) for k, v in C.FRED_SERIES.items()}
     px["gpr"] = fetch_gpr(notes)
     px["cot"] = fetch_cot(notes)
+    oc = opportunity_cost(notes)
+    px["oc_gap_1m"], px["oc_gap_3m"] = oc["gap_1m"], oc["gap_3m"]
     gold = px.get("gold") or manual.get("gold_fallback", 4360)
     px["gold"] = gold
     trail, n_months = trailing_24m(manual, notes)
@@ -259,8 +310,8 @@ def main():
         "macro_rates":     "Fed hold; real-yield link broken",
         "usd_fx":          f"DXY {round(px.get('dxy') or 0,1)} . COFER {mm['cofer_usd_share']['value']}%",
         "geopolitics":     f"VIX {round(px.get('vix') or 0,1)} . GPR {round(px.get('gpr') or mm['gpr_index']['value'])} . Brent ${round(px.get('brent') or mm['brent']['value'])}",
-        "mining_equities": "GDX/gold confirm . GDXJ catch-up",
-        "positioning":     f"COT {round((px.get('cot') or mm['cot_mm_net_pct_oi']['value'])*100,1)}% OI . GVZ {round(px.get('gvz') or mm['gvz']['value'],1)}",
+        "mining_equities": f"GDX/gold confirm . Opp-cost gap {oc['gap_3m'] if oc['gap_3m'] is not None else 'n/a'}pp 3m",
+        "positioning":     f"COT {round((px.get('cot') or mm['cot_mm_net_pct_oi']['value'])*100,1)}% OI",
     }
     themes = [{"id": t, "label": C.THEME_LABELS[t], "signal": C.theme_signal(theme_net[t], theme_max[t]),
                "reading": readings[t]} for t in C.THEMES]
@@ -301,6 +352,7 @@ def main():
                  "trailing_months": n_months, "verdict": vname, "tag": tag, "composite": composite},
         "themes": themes,
         "divergence": divergence(px, fred, prev, notes),
+        "opportunity_cost": oc,
         "portfolio": {"current": total or None,
                       "v2029_base": snap["scenarios"]["2029"]["base"],
                       "income_2029": snap["income_2029_base"], "income_yield": snap["income_2029_yield"]},
