@@ -42,6 +42,7 @@
     <button id="copy">Copy JSON</button>
     <a href="./index.html"><button>&larr; Dashboard</button></a>
     <span class="msg" id="msg"></span>
+    <span id="dirty" style="display:none;font-size:12px;color:#b4690e;font-weight:600">\u25cf Unsaved \u2014 Download &amp; commit to save</span>
   </div>
   <p class="hint">After download: replace <code>data/manual_inputs.json</code> in your repo and commit. The scheduled (or manual) Action regenerates the dashboard data.</p>
 </div>
@@ -115,8 +116,12 @@ function build(){
   root.append(c);
 }
 function flash(t){const m=document.getElementById("msg");m.textContent=t;setTimeout(()=>m.textContent="",2500);}
-document.getElementById("download").onclick=()=>{const b=new Blob([JSON.stringify(M,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="manual_inputs.json";a.click();flash("Downloaded - commit to data/manual_inputs.json");};
-document.getElementById("copy").onclick=async()=>{try{await navigator.clipboard.writeText(JSON.stringify(M,null,2));flash("Copied");}catch{flash("Copy failed - use Download");}};
+let dirty=false;
+function markDirty(){if(!dirty){dirty=true;const d=document.getElementById("dirty");if(d)d.style.display="inline";}}
+function clearDirty(){dirty=false;const d=document.getElementById("dirty");if(d)d.style.display="none";}
+const _form=document.getElementById("form");_form.addEventListener("input",markDirty);_form.addEventListener("change",markDirty);
+document.getElementById("download").onclick=()=>{const b=new Blob([JSON.stringify(M,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="manual_inputs.json";a.click();clearDirty();flash("Downloaded \u2014 now commit data/manual_inputs.json to save");};
+document.getElementById("copy").onclick=async()=>{try{await navigator.clipboard.writeText(JSON.stringify(M,null,2));clearDirty();flash("Copied \u2014 now commit data/manual_inputs.json to save");}catch{flash("Copy failed - use Download");}};
 fetch("./data/manual_inputs.json",{cache:"no-store"}).then(r=>r.json()).then(j=>{M=j;build();}).catch(()=>{document.getElementById("form").innerHTML='<p class="sub">Could not load data/manual_inputs.json.</p>';});
 </script>
 </body>
