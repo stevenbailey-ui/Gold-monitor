@@ -27,6 +27,9 @@
   details{margin:6px 0}summary{cursor:pointer;font-size:13px;color:var(--link)}
   a.src{color:var(--link);text-decoration:none;font-size:11px;white-space:nowrap}a.src:hover{text-decoration:underline}
   h3.feedhdr{font-size:12px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 2px}
+  .roval{font-size:13px;color:var(--t3);text-align:right;font-variant-numeric:tabular-nums}
+  .field.ro{opacity:.8}
+  .lead{font-size:13px;color:var(--t1);background:rgba(24,95,165,.07);border:.5px solid var(--line);border-radius:8px;padding:9px 11px;margin:0 0 10px}
 </style>
 </head>
 <body>
@@ -49,6 +52,7 @@ const opt=(v,sel)=>{const o=el("option",{value:v},v);if(v===sel)o.selected=true;
 function refLink(url){return el("a",{href:url,target:"_blank",rel:"noopener noreferrer",class:"src"},"source \u2197");}
 function num(label,sub,val,setter,step="any",ref){const f=el("div",{class:"field"}),l=el("label",{},label);if(sub)l.append(el("small",{},sub));if(ref){const rs=el("small",{});rs.append(refLink(ref));l.append(rs);}const i=el("input",{type:"number",step});i.value=val;i.oninput=()=>setter(i.value===""?null:parseFloat(i.value));f.append(l,i);return f;}
 function sigSel(label,val,setter,ref){const f=el("div",{class:"field"}),l=el("label",{},label);if(ref){const rs=el("small",{});rs.append(refLink(ref));l.append(rs);}const s=el("select");SIGNALS.forEach(v=>s.append(opt(v,val)));s.onchange=()=>setter(s.value);f.append(l,s);return f;}
+function roRow(label,valText,ref){const f=el("div",{class:"field ro"}),l=el("label",{},label);if(ref){const rs=el("small",{});rs.append(refLink(ref));l.append(rs);}const v=el("div",{class:"roval"},valText);f.append(l,v);return f;}
 function txt(label,val,setter){const f=el("div",{class:"field wide"}),l=el("label",{},label);const t=el("textarea");t.value=val||"";t.oninput=()=>setter(t.value);f.append(l,t);return f;}
 
 function build(){
@@ -68,8 +72,8 @@ function build(){
   // Manual data feeds — the only rows requiring hand entry (WGC + COFER)
   const manualGroups = M.manual_feeds || {};
   const manualKeys = new Set(Object.values(manualGroups).flat());
-  c=el("div",{class:"card"});c.append(el("h2",{},"Manual data feeds"));
-  c.append(el("p",{class:"hint"},"The only metrics still entered by hand - 2 sources. Everything else is scraped live each run. Enter the reading + signal; each row links to its source."));
+  c=el("div",{class:"card"});c.append(el("h2",{},"Manual inputs \u2014 the only values you edit"));
+  c.append(el("div",{class:"lead"},"These four are the ONLY metrics entered by hand. Everything else \u2014 prices, oil/Brent, rates, COT, GPR, deficit \u2014 is scraped live. After editing, click Download or Copy below and commit data/manual_inputs.json; changes are not saved until you do."));
   Object.keys(manualGroups).forEach(srcName=>{
     c.append(el("h3",{class:"feedhdr"},srcName));
     manualGroups[srcName].forEach(k=>{const m=M.metrics[k]; if(!m) return;
@@ -79,14 +83,14 @@ function build(){
   });
   root.append(c);
 
-  // Auto-fed metrics — scraper overwrites each run; entries here are feed-fail fallbacks only
-  c=el("div",{class:"card"});c.append(el("h2",{},"Auto-fed metrics"));
-  c.append(el("p",{class:"hint"},"Scraped each run (Yahoo, FRED, CFTC, AI-GPR). The values/signals below apply only if a feed is unreachable - normally untouched. Source links open the live feed."));
-  const dd=el("details");dd.append(el("summary",{},"Show feed-fail fallbacks"));
+  // Auto-fed metrics — scraped live every run; READ-ONLY here (editing has no effect)
+  c=el("div",{class:"card"});c.append(el("h2",{},"Auto-fed metrics (read-only)"));
+  c.append(el("p",{class:"hint"},"Scraped live every run from Yahoo, FRED, CFTC and AI-GPR \u2014 including Brent/oil. The live feed always wins, so these are not editable here. Shown for reference with the feed-fail fallback in brackets; source links open the live feed."));
+  const dd=el("details");dd.append(el("summary",{},"Show auto-fed metrics"));
   Object.keys(M.metrics).forEach(k=>{const m=M.metrics[k];
     if(manualKeys.has(k)) return;
-    if("value" in m) dd.append(num(m.note||k,(m.cadence||"")+" - fallback only",m.value,v=>m.value=v,"any",m.ref));
-    dd.append(sigSel("   - "+k+" signal",m.signal,v=>m.signal=v,("value" in m)?null:m.ref));
+    const fb=("value" in m)?("fallback "+m.value):("fallback signal "+(m.signal||"base"));
+    dd.append(roRow(m.note||k,"auto \u00b7 "+fb,m.ref));
   });
   c.append(dd);
   root.append(c);
