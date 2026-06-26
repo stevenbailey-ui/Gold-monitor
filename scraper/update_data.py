@@ -2,10 +2,10 @@
 """
 EOD updater for the gold portfolio monitor (public, anonymised output).
 
-Fetches gold-thesis prices (Yahoo, Stooq fallback) + FRED rates, auto-computes the 24-month
-trailing gold price (monthly average of daily closes), reads the portfolio holdings from the
-HOLDINGS secret / data/holdings.local.json, merges valuations from data/model_snapshot.json,
-scores the six-theme composite, and writes data/data.json.
+Fetches gold-thesis prices (Yahoo) + FRED rates, auto-computes the 24-month trailing gold
+price (monthly average of daily closes), reads the portfolio holdings from the HOLDINGS
+secret / data/holdings.local.json, merges valuations from data/model_snapshot.json, scores
+the six-theme composite, and writes data/data.json.
 
 PRIVACY: the published data.json contains only Africa / Asia labels, GBP value and % weight,
 the gold thesis, generic catalysts and actions. It never contains tickers, share counts or
@@ -23,30 +23,25 @@ DATA = os.path.join(ROOT, "data")
 SIG = {"bull": 1, "base": 0, "bear": -1}
 
 
-def _get(url, timeout=20):
+def _get(url, timeout=12):
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 gold-monitor"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.read().decode("utf-8", "replace")
 
 
-def yahoo_last(symbol):
+def yahoo_last(symbol, timeout=12):
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range=5d&interval=1d"
-    res = json.loads(_get(url))["chart"]["result"][0]
+    res = json.loads(_get(url, timeout=timeout))["chart"]["result"][0]
     closes = [c for c in res["indicators"]["quote"][0]["close"] if c is not None]
     return float(closes[-1])
 
 
-def yahoo_daily(symbol, rng_days):
+def yahoo_daily(symbol, rng_days, timeout=12):
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range={rng_days}d&interval=1d"
-    res = json.loads(_get(url))["chart"]["result"][0]
+    res = json.loads(_get(url, timeout=timeout))["chart"]["result"][0]
     ts = res["timestamp"]
     closes = res["indicators"]["quote"][0]["close"]
     return [(datetime.datetime.utcfromtimestamp(t), c) for t, c in zip(ts, closes) if c is not None]
-
-
-def stooq_last(symbol):
-    line = _get(f"https://stooq.com/q/l/?s={symbol}&f=sd2t2c&h&e=csv").strip().splitlines()[-1].split(",")
-    return float(line[-1])
 
 
 def fetch_price(key, notes):
@@ -55,11 +50,7 @@ def fetch_price(key, notes):
         return yahoo_last(sym)
     except Exception as e:
         notes.append(f"{key}:yahoo:{type(e).__name__}")
-    try:
-        return stooq_last(sym.lower().replace("^", "").replace("=f", ".f"))
-    except Exception as e:
-        notes.append(f"{key}:stooq:{type(e).__name__}")
-    return None
+    return None   # Stooq fallback removed: blocked on Actions runners, only adds ~20s dead-waits
 
 
 def fetch_holding_price(ticker, notes):
@@ -111,10 +102,12 @@ def fetch_cot(notes):
         notes.append(f"cot:{type(e).__name__}"); return None
 
 
-def trailing_24m(manual, notes):
-    """Monthly average of daily closes, last 24 completed months. Fallback to manual."""
+def trailing_24m(manual, notes, bars=None):
+    """Monthly average of daily closes, last 24 completed months. Fallback to manual.
+    Reuses pre-fetched daily `bars` when supplied (avoids a duplicate gold fetch)."""
     try:
-        bars = yahoo_daily(C.PRICE_SYMBOLS["gold"], C.TRAILING_RANGE_DAYS)
+        if bars is None:
+            bars = yahoo_daily(C.PRICE_SYMBOLS["gold"], C.TRAILING_RANGE_DAYS)
         by_month = defaultdict(list)
         for dt, c in bars:
             by_month[(dt.year, dt.month)].append(c)
@@ -232,43 +225,50 @@ def divergence(px, fred, prev, notes):
     }
 
 
-def opportunity_cost(notes):
+def opportunity_cost(notes, gold_bars=None):
     """Return-competition (opportunity cost) of holding gold vs the AI/tech complex.
     Contrarian: a large tech-over-gold return gap = stretched -> mean-reversion
-    favours gold. Headline gap is NDX vs gold; GDXJ leg shown for the portfolio read."""
+    favours gold. Headline gap NDX vs gold; GDXJ leg for the portfolio read.
+    Best-effort: each leg guarded + short timeout so it can never hang the run."""
     out = {"gap_1m": None, "gap_3m": None, "ndx_1m": None, "gold_1m": None,
            "ndx_3m": None, "gold_3m": None, "gdxj_3m": None,
            "verdict": "insufficient history", "signal": "base"}
-    try:
-        def ret(bars, n):
-            return None if len(bars) < n + 1 else (bars[-1][1] / bars[-1 - n][1] - 1.0) * 100.0
-        n1, n3 = 21, 63                                   # ~1m and ~3m trading days
-        ndx = yahoo_daily(C.PRICE_SYMBOLS["ndx"], 150)
-        gld = yahoo_daily(C.PRICE_SYMBOLS["gold"], 150)
-        gdxj = yahoo_daily(C.PRICE_SYMBOLS["gdxj"], 150)
-        out["ndx_1m"], out["gold_1m"] = ret(ndx, n1), ret(gld, n1)
-        out["ndx_3m"], out["gold_3m"] = ret(ndx, n3), ret(gld, n3)
-        out["gdxj_3m"] = ret(gdxj, n3)
-        if None not in (out["ndx_1m"], out["gold_1m"]):
-            out["gap_1m"] = round(out["ndx_1m"] - out["gold_1m"], 1)
-        if None not in (out["ndx_3m"], out["gold_3m"]):
-            out["gap_3m"] = round(out["ndx_3m"] - out["gold_3m"], 1)
-        g1, g3 = out["gap_1m"], out["gap_3m"]
-        oc_m = next((x for x in C.METRICS if x["id"] == "opp_cost"), None)
-        t1, t3 = (oc_m["t1"], oc_m["t3"]) if oc_m else (7, 15)
-        if g1 is not None and g3 is not None:
-            if g3 >= t3 and g1 >= t1:
-                out["signal"], out["verdict"] = "bull", f"Tech stretched vs gold (+{g3:.0f}pp 3m) - contrarian bid"
-            elif g3 <= -t3 and g1 <= -t1:
-                out["signal"], out["verdict"] = "bear", f"Gold stretched vs tech ({g3:.0f}pp 3m) - contrarian fade"
-            else:
-                out["signal"], out["verdict"] = "base", f"Gap {g3:+.0f}pp 3m / {g1:+.0f}pp 1m - no extreme"
-        for k in ("ndx_1m", "gold_1m", "ndx_3m", "gold_3m", "gdxj_3m"):
-            if out[k] is not None: out[k] = round(out[k], 1)
-        return out
-    except Exception as e:
-        notes.append(f"oppcost:{type(e).__name__}")
-        return out
+    n1, n3 = 21, 63                                   # ~1m and ~3m trading days
+
+    def ret(bars, n):
+        return None if not bars or len(bars) < n + 1 else (bars[-1][1] / bars[-1 - n][1] - 1.0) * 100.0
+
+    def leg(sym):
+        try:
+            return yahoo_daily(sym, 150, timeout=8)
+        except Exception as e:
+            notes.append(f"oppcost:{sym}:{type(e).__name__}"); return None
+
+    ndx = leg(C.PRICE_SYMBOLS["ndx"])
+    gld = gold_bars if gold_bars else leg(C.PRICE_SYMBOLS["gold"])
+    gdxj = leg(C.PRICE_SYMBOLS["gdxj"])
+
+    out["ndx_1m"], out["ndx_3m"] = ret(ndx, n1), ret(ndx, n3)
+    out["gold_1m"], out["gold_3m"] = ret(gld, n1), ret(gld, n3)
+    out["gdxj_3m"] = ret(gdxj, n3)
+    if None not in (out["ndx_1m"], out["gold_1m"]):
+        out["gap_1m"] = round(out["ndx_1m"] - out["gold_1m"], 1)
+    if None not in (out["ndx_3m"], out["gold_3m"]):
+        out["gap_3m"] = round(out["ndx_3m"] - out["gold_3m"], 1)
+
+    g1, g3 = out["gap_1m"], out["gap_3m"]
+    oc_m = next((x for x in C.METRICS if x["id"] == "opp_cost"), None)
+    t1, t3 = (oc_m["t1"], oc_m["t3"]) if oc_m else (7, 15)
+    if g1 is not None and g3 is not None:
+        if g3 >= t3 and g1 >= t1:
+            out["signal"], out["verdict"] = "bull", f"Tech stretched vs gold (+{g3:.0f}pp 3m) - contrarian bid"
+        elif g3 <= -t3 and g1 <= -t1:
+            out["signal"], out["verdict"] = "bear", f"Gold stretched vs tech ({g3:.0f}pp 3m) - contrarian fade"
+        else:
+            out["signal"], out["verdict"] = "base", f"Gap {g3:+.0f}pp 3m / {g1:+.0f}pp 1m - no extreme"
+    for k in ("ndx_1m", "gold_1m", "ndx_3m", "gold_3m", "gdxj_3m"):
+        if out[k] is not None: out[k] = round(out[k], 1)
+    return out
 
 
 def main():
@@ -284,11 +284,16 @@ def main():
     fred = {k: fetch_fred(v, notes) for k, v in C.FRED_SERIES.items()}
     px["gpr"] = fetch_gpr(notes)
     px["cot"] = fetch_cot(notes)
-    oc = opportunity_cost(notes)
+    # One gold daily fetch, shared by trailing-average and the opportunity-cost lens.
+    try:
+        gold_bars = yahoo_daily(C.PRICE_SYMBOLS["gold"], C.TRAILING_RANGE_DAYS)
+    except Exception as e:
+        notes.append(f"gold_daily:{type(e).__name__}"); gold_bars = None
+    oc = opportunity_cost(notes, gold_bars)
     px["oc_gap_1m"], px["oc_gap_3m"] = oc["gap_1m"], oc["gap_3m"]
     gold = px.get("gold") or manual.get("gold_fallback", 4360)
     px["gold"] = gold
-    trail, n_months = trailing_24m(manual, notes)
+    trail, n_months = trailing_24m(manual, notes, gold_bars)
     px["_trailing"] = trail
 
     # Composite + themes
