@@ -118,6 +118,32 @@ function render(D){
       </div></div>`;
   })();
 
+  const ocBlock=(()=>{
+    const o=D.opportunity_cost,sgn=n=>n==null?"\u2014":(n>0?"+":"")+n;
+    if(!o||o.gap_3m==null) return `<div class="card" style="margin-bottom:12px"><div class="row">
+      <span style="font-size:13px;font-weight:600">Opportunity cost</span>
+      <span class="pill sm p-base">N/A</span></div>
+      <div class="sub" style="margin-top:6px">Awaiting NDX/gold trailing history.</div></div>`;
+    const pill=o.signal==="bull"?"p-bull":o.signal==="bear"?"p-bear":"p-base";
+    const lbl=o.signal==="bull"?"CONTRARIAN BID":o.signal==="bear"?"GOLD STRETCHED":"NO EXTREME";
+    const gcol=o.signal==="bull"?"var(--pos)":o.signal==="bear"?"var(--neg)":"var(--t1)";
+    return `<div class="card" style="margin-bottom:12px">
+      <div class="row">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:13px;color:var(--t2)">Opportunity cost \u00b7 NDX vs gold</span>
+          <span class="pill ${pill}">${lbl}</span>
+          <span style="font-size:15px;font-weight:600">${o.verdict}</span>
+        </div>
+        <div style="text-align:right"><div class="sub">Gap 3m</div>
+          <div style="font-size:15px;font-weight:600;color:${gcol}">${sgn(o.gap_3m)}pp</div></div>
+      </div>
+      <div class="grid3" style="margin-top:10px">
+        <div class="metric"><div class="k">NDX \u00b7 gold (3m)</div><div class="v">${sgn(o.ndx_3m)}% \u00b7 ${sgn(o.gold_3m)}%</div><div class="s">trailing return</div></div>
+        <div class="metric"><div class="k">Gap 1m \u00b7 3m</div><div class="v">${sgn(o.gap_1m)} \u00b7 ${sgn(o.gap_3m)}pp</div><div class="s">contrarian: needs both</div></div>
+        <div class="metric"><div class="k">GDXJ (3m)</div><div class="v">${sgn(o.gdxj_3m)}%</div><div class="s">your juniors vs tech</div></div>
+      </div></div>`;
+  })();
+
   document.getElementById("app").innerHTML=`
     <div class="row" style="margin-bottom:12px">
       <h1>Gold-miner portfolio monitor</h1>
@@ -150,6 +176,7 @@ function render(D){
       <div class="bandlbl"><span>Strongly bear \u221250</span><span>Balanced 0</span><span>Strongly bull +50</span></div>
     </div>
     ${dvBlock}
+    ${ocBlock}
     <div class="sec">Six thesis drivers</div>
     <div class="grid6">${drivers}</div>
     <div class="grid2">${hold("africa")}${hold("asia")}</div>
