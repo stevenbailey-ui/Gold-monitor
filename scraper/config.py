@@ -13,8 +13,8 @@ THEME_LABELS = {
     "macro_rates":     "Macro & rates",
     "usd_fx":          "USD / FX",
     "geopolitics":     "Geopolitics",
-    "mining_equities": "Mining equities",
-    "positioning":     "Positioning",
+    "mining_equities": "Sector re-rate",
+    "positioning":     "Positioning & flows",
 }
 
 # Public gold-thesis instruments (Yahoo symbols). NOT the portfolio holdings.
@@ -73,7 +73,7 @@ METRICS = [
     {"id": "spot_trailing", "theme": "mining_equities", "weight": 7, "kind": "ratio_trailing",
      "bull_lo": 0.90, "bull_hi": 1.40, "bear_at": 1.55,
      "label": "Gold spot / 24m trailing [momentum]"},
-    {"id": "opp_cost", "theme": "mining_equities", "weight": 6, "kind": "opp_cost",
+    {"id": "opp_cost", "theme": "positioning", "weight": 6, "kind": "opp_cost",
      "t1": 7, "t3": 15,
      "label": "Opportunity cost: NDX vs gold return gap [contrarian, 1m+3m]"},
 

@@ -309,21 +309,21 @@ def main():
     composite = int(round(composite))
     vname, tag = C.verdict(composite)
 
-    gj, gx = px.get("gdxj"), px.get("gold")
-    gd = px.get("gdx")
-    mining_reading = " . ".join([
+    gj, gd = px.get("gdxj"), px.get("gdx")
+    sector_reading = " . ".join([
         f"GDXJ/gold {gj/gold:.3f}" if (gj and gold) else "GDXJ/gold n/a",
         f"GDX/gold {gd/gold:.3f}" if (gd and gold) else "GDX/gold n/a",
-        f"opp-cost {oc['gap_3m']:+.0f}pp 3m" if oc["gap_3m"] is not None else "opp-cost n/a",
+        f"spot/24m {gold/trail:.2f}" if (gold and trail) else "spot/24m n/a",
     ])
+    opp = f"opp-cost {oc['gap_3m']:+.0f}pp 3m" if oc["gap_3m"] is not None else "opp-cost n/a"
     mm = manual["metrics"]
     readings = {
         "central_bank":    f"WGC {mm['wgc_cb_purchases_t']['value']} t/qtr",
         "macro_rates":     "Fed hold; real-yield link broken",
         "usd_fx":          f"DXY {round(px.get('dxy') or 0,1)} . COFER {mm['cofer_usd_share']['value']}%",
         "geopolitics":     f"VIX {round(px.get('vix') or 0,1)} . GPR {round(px.get('gpr') or mm['gpr_index']['value'])} . Brent ${round(px.get('brent') or mm['brent']['value'])}",
-        "mining_equities": mining_reading,
-        "positioning":     f"COT {round((px.get('cot') or mm['cot_mm_net_pct_oi']['value'])*100,1)}% OI",
+        "mining_equities": sector_reading,
+        "positioning":     f"COT {round((px.get('cot') or mm['cot_mm_net_pct_oi']['value'])*100,1)}% OI . {opp}",
     }
     themes = [{"id": t, "label": C.THEME_LABELS[t], "signal": C.theme_signal(theme_net[t], theme_max[t]),
                "reading": readings[t]} for t in C.THEMES]
