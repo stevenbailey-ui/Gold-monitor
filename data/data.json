@@ -3,7 +3,7 @@
   "manual_as_of": "2026-06-15",
   "model_as_of": "2026-06-23",
   "gold": {
-    "spot": 4068,
+    "spot": 4063,
     "trailing24": 3456,
     "ratio": 1.18,
     "forecast_2029": 4898,
@@ -35,7 +35,7 @@
       "id": "geopolitics",
       "label": "Geopolitics",
       "signal": "bear",
-      "reading": "VIX 20.0 . GPR 195 . Brent $73"
+      "reading": "VIX 20.0 . GPR 195 . Brent $74"
     },
     {
       "id": "mining_equities",
@@ -52,20 +52,20 @@
   ],
   "divergence": {
     "d_real_yield_bp": 0.0,
-    "d_dxy_pct": 0.01,
-    "expected_gold_pct": -0.01,
-    "actual_gold_pct": 0.03,
-    "residual_pp": 0.04,
-    "verdict": "Tracking textbook within 0.0pp",
+    "d_dxy_pct": 0.04,
+    "expected_gold_pct": -0.03,
+    "actual_gold_pct": -0.12,
+    "residual_pp": -0.09,
+    "verdict": "Tracking textbook within 0.1pp",
     "signal": "textbook"
   },
   "opportunity_cost": {
-    "gap_1m": 6.7,
-    "gap_3m": 28.9,
+    "gap_1m": 6.8,
+    "gap_3m": 29.0,
     "ndx_1m": -1.9,
-    "gold_1m": -8.5,
+    "gold_1m": -8.6,
     "ndx_3m": 21.8,
-    "gold_3m": -7.0,
+    "gold_3m": -7.1,
     "gdxj_3m": -13.6,
     "verdict": "Gap +29pp 3m / +7pp 1m - no extreme",
     "signal": "base"
@@ -174,6 +174,6 @@
   "_raw": {
     "real_yield": 2.23,
     "fed_funds": 3.75,
-    "dxy": 101.21099853515625
+    "dxy": 101.24800109863281
   }
 }
