@@ -21,7 +21,7 @@
       "value": -16,
       "signal": "base",
       "cadence": "monthly",
-      "note": "Global gold ETF AUM change (t/mo)",
+      "note": "Gold ETF holdings change / demand (t/mo)",
       "ref": "https://www.gold.org/goldhub/data/gold-etfs-holdings-and-flows"
     },
     "deficit_pct_gdp": {
@@ -29,7 +29,8 @@
       "signal": "base",
       "cadence": "quarterly",
       "note": "US federal deficit (% GDP); >6% = fiscal dominance = bull",
-      "ref": "https://fred.stlouisfed.org/series/FYFSGDA188S"
+      "ref": "https://fred.stlouisfed.org/series/FYFSGDA188S",
+      "auto": true
     },
     "cofer_usd_share": {
       "value": 56.77,
@@ -43,28 +44,24 @@
       "signal": "base",
       "cadence": "monthly",
       "note": "Geopolitical Risk Index (level)",
-      "ref": "https://www.matteoiacoviello.com/ai_gpr.html#chart-section"
+      "ref": "https://www.matteoiacoviello.com/ai_gpr.html#chart-section",
+      "auto": true
     },
     "brent": {
       "value": 81,
       "signal": "base",
       "cadence": "monthly",
       "note": "Brent ($/bbl); non-monotonic: high+falling=bull",
-      "ref": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm"
+      "ref": "https://www.eia.gov/dnav/pet/hist/RBRTEd.htm",
+      "auto": true
     },
     "cot_mm_net_pct_oi": {
       "value": 0.318,
       "signal": "base",
       "cadence": "weekly",
       "note": "COMEX Managed Money net longs (% OI), contrarian - enter as fraction",
-      "ref": "https://www.cftc.gov/MarketReports/CommitmentsofTraders/index.htm"
-    },
-    "gvz": {
-      "value": 25.8,
-      "signal": "base",
-      "cadence": "weekly",
-      "note": "CBOE Gold VIX (GVZ) level",
-      "ref": "https://www.cboe.com/us/indices/dashboard/GVZ/"
+      "ref": "https://www.cftc.gov/MarketReports/CommitmentsofTraders/index.htm",
+      "auto": true
     },
     "real_yield": {
       "signal": "base",
@@ -98,9 +95,8 @@
       "signal": "bull",
       "note": "spot/24m ratio - last-known-good"
     },
-    "ndx_gdxj": {
-      "signal": "base",
-      "note": "NDX/GDXJ ratio - last-known-good"
+    "opp_cost": {
+      "signal": "base"
     }
   },
   "catalysts": [
@@ -145,5 +141,15 @@
       "cls": "p-base",
       "body": "Exploration optionality. Re-rate catalyst, not a base-case input. <b>No action until the licence is granted.</b>"
     }
-  ]
+  ],
+  "manual_feeds": {
+    "World Gold Council": [
+      "wgc_cb_purchases_t",
+      "pboc_holdings_delta_t",
+      "etf_aum_delta_t"
+    ],
+    "IMF COFER": [
+      "cofer_usd_share"
+    ]
+  }
 }
