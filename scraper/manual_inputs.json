@@ -1,7 +1,7 @@
 {
   "manual_as_of": "2026-06-15",
   "trailing24": 3408,
-  "gold_fallback": 4360,
+  "gold_fallback": 4050,
   "metrics": {
     "wgc_cb_purchases_t": {
       "value": 243,
@@ -63,14 +63,6 @@
       "ref": "https://www.cftc.gov/MarketReports/CommitmentsofTraders/index.htm",
       "auto": true
     },
-    "gvz": {
-      "value": 25.8,
-      "signal": "base",
-      "cadence": "weekly",
-      "note": "CBOE Gold VIX (GVZ) level",
-      "ref": "https://www.cboe.com/us/indices/dashboard/GVZ/",
-      "auto": true
-    },
     "real_yield": {
       "signal": "base",
       "note": "FRED DFII10 delta - last-known-good; scraper overwrites when live",
@@ -103,9 +95,8 @@
       "signal": "bull",
       "note": "spot/24m ratio - last-known-good"
     },
-    "ndx_gdxj": {
-      "signal": "base",
-      "note": "NDX/GDXJ ratio - last-known-good"
+    "opp_cost": {
+      "signal": "base"
     }
   },
   "catalysts": [
