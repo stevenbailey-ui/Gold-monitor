@@ -3,7 +3,7 @@
   "manual_as_of": "2026-06-15",
   "model_as_of": "2026-06-23",
   "gold": {
-    "spot": 4067,
+    "spot": 4068,
     "trailing24": 3456,
     "ratio": 1.18,
     "forecast_2029": 4898,
@@ -35,13 +35,13 @@
       "id": "geopolitics",
       "label": "Geopolitics",
       "signal": "bear",
-      "reading": "VIX 20.1 . GPR 195 . Brent $73"
+      "reading": "VIX 20.0 . GPR 195 . Brent $73"
     },
     {
       "id": "mining_equities",
       "label": "Mining equities",
       "signal": "bull",
-      "reading": "GDX/gold confirm . Opp-cost gap 28.9pp 3m"
+      "reading": "GDXJ/gold 0.024 . GDX/gold 0.019 . opp-cost +29pp 3m"
     },
     {
       "id": "positioning",
@@ -52,26 +52,26 @@
   ],
   "divergence": {
     "d_real_yield_bp": 0.0,
-    "d_dxy_pct": -0.05,
-    "expected_gold_pct": 0.05,
-    "actual_gold_pct": 0.39,
-    "residual_pp": 0.35,
-    "verdict": "Tracking textbook within 0.3pp",
+    "d_dxy_pct": 0.01,
+    "expected_gold_pct": -0.01,
+    "actual_gold_pct": 0.03,
+    "residual_pp": 0.04,
+    "verdict": "Tracking textbook within 0.0pp",
     "signal": "textbook"
   },
   "opportunity_cost": {
     "gap_1m": 6.7,
     "gap_3m": 28.9,
     "ndx_1m": -1.9,
-    "gold_1m": -8.6,
+    "gold_1m": -8.5,
     "ndx_3m": 21.8,
-    "gold_3m": -7.1,
+    "gold_3m": -7.0,
     "gdxj_3m": -13.6,
     "verdict": "Gap +29pp 3m / +7pp 1m - no extreme",
     "signal": "base"
   },
   "portfolio": {
-    "current": 422153,
+    "current": 435279,
     "v2029_base": 1.94,
     "income_2029": 65416,
     "income_yield": 2.9
@@ -80,8 +80,8 @@
     "africa": {
       "name": "Africa",
       "desc": "Gold producer + developer",
-      "value": 363028,
-      "pct": 86.0,
+      "value": 375935,
+      "pct": 86.4,
       "npv": "1.645 - 3.135",
       "jur": "8% disc",
       "jsig": "base",
@@ -91,8 +91,8 @@
     "asia": {
       "name": "Asia",
       "desc": "Gold developer (construction)",
-      "value": 59125,
-      "pct": 14.0,
+      "value": 59344,
+      "pct": 13.6,
       "npv": "0.267 - 0.552",
       "jur": "12% disc",
       "jsig": "bear",
@@ -174,6 +174,6 @@
   "_raw": {
     "real_yield": 2.23,
     "fed_funds": 3.75,
-    "dxy": 101.20099639892578
+    "dxy": 101.21099853515625
   }
 }
