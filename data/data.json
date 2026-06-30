@@ -1,9 +1,9 @@
 {
-  "as_of": "2026-06-29",
+  "as_of": "2026-06-30",
   "manual_as_of": "2026-06-15",
   "model_as_of": "2026-06-23",
   "gold": {
-    "spot": 4029,
+    "spot": 4033,
     "trailing24": 3456,
     "ratio": 1.17,
     "forecast_2029": 4898,
@@ -29,7 +29,7 @@
       "id": "usd_fx",
       "label": "USD / FX",
       "signal": "base",
-      "reading": "DXY 101.1 . COFER 56.77%"
+      "reading": "DXY 101.4 . COFER 56.77%"
     },
     {
       "id": "geopolitics",
@@ -47,31 +47,31 @@
       "id": "positioning",
       "label": "Positioning & flows",
       "signal": "bull",
-      "reading": "COT 32.8% OI . opp-cost +39pp 3m"
+      "reading": "COT 32.8% OI . opp-cost +40pp 3m"
     }
   ],
   "divergence": {
-    "d_real_yield_bp": 0.0,
-    "d_dxy_pct": -0.06,
-    "expected_gold_pct": 0.06,
-    "actual_gold_pct": -0.22,
-    "residual_pp": -0.27,
+    "d_real_yield_bp": -1.0,
+    "d_dxy_pct": 0.31,
+    "expected_gold_pct": -0.18,
+    "actual_gold_pct": 0.09,
+    "residual_pp": 0.28,
     "verdict": "Tracking textbook within 0.3pp",
     "signal": "textbook"
   },
   "opportunity_cost": {
-    "gap_1m": 8.8,
-    "gap_3m": 38.9,
-    "ndx_1m": -1.6,
-    "gold_1m": -10.4,
-    "ndx_3m": 28.6,
-    "gold_3m": -10.3,
+    "gap_1m": 10.1,
+    "gap_3m": 39.6,
+    "ndx_1m": -1.5,
+    "gold_1m": -11.6,
+    "ndx_3m": 28.7,
+    "gold_3m": -10.9,
     "gdxj_3m": -10.5,
-    "verdict": "Tech stretched vs gold (+39pp 3m) - contrarian bid",
+    "verdict": "Tech stretched vs gold (+40pp 3m) - contrarian bid",
     "signal": "bull"
   },
   "portfolio": {
-    "current": 411314,
+    "current": 412220,
     "v2029_base": 1.94,
     "income_2029": 65416,
     "income_yield": 2.9
@@ -81,7 +81,7 @@
       "name": "Africa",
       "desc": "Gold producer + developer",
       "value": 350873,
-      "pct": 85.3,
+      "pct": 85.1,
       "npv": "1.645 - 3.135",
       "jur": "8% disc",
       "jsig": "base",
@@ -91,8 +91,8 @@
     "asia": {
       "name": "Asia",
       "desc": "Gold developer (construction)",
-      "value": 60441,
-      "pct": 14.7,
+      "value": 61347,
+      "pct": 14.9,
       "npv": "0.267 - 0.552",
       "jur": "12% disc",
       "jsig": "bear",
@@ -172,8 +172,8 @@
   ],
   "fetch_notes": [],
   "_raw": {
-    "real_yield": 2.19,
+    "real_yield": 2.18,
     "fed_funds": 3.75,
-    "dxy": 101.10199737548828
+    "dxy": 101.41400146484375
   }
 }
