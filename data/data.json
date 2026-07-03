@@ -3,9 +3,9 @@
   "manual_as_of": "2026-06-15",
   "model_as_of": "2026-06-23",
   "gold": {
-    "spot": 4195,
+    "spot": 4187,
     "trailing24": 3535,
-    "ratio": 1.19,
+    "ratio": 1.18,
     "forecast_2029": 4898,
     "trailing_months": 24,
     "verdict": "Bullish",
@@ -29,19 +29,19 @@
       "id": "usd_fx",
       "label": "USD / FX",
       "signal": "base",
-      "reading": "DXY 100.7 . COFER 56.77%"
+      "reading": "DXY 100.9 . COFER 56.77%"
     },
     {
       "id": "geopolitics",
       "label": "Geopolitics",
       "signal": "bear",
-      "reading": "VIX 15.9 . GPR 177 . Brent $72"
+      "reading": "VIX 15.8 . GPR 177 . Brent $72"
     },
     {
       "id": "mining_equities",
       "label": "Sector re-rate",
       "signal": "bull",
-      "reading": "GDXJ/gold 0.025 . GDX/gold 0.019 . spot/24m 1.19"
+      "reading": "GDXJ/gold 0.025 . GDX/gold 0.019 . spot/24m 1.18"
     },
     {
       "id": "positioning",
@@ -51,27 +51,27 @@
     }
   ],
   "divergence": {
-    "d_real_yield_bp": 5.0,
-    "d_dxy_pct": -0.09,
-    "expected_gold_pct": -0.42,
-    "actual_gold_pct": 1.43,
-    "residual_pp": 1.85,
-    "verdict": "Gold outperforming textbook by 1.8pp",
-    "signal": "structural_bid"
+    "d_real_yield_bp": 0.0,
+    "d_dxy_pct": 0.16,
+    "expected_gold_pct": -0.14,
+    "actual_gold_pct": -0.18,
+    "residual_pp": -0.04,
+    "verdict": "Tracking textbook within 0.0pp",
+    "signal": "textbook"
   },
   "opportunity_cost": {
-    "gap_1m": 1.1,
-    "gap_3m": 31.9,
+    "gap_1m": 1.3,
+    "gap_3m": 32.1,
     "ndx_1m": -4.3,
-    "gold_1m": -5.5,
+    "gold_1m": -5.6,
     "ndx_3m": 22.1,
-    "gold_3m": -9.8,
+    "gold_3m": -10.0,
     "gdxj_3m": -17.8,
     "verdict": "Gap +32pp 3m / +1pp 1m - no extreme",
     "signal": "base"
   },
   "portfolio": {
-    "current": 435096,
+    "current": 430390,
     "v2029_base": 1.94,
     "income_2029": 65416,
     "income_yield": 2.9
@@ -80,8 +80,8 @@
     "africa": {
       "name": "Africa",
       "desc": "Gold producer + developer",
-      "value": 373680,
-      "pct": 85.9,
+      "value": 366537,
+      "pct": 85.2,
       "npv": "1.645 - 3.135",
       "jur": "8% disc",
       "jsig": "base",
@@ -91,8 +91,8 @@
     "asia": {
       "name": "Asia",
       "desc": "Gold developer (construction)",
-      "value": 61416,
-      "pct": 14.1,
+      "value": 63853,
+      "pct": 14.8,
       "npv": "0.267 - 0.552",
       "jur": "12% disc",
       "jsig": "bear",
@@ -174,6 +174,6 @@
   "_raw": {
     "real_yield": 2.25,
     "fed_funds": 3.75,
-    "dxy": 100.6989974975586
+    "dxy": 100.85700225830078
   }
 }
