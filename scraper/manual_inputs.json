@@ -1,7 +1,7 @@
 {
   "manual_as_of": "2026-06-15",
-  "trailing24": 3456,
-  "gold_fallback": 4068,
+  "trailing24": 3408,
+  "gold_fallback": 4360,
   "metrics": {
     "wgc_cb_purchases_t": {
       "value": 243,
@@ -18,8 +18,8 @@
       "ref": "https://www.gold.org/goldhub/data/gold-reserves-by-country"
     },
     "etf_aum_delta_t": {
-      "value": -16,
-      "signal": "base",
+      "value": -74,
+      "signal": "bear",
       "cadence": "monthly",
       "note": "Gold ETF holdings change / demand (t/mo)",
       "ref": "https://www.gold.org/goldhub/data/gold-etfs-holdings-and-flows"
