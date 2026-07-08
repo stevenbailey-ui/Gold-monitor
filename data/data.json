@@ -29,13 +29,13 @@
       "id": "usd_fx",
       "label": "USD / FX",
       "signal": "base",
-      "reading": "DXY 101.0 . COFER 56.77%"
+      "reading": "DXY 101.1 . COFER 56.77%"
     },
     {
       "id": "geopolitics",
       "label": "Geopolitics",
       "signal": "bear",
-      "reading": "VIX 17.0 . GPR 177 . Brent $79"
+      "reading": "VIX 16.9 . GPR 177 . Brent $79"
     },
     {
       "id": "mining_equities",
@@ -51,12 +51,12 @@
     }
   ],
   "divergence": {
-    "d_real_yield_bp": 6.0,
-    "d_dxy_pct": -0.11,
-    "expected_gold_pct": -0.5,
-    "actual_gold_pct": -0.67,
-    "residual_pp": -0.17,
-    "verdict": "Tracking textbook within 0.2pp",
+    "d_real_yield_bp": 0.0,
+    "d_dxy_pct": 0.06,
+    "expected_gold_pct": -0.05,
+    "actual_gold_pct": -0.01,
+    "residual_pp": 0.04,
+    "verdict": "Tracking textbook within 0.0pp",
     "signal": "textbook"
   },
   "opportunity_cost": {
@@ -174,6 +174,6 @@
   "_raw": {
     "real_yield": 2.3,
     "fed_funds": 3.75,
-    "dxy": 101.00800323486328
+    "dxy": 101.06600189208984
   }
 }
