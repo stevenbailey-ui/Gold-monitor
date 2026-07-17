@@ -1,11 +1,11 @@
 {
-  "as_of": "2026-07-16",
+  "as_of": "2026-07-17",
   "manual_as_of": "2026-07-08",
   "model_as_of": "2026-06-23",
   "gold": {
-    "spot": 3979,
+    "spot": 4023,
     "trailing24": 3535,
-    "ratio": 1.13,
+    "ratio": 1.14,
     "forecast_2029": 4898,
     "trailing_months": 24,
     "verdict": "Bullish",
@@ -29,49 +29,49 @@
       "id": "usd_fx",
       "label": "USD / FX",
       "signal": "base",
-      "reading": "DXY 100.7 . COFER 56.77%"
+      "reading": "DXY 100.8 . COFER 56.77%"
     },
     {
       "id": "geopolitics",
       "label": "Geopolitics",
       "signal": "bear",
-      "reading": "VIX 16.7 . GPR 177 . Brent $85"
+      "reading": "VIX 18.8 . GPR 177 . Brent $88"
     },
     {
       "id": "mining_equities",
       "label": "Sector re-rate",
       "signal": "bull",
-      "reading": "GDXJ/gold 0.023 . GDX/gold 0.018 . spot/24m 1.13"
+      "reading": "GDXJ/gold 0.023 . GDX/gold 0.018 . spot/24m 1.14"
     },
     {
       "id": "positioning",
       "label": "Positioning & flows",
       "signal": "base",
-      "reading": "COT 31.2% OI . opp-cost +28pp 3m"
+      "reading": "COT 31.5% OI . opp-cost +24pp 3m"
     }
   ],
   "divergence": {
-    "d_real_yield_bp": -1.0,
-    "d_dxy_pct": 0.21,
-    "expected_gold_pct": -0.09,
-    "actual_gold_pct": -2.21,
-    "residual_pp": -2.12,
-    "verdict": "Gold lagging textbook by 2.1pp",
-    "signal": "gold_lagging"
+    "d_real_yield_bp": 3.0,
+    "d_dxy_pct": 0.05,
+    "expected_gold_pct": -0.34,
+    "actual_gold_pct": 1.11,
+    "residual_pp": 1.45,
+    "verdict": "Gold outperforming textbook by 1.4pp",
+    "signal": "structural_bid"
   },
   "opportunity_cost": {
-    "gap_1m": 3.1,
-    "gap_3m": 27.9,
-    "ndx_1m": -5.0,
-    "gold_1m": -8.1,
-    "ndx_3m": 10.8,
-    "gold_3m": -17.1,
-    "gdxj_3m": -28.4,
-    "verdict": "Gap +28pp 3m / +3pp 1m - no extreme",
+    "gap_1m": 2.5,
+    "gap_3m": 24.5,
+    "ndx_1m": -4.6,
+    "gold_1m": -7.1,
+    "ndx_3m": 8.6,
+    "gold_3m": -15.9,
+    "gdxj_3m": -28.8,
+    "verdict": "Gap +24pp 3m / +2pp 1m - no extreme",
     "signal": "base"
   },
   "portfolio": {
-    "current": 424404,
+    "current": 427048,
     "v2029_base": 1.94,
     "income_2029": 65416,
     "income_yield": 2.9
@@ -80,8 +80,8 @@
     "africa": {
       "name": "Africa",
       "desc": "Gold producer + developer",
-      "value": 357139,
-      "pct": 84.2,
+      "value": 360271,
+      "pct": 84.4,
       "npv": "1.645 - 3.135",
       "jur": "8% disc",
       "jsig": "base",
@@ -91,8 +91,8 @@
     "asia": {
       "name": "Asia",
       "desc": "Gold developer (construction)",
-      "value": 67265,
-      "pct": 15.8,
+      "value": 66777,
+      "pct": 15.6,
       "npv": "0.267 - 0.552",
       "jur": "12% disc",
       "jsig": "bear",
@@ -172,8 +172,8 @@
   ],
   "fetch_notes": [],
   "_raw": {
-    "real_yield": 2.32,
+    "real_yield": 2.35,
     "fed_funds": 3.75,
-    "dxy": 100.70800018310547
+    "dxy": 100.75499725341797
   }
 }
