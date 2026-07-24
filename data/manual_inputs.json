@@ -1,5 +1,5 @@
 {
-  "manual_as_of": "2026-07-19",
+  "manual_as_of": "2026-07-24",
   "trailing24": 3408,
   "gold_fallback": 4360,
   "metrics": {
@@ -7,21 +7,21 @@
       "value": 243,
       "signal": "bull",
       "cadence": "quarterly",
-      "note": "WGC net purchases, trailing 4-qtr avg (t/qtr)",
+      "note": "WGC net purchases, trailing 4-qtr avg (t/qtr); latest Q1-26, Q2-26 GDT pending",
       "ref": "https://www.gold.org/goldhub/data/gold-reserves-by-country"
     },
     "pboc_holdings_delta_t": {
       "value": 15,
       "signal": "bull",
       "cadence": "monthly",
-      "note": "PBoC reported holdings, monthly change (t); Jun-26 +15t, reserves 2,346t (WGC)",
+      "note": "PBoC reported holdings, monthly change (t); Jun-26 +15t, reserves 2,346t, 20th consecutive month (WGC)",
       "ref": "https://www.gold.org/goldhub/data/gold-reserves-by-country"
     },
     "etf_aum_delta_t": {
       "value": -74,
       "signal": "bear",
       "cadence": "monthly",
-      "note": "Gold ETF holdings change / demand (t/mo)",
+      "note": "Gold ETF holdings change / demand (t/mo); Jun-26 -74.3t, holdings 4,047t (WGC)",
       "ref": "https://www.gold.org/goldhub/data/gold-etfs-holdings-and-flows"
     },
     "deficit_pct_gdp": {
@@ -33,10 +33,10 @@
       "auto": true
     },
     "cofer_usd_share": {
-      "value": 56.77,
+      "value": 57.13,
       "signal": "base",
       "cadence": "quarterly",
-      "note": "USD share of FX reserves, IMF COFER (%)",
+      "note": "USD share of FX reserves, IMF COFER (%); Q1-26 57.13 vs Q4-25 56.42, ~half the rise is FX valuation",
       "ref": "https://data.imf.org/en/datasets/IMF.STA:COFER"
     },
     "gpr_index": {
