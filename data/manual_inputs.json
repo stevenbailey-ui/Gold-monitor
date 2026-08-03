@@ -1,27 +1,20 @@
 {
-  "manual_as_of": "2026-07-24",
+  "manual_as_of": "2026-08-03",
   "trailing24": 3408,
   "gold_fallback": 4360,
   "metrics": {
     "wgc_cb_purchases_t": {
-      "value": 243,
-      "signal": "bull",
+      "value": 195.0,
+      "signal": "base",
       "cadence": "quarterly",
-      "note": "WGC net purchases, trailing 4-qtr avg (t/qtr); latest Q1-26, Q2-26 GDT pending",
-      "ref": "https://www.gold.org/goldhub/data/gold-reserves-by-country"
-    },
-    "pboc_holdings_delta_t": {
-      "value": 15,
-      "signal": "bull",
-      "cadence": "monthly",
-      "note": "PBoC reported holdings, monthly change (t); Jun-26 +15t, reserves 2,346t, 20th consecutive month (WGC)",
+      "note": "WGC net purchases, trailing 4-qtr avg (t/qtr). Q3'25 226.3 + Q4'25 208.2 + Q1'26 56.5 (revised down from 244) + Q2'26 288.9 = 779.9t / 4 = 195.0. Base: 175-200 band (bull >=200, bear <=150). H1'26 345t is the weakest first half since 2022; WGC guides FY26 below FY25. Quarterly prints ranged 56.5-288.9 in two consecutive quarters - use the trailing average, never the spot quarter.",
       "ref": "https://www.gold.org/goldhub/data/gold-reserves-by-country"
     },
     "etf_aum_delta_t": {
       "value": -74,
       "signal": "bear",
       "cadence": "monthly",
-      "note": "Gold ETF holdings change / demand (t/mo); Jun-26 -74.3t, holdings 4,047t (WGC)",
+      "note": "Gold ETF holdings change / demand (t/mo); Jun-26 -74.3t, holdings 4,047t (WGC). Heaviest metric (20): contemporaneous R2 0.432 vs monthly gold return post-2022. Enter the RAW MONTHLY FLOW - not a 3m average and not an acceleration; both tested worse.",
       "ref": "https://www.gold.org/goldhub/data/gold-etfs-holdings-and-flows"
     },
     "deficit_pct_gdp": {
@@ -30,21 +23,6 @@
       "cadence": "quarterly",
       "note": "US federal deficit (% GDP); >6% = fiscal dominance = bull",
       "ref": "https://fred.stlouisfed.org/series/FYFSGDA188S",
-      "auto": true
-    },
-    "cofer_usd_share": {
-      "value": 57.13,
-      "signal": "base",
-      "cadence": "quarterly",
-      "note": "USD share of FX reserves, IMF COFER (%); Q1-26 57.13 vs Q4-25 56.42, ~half the rise is FX valuation",
-      "ref": "https://data.imf.org/en/datasets/IMF.STA:COFER"
-    },
-    "gpr_index": {
-      "value": 180,
-      "signal": "base",
-      "cadence": "monthly",
-      "note": "Geopolitical Risk Index (level)",
-      "ref": "https://www.matteoiacoviello.com/ai_gpr.html#chart-section",
       "auto": true
     },
     "brent": {
@@ -59,44 +37,27 @@
       "value": 0.318,
       "signal": "base",
       "cadence": "weekly",
-      "note": "COMEX Managed Money net longs (% OI), contrarian - enter as fraction",
+      "note": "COMEX Managed Money net longs (% OI), contrarian - enter as fraction. Thresholds 0.10 bull / 0.35 bear (app). Spreadsheet still on 0.25/0.45 - reconcile toward these.",
       "ref": "https://www.cftc.gov/MarketReports/CommitmentsofTraders/index.htm",
       "auto": true
-    },
-    "real_yield": {
-      "signal": "base",
-      "note": "FRED DFII10 delta - last-known-good; scraper overwrites when live",
-      "ref": "https://fred.stlouisfed.org/series/DFII10"
-    },
-    "fed_funds": {
-      "signal": "base",
-      "note": "FRED DFEDTARU delta - last-known-good",
-      "ref": "https://fred.stlouisfed.org/series/DFEDTARU"
     },
     "dxy": {
       "signal": "base",
       "note": "Yahoo DXY delta - last-known-good",
       "ref": "https://finance.yahoo.com/quote/DX-Y.NYB/"
     },
-    "vix": {
-      "signal": "base",
-      "note": "Yahoo VIX level - last-known-good",
-      "ref": "https://www.cboe.com/us/indices/dashboard/VIX/"
-    },
     "gdxj_gold": {
       "signal": "base",
       "note": "GDXJ/gold ratio - last-known-good"
-    },
-    "gdx_gold": {
-      "signal": "bull",
-      "note": "GDX/gold ratio - last-known-good"
     },
     "spot_trailing": {
       "signal": "bull",
       "note": "spot/24m ratio - last-known-good"
     },
-    "opp_cost": {
-      "signal": "base"
+    "real_curve_slope": {
+      "signal": "base",
+      "note": "30y-10y TIPS slope, 3m change (bp) - last-known-good; scraper overwrites when FRED responds",
+      "ref": "https://fred.stlouisfed.org/series/DFII30"
     }
   },
   "catalysts": [
@@ -145,11 +106,7 @@
   "manual_feeds": {
     "World Gold Council": [
       "wgc_cb_purchases_t",
-      "pboc_holdings_delta_t",
       "etf_aum_delta_t"
-    ],
-    "IMF COFER": [
-      "cofer_usd_share"
     ]
   }
 }
