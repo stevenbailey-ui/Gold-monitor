@@ -4,7 +4,7 @@
   "gold_fallback": 4360,
   "metrics": {
     "wgc_cb_purchases_t": {
-      "value": 195.0,
+      "value": 195,
       "signal": "base",
       "cadence": "quarterly",
       "note": "WGC net purchases, trailing 4-qtr avg (t/qtr). Q3'25 226.3 + Q4'25 208.2 + Q1'26 56.5 (revised down from 244) + Q2'26 288.9 = 779.9t / 4 = 195.0. Base: 175-200 band (bull >=200, bear <=150). H1'26 345t is the weakest first half since 2022; WGC guides FY26 below FY25. Quarterly prints ranged 56.5-288.9 in two consecutive quarters - use the trailing average, never the spot quarter.",
