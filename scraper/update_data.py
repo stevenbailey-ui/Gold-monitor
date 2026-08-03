@@ -73,15 +73,48 @@ def fetch_fred(series_id, notes):
         notes.append(f"{series_id}:FRED:{type(e).__name__}"); return None
 
 
-def fetch_gpr(notes):
-    """Latest monthly AI-GPR level from Iacoviello CSV. Column GPR_AI, last row."""
-    url = "https://www.matteoiacoviello.com/ai_gpr_files/ai_gpr_data_monthly.csv"
+def fetch_fred_history(series_id, notes, limit=180):
+    """Recent observations for a FRED series, newest first, as [(date_str, value)].
+    Missing prints are published as '.' and are dropped."""
+    key = os.environ.get("FRED_API_KEY")
+    if not key:
+        notes.append(f"{series_id}:no_FRED_key"); return None
     try:
-        rows = [r for r in _get(url).splitlines() if r.strip()]
-        idx = rows[0].split(",").index("GPR_AI")
-        return float(rows[-1].split(",")[idx])
+        url = (f"https://api.stlouisfed.org/fred/series/observations?series_id={series_id}"
+               f"&api_key={key}&file_type=json&sort_order=desc&limit={limit}")
+        obs = json.loads(_get(url))["observations"]
+        return [(o["date"], float(o["value"])) for o in obs
+                if o.get("value") not in (".", "", None)]
     except Exception as e:
-        notes.append(f"gpr:{type(e).__name__}"); return None
+        notes.append(f"{series_id}:FRED_hist:{type(e).__name__}"); return None
+
+
+def real_curve_slope(notes):
+    """Real curve slope = 30y TIPS - 10y TIPS, and its change over ~3 months.
+
+    Rationale: the 30y real yield adds nothing to the 10y as a standalone regressor
+    (post-2022 R2 0.172 vs 0.200; it beats the 10y in 2.5% of rolling 36m windows).
+    The SLOPE is a different object - it proxies the term premium, i.e. compensation
+    demanded for duration and supply risk. d(slope) vs monthly gold return: t +4.64,
+    n=196. Steepening = fiscal risk being priced = gold-supportive.
+
+    Computed statelessly from FRED history, so it survives a missing prior data.json.
+    """
+    a = fetch_fred_history("DFII30", notes)
+    b = fetch_fred_history("DFII10", notes)
+    if not a or not b:
+        notes.append("slope:no_series"); return None
+    d30, d10 = dict(a), dict(b)
+    common = sorted(set(d30) & set(d10), reverse=True)      # newest first
+    lb = getattr(C, "SLOPE_LOOKBACK_OBS", 63)
+    if len(common) < lb + 1:
+        notes.append(f"slope:short_history({len(common)})"); return None
+    now = d30[common[0]] - d10[common[0]]
+    then = d30[common[lb]] - d10[common[lb]]
+    chg = (now - then) * 100.0                               # pp -> bp
+    return {"as_of": common[0], "prior_as_of": common[lb],
+            "slope_now_pp": round(now, 3), "slope_prior_pp": round(then, 3),
+            "change_bp": round(chg, 1)}
 
 
 def fetch_cot(notes):
@@ -100,6 +133,70 @@ def fetch_cot(notes):
         return (lo - sh) / oi
     except Exception as e:
         notes.append(f"cot:{type(e).__name__}"); return None
+
+
+def yahoo_daily_ohlcv(symbol, rng_days, timeout=12):
+    """Daily bars including volume. Same endpoint as yahoo_daily; volume lives in
+    indicators.quote[0].volume, so this is a field addition, not a new data source."""
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range={rng_days}d&interval=1d"
+    res = json.loads(_get(url, timeout=timeout))["chart"]["result"][0]
+    q = res["indicators"]["quote"][0]
+    out = []
+    for t, c, v in zip(res["timestamp"], q["close"], q["volume"]):
+        if c is not None and v:
+            out.append((datetime.datetime.utcfromtimestamp(t), float(c), float(v)))
+    return out
+
+
+def median_volume(bars, n):
+    """Median (not mean) of the last n sessions' volume. Median deliberately: a single
+    block trade on an illiquid AIM line distorts a mean badly and would flatter the
+    days-to-exit figure exactly when it matters most."""
+    if not bars or len(bars) < max(5, n // 3):
+        return None
+    vols = sorted(v for _, _, v in bars[-n:])
+    if not vols:
+        return None
+    k = len(vols)
+    return vols[k // 2] if k % 2 else 0.5 * (vols[k // 2 - 1] + vols[k // 2])
+
+
+def liquidity_profile(ticker, shares, pence, notes):
+    """Exit liquidity for one holding: ADTV in GBP, days to exit at a fixed
+    participation rate, and a 20d/60d volume trend. Returns None on any failure so a
+    dead feed can never block the run."""
+    if not ticker or not shares:
+        return None
+    long_w = getattr(C, "LIQ_WINDOW_LONG", 60)
+    short_w = getattr(C, "LIQ_WINDOW_SHORT", 20)
+    part = getattr(C, "LIQ_PARTICIPATION", 0.20)
+    d_base = getattr(C, "LIQ_DAYS_BASE", 5.0)
+    d_bear = getattr(C, "LIQ_DAYS_BEAR", 20.0)
+    try:
+        bars = yahoo_daily_ohlcv(ticker, long_w * 2, timeout=10)
+    except Exception as e:
+        notes.append(f"liq:{type(e).__name__}"); return None
+    v60, v20 = median_volume(bars, long_w), median_volume(bars, short_w)
+    if not v60:
+        notes.append("liq:no_volume"); return None
+    days = shares / (part * v60) if part * v60 > 0 else None
+    if days is None:
+        sig = "base"
+    elif days <= d_base:
+        sig = "bull"          # exitable inside a week at the assumed participation
+    elif days >= d_bear:
+        sig = "bear"          # a month or more of the tape to clear the position
+    else:
+        sig = "base"
+    trend = round(v20 / v60, 2) if (v20 and v60) else None
+    adtv_gbp = round(v60 * (pence or 0) / 100) if pence else None
+    return {
+        "adtv_gbp": adtv_gbp,
+        "days_to_exit": round(days, 1) if days is not None else None,
+        "participation": part,
+        "trend_20_60": trend,
+        "signal": sig,
+    }
 
 
 def trailing_24m(manual, notes, bars=None):
@@ -172,6 +269,12 @@ def score_metric(m, px, fred, manual, prev):
         if m["higher_is_bull"]:
             return "bull" if r >= m["bull_at"] else "bear" if r <= m["bear_at"] else "base"
         return "bull" if r <= m["bull_at"] else "bear" if r >= m["bear_at"] else "base"
+    if k == "slope3m":
+        chg = px.get("_slope_change_bp")
+        if chg is None: return fb
+        if chg >= m["bull_at"]: return "bull"
+        if chg <= m["bear_at"]: return "bear"
+        return "base"
     if k == "ratio_trailing":
         spot, trail = px.get("gold"), px.get("_trailing")
         if not spot or not trail: return fb
@@ -282,8 +385,9 @@ def main():
     notes = []
     px = {k: fetch_price(k, notes) for k in C.PRICE_SYMBOLS}
     fred = {k: fetch_fred(v, notes) for k, v in C.FRED_SERIES.items()}
-    px["gpr"] = fetch_gpr(notes)
     px["cot"] = fetch_cot(notes)
+    slope = real_curve_slope(notes)
+    px["_slope_change_bp"] = slope["change_bp"] if slope else None
     # One gold daily fetch, shared by trailing-average and the opportunity-cost lens.
     try:
         gold_bars = yahoo_daily(C.PRICE_SYMBOLS["gold"], C.TRAILING_RANGE_DAYS)
@@ -309,33 +413,46 @@ def main():
     composite = int(round(composite))
     vname, tag = C.verdict(composite)
 
-    gj, gd = px.get("gdxj"), px.get("gdx")
-    sector_reading = " . ".join([
-        f"GDXJ/gold {gj/gold:.3f}" if (gj and gold) else "GDXJ/gold n/a",
-        f"GDX/gold {gd/gold:.3f}" if (gd and gold) else "GDX/gold n/a",
-        f"spot/24m {gold/trail:.2f}" if (gold and trail) else "spot/24m n/a",
-    ])
-    opp = f"opp-cost {oc['gap_3m']:+.0f}pp 3m" if oc["gap_3m"] is not None else "opp-cost n/a"
+    # The divergence panel needs yesterday's 10y real yield and DXY. Those used to be
+    # persisted as a side effect of real_yield/dxy being `delta` METRICS. real_yield is no
+    # longer a metric, so persist both explicitly - otherwise the panel silently dies.
+    if fred.get("dfii10") is not None: raw_next["real_yield"] = fred["dfii10"]
+    if px.get("dxy") is not None:      raw_next["dxy"] = px["dxy"]
+
+    gj = px.get("gdxj")
     mm = manual["metrics"]
+    cot_v = px.get("cot")
+    if cot_v is None: cot_v = mm["cot_mm_net_pct_oi"]["value"]
+    slope_txt = (f"real slope {slope['slope_now_pp']:+.2f}pp ({slope['change_bp']:+.0f}bp 3m)"
+                 if slope else "real slope n/a")
     readings = {
-        "central_bank":    f"WGC {mm['wgc_cb_purchases_t']['value']} t/qtr",
-        "macro_rates":     "Fed hold; real-yield link broken",
-        "usd_fx":          f"DXY {round(px.get('dxy') or 0,1)} . COFER {mm['cofer_usd_share']['value']}%",
-        "geopolitics":     f"VIX {round(px.get('vix') or 0,1)} . GPR {round(px.get('gpr') or mm['gpr_index']['value'])} . Brent ${round(px.get('brent') or mm['brent']['value'])}",
-        "mining_equities": sector_reading,
-        "positioning":     f"COT {round((px.get('cot') or mm['cot_mm_net_pct_oi']['value'])*100,1)}% OI . {opp}",
+        "demand_flows": " . ".join([
+            f"ETF {mm['etf_aum_delta_t']['value']:+g} t/mo",
+            f"COT {round(cot_v*100,1)}% OI",
+            f"CB {mm['wgc_cb_purchases_t']['value']} t/qtr",
+        ]),
+        "macro_rates": slope_txt,
+        "usd_geo": " . ".join([
+            f"DXY {round(px.get('dxy') or 0,1)}",
+            f"Brent ${round(px.get('brent') or mm['brent']['value'])}",
+        ]),
+        "mining_equities": " . ".join([
+            f"spot/24m {gold/trail:.2f}" if (gold and trail) else "spot/24m n/a",
+            f"GDXJ/gold {gj/gold:.3f}" if (gj and gold) else "GDXJ/gold n/a",
+        ]),
     }
     themes = [{"id": t, "label": C.THEME_LABELS[t], "signal": C.theme_signal(theme_net[t], theme_max[t]),
                "reading": readings[t]} for t in C.THEMES]
 
     # Holdings -> GBP value + %, anonymised. No shares, no per-share price published.
     H = load_holdings(notes)
-    vals = {}
+    vals, liq = {}, {}
     for key in ("africa", "asia"):
         h = H.get(key, {})
         live = fetch_holding_price(h["ticker"], notes) if h.get("ticker") else None
         pence = live if live else h.get("px_fallback")
         vals[key] = round(h.get("shares", 0) * pence / 100) if (h.get("shares") and pence) else None
+        liq[key] = liquidity_profile(h.get("ticker"), h.get("shares"), pence, notes)
     total = sum(v for v in vals.values() if v) or 0
     pct = lambda v: round(100 * v / total, 1) if (v and total) else None
 
@@ -352,6 +469,11 @@ def main():
             "lens": (f"{val[key]['pfcf_mult']:g}\u00d7 P/FCF \u00b7 {round(val[key]['npv_wt']*100)}/{round(val[key]['pfcf_wt']*100)} NPV/P-FCF"
                      if None not in (val[key].get("pfcf_mult"), val[key].get("npv_wt"), val[key].get("pfcf_wt")) else ""),
             "next": manual["catalysts"][0]["label"] if key == "africa" else manual["catalysts"][1]["label"],
+            "liq": (f"{liq[key]['days_to_exit']:g}d @ {round(liq[key]['participation']*100)}% ADV"
+                    if (liq[key] and liq[key].get("days_to_exit") is not None) else "\u2014"),
+            "lsig": (liq[key]["signal"] if liq[key] else "base"),
+            "adtv": (liq[key]["adtv_gbp"] if liq[key] else None),
+            "ltrend": (liq[key]["trend_20_60"] if liq[key] else None),
         }
 
     out = {
@@ -364,6 +486,7 @@ def main():
                  "trailing_months": n_months, "verdict": vname, "tag": tag, "composite": composite},
         "themes": themes,
         "divergence": divergence(px, fred, prev, notes),
+        "real_curve_slope": slope,
         "opportunity_cost": oc,
         "portfolio": {"current": total or None,
                       "v2029_base": snap["scenarios"]["2029"]["base"],
