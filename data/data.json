@@ -3,7 +3,7 @@
   "manual_as_of": "2026-08-03",
   "model_as_of": "2026-06-23",
   "gold": {
-    "spot": 4103,
+    "spot": 4104,
     "trailing24": 3605,
     "ratio": 1.14,
     "forecast_2029": 4898,
@@ -40,11 +40,11 @@
   ],
   "divergence": {
     "d_real_yield_bp": 0.0,
-    "d_dxy_pct": -0.01,
-    "expected_gold_pct": 0.01,
-    "actual_gold_pct": -0.22,
-    "residual_pp": -0.23,
-    "verdict": "Tracking textbook within 0.2pp",
+    "d_dxy_pct": -0.02,
+    "expected_gold_pct": 0.02,
+    "actual_gold_pct": 0.02,
+    "residual_pp": -0.0,
+    "verdict": "Tracking textbook within 0.0pp",
     "signal": "textbook"
   },
   "real_curve_slope": {
@@ -66,7 +66,7 @@
     "signal": "base"
   },
   "portfolio": {
-    "current": 415109,
+    "current": 414969,
     "v2029_base": 1.94,
     "income_2029": 65416,
     "income_yield": 2.9
@@ -75,8 +75,8 @@
     "africa": {
       "name": "Africa",
       "desc": "Gold producer + developer",
-      "value": 353693,
-      "pct": 85.2,
+      "value": 353066,
+      "pct": 85.1,
       "npv": "1.645 - 3.135",
       "jur": "8% disc",
       "jsig": "base",
@@ -84,14 +84,14 @@
       "next": "New mine FID",
       "liq": "9.1d @ 20% ADV",
       "lsig": "base",
-      "adtv": 194009,
+      "adtv": 193666,
       "ltrend": 0.53
     },
     "asia": {
       "name": "Asia",
       "desc": "Gold developer (construction)",
-      "value": 61416,
-      "pct": 14.8,
+      "value": 61903,
+      "pct": 14.9,
       "npv": "0.267 - 0.552",
       "jur": "12% disc",
       "jsig": "bear",
@@ -99,7 +99,7 @@
       "next": "Flagship first gold",
       "liq": "0.7d @ 20% ADV",
       "lsig": "bull",
-      "adtv": 455169,
+      "adtv": 458781,
       "ltrend": 0.93
     }
   },
@@ -176,6 +176,6 @@
   "fetch_notes": [],
   "_raw": {
     "real_yield": 2.41,
-    "dxy": 99.83699798583984
+    "dxy": 99.81400299072266
   }
 }
