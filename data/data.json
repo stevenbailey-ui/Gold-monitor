@@ -1,77 +1,72 @@
 {
-  "as_of": "2026-07-31",
-  "manual_as_of": "2026-07-24",
+  "as_of": "2026-08-03",
+  "manual_as_of": "2026-08-03",
   "model_as_of": "2026-06-23",
   "gold": {
-    "spot": 4099,
-    "trailing24": 3535,
-    "ratio": 1.16,
+    "spot": 4112,
+    "trailing24": 3605,
+    "ratio": 1.14,
     "forecast_2029": 4898,
     "trailing_months": 24,
-    "verdict": "Bullish",
-    "tag": "BULL",
-    "composite": 24
+    "verdict": "Bearish",
+    "tag": "BEAR",
+    "composite": -22
   },
   "themes": [
     {
-      "id": "central_bank",
-      "label": "Central-bank bid",
-      "signal": "bull",
-      "reading": "WGC 243 t/qtr"
+      "id": "demand_flows",
+      "label": "Demand & flows",
+      "signal": "bear",
+      "reading": "ETF -74 t/mo . COT 31.1% OI . CB 195 t/qtr"
     },
     {
       "id": "macro_rates",
       "label": "Macro & rates",
-      "signal": "base",
-      "reading": "Fed hold; real-yield link broken"
-    },
-    {
-      "id": "usd_fx",
-      "label": "USD / FX",
-      "signal": "base",
-      "reading": "DXY 99.8 . COFER 57.13%"
-    },
-    {
-      "id": "geopolitics",
-      "label": "Geopolitics",
       "signal": "bear",
-      "reading": "VIX 16.0 . GPR 177 . Brent $90"
+      "reading": "real slope +0.57pp (-18bp 3m)"
+    },
+    {
+      "id": "usd_geo",
+      "label": "USD & geopolitics",
+      "signal": "bear",
+      "reading": "DXY 99.8 . Brent $84"
     },
     {
       "id": "mining_equities",
       "label": "Sector re-rate",
       "signal": "bull",
-      "reading": "GDXJ/gold 0.023 . GDX/gold 0.018 . spot/24m 1.16"
-    },
-    {
-      "id": "positioning",
-      "label": "Positioning & flows",
-      "signal": "base",
-      "reading": "COT 31.1% OI . opp-cost +14pp 3m"
+      "reading": "spot/24m 1.14 . GDXJ/gold 0.023"
     }
   ],
   "divergence": {
     "d_real_yield_bp": 0.0,
-    "d_dxy_pct": -0.17,
-    "expected_gold_pct": 0.15,
-    "actual_gold_pct": -1.62,
-    "residual_pp": -1.77,
-    "verdict": "Gold lagging textbook by 1.8pp",
-    "signal": "gold_lagging"
+    "d_dxy_pct": 0.04,
+    "expected_gold_pct": -0.04,
+    "actual_gold_pct": 0.3,
+    "residual_pp": 0.35,
+    "verdict": "Tracking textbook within 0.3pp",
+    "signal": "textbook"
+  },
+  "real_curve_slope": {
+    "as_of": "2026-07-30",
+    "prior_as_of": "2026-04-29",
+    "slope_now_pp": 0.57,
+    "slope_prior_pp": 0.75,
+    "change_bp": -18.0
   },
   "opportunity_cost": {
-    "gap_1m": -5.9,
+    "gap_1m": -5.1,
     "gap_3m": 14.2,
     "ndx_1m": -5.1,
-    "gold_1m": 0.7,
+    "gold_1m": -0.0,
     "ndx_3m": 3.0,
     "gold_3m": -11.2,
     "gdxj_3m": -18.0,
-    "verdict": "Gap +14pp 3m / -6pp 1m - no extreme",
+    "verdict": "Gap +14pp 3m / -5pp 1m - no extreme",
     "signal": "base"
   },
   "portfolio": {
-    "current": 402891,
+    "current": 414934,
     "v2029_base": 1.94,
     "income_2029": 65416,
     "income_yield": 2.9
@@ -80,24 +75,32 @@
     "africa": {
       "name": "Africa",
       "desc": "Gold producer + developer",
-      "value": 341475,
-      "pct": 84.8,
+      "value": 354006,
+      "pct": 85.3,
       "npv": "1.645 - 3.135",
       "jur": "8% disc",
       "jsig": "base",
       "lens": "10\u00d7 P/FCF \u00b7 20/80 NPV/P-FCF",
-      "next": "New mine FID"
+      "next": "New mine FID",
+      "liq": "9.1d @ 20% ADV",
+      "lsig": "base",
+      "adtv": 194181,
+      "ltrend": 0.53
     },
     "asia": {
       "name": "Asia",
       "desc": "Gold developer (construction)",
-      "value": 61416,
-      "pct": 15.2,
+      "value": 60928,
+      "pct": 14.7,
       "npv": "0.267 - 0.552",
       "jur": "12% disc",
       "jsig": "bear",
       "lens": "6\u00d7 P/FCF \u00b7 15/85 NPV/P-FCF",
-      "next": "Flagship first gold"
+      "next": "Flagship first gold",
+      "liq": "0.7d @ 20% ADV",
+      "lsig": "bull",
+      "adtv": 451557,
+      "ltrend": 0.93
     }
   },
   "scenarios": {
@@ -172,8 +175,7 @@
   ],
   "fetch_notes": [],
   "_raw": {
-    "real_yield": 2.41,
-    "fed_funds": 3.75,
-    "dxy": 99.8030014038086
+    "dxy": 99.8479995727539,
+    "real_yield": 2.41
   }
 }
