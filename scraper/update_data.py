@@ -199,6 +199,31 @@ def liquidity_profile(ticker, shares, pence, notes):
     }
 
 
+def n_session_change(sym_key, window, unit, notes):
+    """Change in a Yahoo series over `window` completed sessions.
+
+    unit="abs" -> absolute units (DXY index points); unit="pct" -> percent.
+    Stateless: computed from a fresh history pull, so it survives a missing or stale
+    prior data.json. The old `delta` kind compared today against yesterday's stored
+    value, which made the metric hostage to the previous run having succeeded.
+    """
+    sym = C.PRICE_SYMBOLS.get(sym_key)
+    if not sym:
+        notes.append(f"chg:{sym_key}:no_symbol"); return None
+    rng = max(90, int(window * 2.2) + 30)      # calendar days to cover N sessions
+    try:
+        bars = yahoo_daily(sym, rng, timeout=10)
+    except Exception as e:
+        notes.append(f"chg:{sym_key}:{type(e).__name__}"); return None
+    closes = [c for _, c in bars]
+    if len(closes) < window + 1:
+        notes.append(f"chg:{sym_key}:short({len(closes)})"); return None
+    now, then = closes[-1], closes[-1 - window]
+    if not then:
+        return None
+    return round(now - then, 3) if unit == "abs" else round((now / then - 1) * 100, 2)
+
+
 def trailing_24m(manual, notes, bars=None):
     """Monthly average of daily closes, last 24 completed months. Fallback to manual.
     Reuses pre-fetched daily `bars` when supplied (avoids a duplicate gold fetch)."""
@@ -240,28 +265,20 @@ def score_metric(m, px, fred, manual, prev):
     k = m["kind"]
     if k == "manual":
         return fb
-    if k == "delta":
-        cur = fred.get(m["src"]) if m["src"] in C.FRED_SERIES else px.get(m["src"])
-        prior = prev.get("_raw", {}).get(m["id"])
-        if cur is None or prior is None:
-            return fb
-        d = cur - prior
-        bull = d <= m["bull_at"] if not m["higher_is_bull"] else d >= m["bull_at"]
-        bear = d >= m["bear_at"] if not m["higher_is_bull"] else d <= m["bear_at"]
-        return "bull" if bull else "bear" if bear else "base"
+    if k == "chg_n":
+        # n-session change, precomputed into px by n_session_change(). Falling = bull for
+        # both current users (a weaker dollar and cheaper oil are each gold-supportive).
+        chg = px.get("_chg_" + m["id"])
+        if chg is None: return fb
+        if chg <= m["bull_at"]: return "bull"
+        if chg >= m["bear_at"]: return "bear"
+        return "base"
     if k == "level":
         cur = fred.get(m["src"]) if m["src"] in C.FRED_SERIES else px.get(m["src"])
         if cur is None: return fb
         if m["higher_is_bull"]:
             return "bull" if cur >= m["bull_at"] else "bear" if cur <= m["bear_at"] else "base"
         return "bull" if cur <= m["bull_at"] else "bear" if cur >= m["bear_at"] else "base"
-    if k == "band":
-        cur = px.get(m["src"])
-        if cur is None: cur = man.get("value")   # feed fail -> last manual value
-        if cur is None: return fb                # no value at all -> manual signal
-        if cur >= m["hi"]: return m["above_hi"]
-        if cur < m["lo"]:  return m["below_lo"]
-        return m["mid"]
     if k == "ratio":
         n, dn = px.get(m["num"]), px.get(m["den"])
         if not n or not dn: return fb
@@ -388,6 +405,10 @@ def main():
     px["cot"] = fetch_cot(notes)
     slope = real_curve_slope(notes)
     px["_slope_change_bp"] = slope["change_bp"] if slope else None
+    for _m in C.METRICS:
+        if _m.get("kind") == "chg_n":
+            px["_chg_" + _m["id"]] = n_session_change(
+                _m["sym"], _m["window"], _m.get("unit", "abs"), notes)
     # One gold daily fetch, shared by trailing-average and the opportunity-cost lens.
     try:
         gold_bars = yahoo_daily(C.PRICE_SYMBOLS["gold"], C.TRAILING_RANGE_DAYS)
@@ -407,9 +428,6 @@ def main():
         composite += m["weight"] * SIG[sig]
         theme_net[m["theme"]] += m["weight"] * SIG[sig]
         theme_max[m["theme"]] += m["weight"]
-        if m.get("kind") == "delta":
-            src = m["src"]; v = fred.get(src) if src in C.FRED_SERIES else px.get(src)
-            if v is not None: raw_next[m["id"]] = v
     composite = int(round(composite))
     vname, tag = C.verdict(composite)
 
@@ -433,8 +451,11 @@ def main():
         ]),
         "macro_rates": slope_txt,
         "usd_geo": " . ".join([
-            f"DXY {round(px.get('dxy') or 0,1)}",
-            f"Brent ${round(px.get('brent') or mm['brent']['value'])}",
+            (f"DXY {round(px.get('dxy') or 0,1)} ({px['_chg_dxy']:+.1f} 20d)"
+             if px.get("_chg_dxy") is not None else f"DXY {round(px.get('dxy') or 0,1)}"),
+            (f"Brent ${round(px.get('brent') or mm['brent']['value'])} ({px['_chg_brent']:+.0f}% 3m)"
+             if px.get("_chg_brent") is not None else
+             f"Brent ${round(px.get('brent') or mm['brent']['value'])}"),
         ]),
         "mining_equities": " . ".join([
             f"spot/24m {gold/trail:.2f}" if (gold and trail) else "spot/24m n/a",

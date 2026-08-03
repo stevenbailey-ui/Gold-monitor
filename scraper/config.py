@@ -21,6 +21,24 @@ v22 (2026-08-03) rationalisation, 16 metrics -> 9:
     rates channel; 10y real R2 has decayed to 0.075 on the trailing 36m window),
     vix, gpr_index, opp_cost (each too small to change a verdict on a 100pt scale).
   - Manual share of composite cut 42% -> 28%.
+
+v23 (2026-08-03) recalibration of the usd_geo theme. Both metrics were measured against
+5 years of daily bars (1,257 sessions) and both were found to be non-functional:
+  - dxy was a ONE-DAY delta with a +/-2.0 pt threshold. |1d change| percentiles are
+    p50 0.26 / p90 0.76 / p95 0.93, so the threshold fired on 0.2% of sessions - three
+    days in five years. 12 of 100 points were pinned at base. The threshold was never
+    the problem; the window was. At 20 sessions, +/-2.0 fires on 31.8%.
+  - brent was a non-monotonic band (<50 bear / 50-70 base / >=70 bear). Brent spent
+    0.0% of 1,258 sessions below 50 - that state is unreachable - and 82.6% above 70,
+    so the metric read bear five-sixths of the time and could never read bull. A
+    constant -6 offset, not a classifier. Replaced with the 3m % change: +/-15% fires
+    on 25.2% of sessions.
+  - `delta` and `band` each had exactly one user; both are replaced by a single
+    parameterised `chg_n` kind, so this is a net reduction of one scoring branch.
+  CAVEAT: the new brent rule is monotonic (falling oil = bull, via the
+  oil -> CPI -> hawkish-Fed channel). It will therefore misread a large oil decline
+  driven by demand destruction, which the old <50 bear state was meant to catch but
+  never did. Accepted deliberately: an unreachable state catches nothing.
 """
 
 THEMES = ["demand_flows", "macro_rates", "usd_geo", "mining_equities"]
@@ -74,13 +92,12 @@ METRICS = [
      "label": "US federal deficit (% GDP) [FRED signed: -6=6% deficit; bull <=-6, bear >=-3]"},
 
     # --- USD & geopolitics ----------------------------------------------- 18
-    {"id": "dxy", "theme": "usd_geo", "weight": 12, "kind": "delta",
-     "src": "dxy", "bull_at": -2, "bear_at": 2, "higher_is_bull": False,
-     "label": "DXY (delta index pts)"},
-    {"id": "brent", "theme": "usd_geo", "weight": 6, "kind": "band",
-     "src": "brent", "lo": 50, "hi": 70,
-     "below_lo": "bear", "mid": "base", "above_hi": "bear",
-     "label": "Brent crude ($/bbl) [band: <50 or >=70 bear, else base]"},
+    {"id": "dxy", "theme": "usd_geo", "weight": 12, "kind": "chg_n",
+     "sym": "dxy", "window": 20, "unit": "abs", "bull_at": -2.0, "bear_at": 2.0,
+     "label": "DXY, 20-session change (index pts) [falling dollar = bull]"},
+    {"id": "brent", "theme": "usd_geo", "weight": 6, "kind": "chg_n",
+     "sym": "brent", "window": 63, "unit": "pct", "bull_at": -15.0, "bear_at": 15.0,
+     "label": "Brent crude, 3m change (%) [falling oil eases the CPI -> hawkish-Fed channel]"},
 
     # --- Sector re-rate --------------------------------------------------- 26
     {"id": "spot_trailing", "theme": "mining_equities", "weight": 16, "kind": "ratio_trailing",
