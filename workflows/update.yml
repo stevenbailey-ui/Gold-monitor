@@ -2,8 +2,8 @@ name: Update EOD data
 
 on:
   schedule:
-    # 21:30 UTC weekdays — after US market close. Adjust as you like.
-    - cron: "30 21 * * 1-5"
+    # 20:30 UTC weekdays — after US market close. Adjust as you like.
+   
   workflow_dispatch: {}   # lets you run it manually from the Actions tab
 
 permissions:
