@@ -3,9 +3,9 @@
   "manual_as_of": "2026-08-21",
   "model_as_of": "2026-08-21",
   "gold": {
-    "spot": 4653,
+    "spot": 4628,
     "trailing24": 3605,
-    "ratio": 1.29,
+    "ratio": 1.28,
     "forecast_2029": 4898,
     "trailing_months": 24,
     "verdict": "Bullish",
@@ -29,23 +29,23 @@
       "id": "usd_geo",
       "label": "USD & geopolitics",
       "signal": "bull",
-      "reading": "DXY 98.7 (-2.8 20d) . Brent $94 (-8% 3m)"
+      "reading": "DXY 98.7 (-2.7 20d) . Brent $94 (-8% 3m)"
     },
     {
       "id": "mining_equities",
       "label": "Sector re-rate",
       "signal": "bull",
-      "reading": "spot/24m 1.29 . GDXJ/gold 0.028"
+      "reading": "spot/24m 1.28 . GDXJ/gold 0.028"
     }
   ],
   "divergence": {
     "d_real_yield_bp": 0.0,
-    "d_dxy_pct": -0.21,
-    "expected_gold_pct": 0.19,
-    "actual_gold_pct": 1.71,
-    "residual_pp": 1.52,
-    "verdict": "Gold outperforming textbook by 1.5pp",
-    "signal": "structural_bid"
+    "d_dxy_pct": 0.08,
+    "expected_gold_pct": -0.08,
+    "actual_gold_pct": -0.55,
+    "residual_pp": -0.47,
+    "verdict": "Tracking textbook within 0.5pp",
+    "signal": "textbook"
   },
   "real_curve_slope": {
     "as_of": "2026-08-19",
@@ -55,18 +55,18 @@
     "change_bp": -7.0
   },
   "opportunity_cost": {
-    "gap_1m": -14.3,
-    "gap_3m": -2.8,
+    "gap_1m": -13.6,
+    "gap_3m": -2.2,
     "ndx_1m": 0.7,
-    "gold_1m": 15.0,
+    "gold_1m": 14.4,
     "ndx_3m": -0.3,
-    "gold_3m": 2.5,
+    "gold_3m": 1.9,
     "gdxj_3m": 13.9,
-    "verdict": "Gap -3pp 3m / -14pp 1m - no extreme",
+    "verdict": "Gap -2pp 3m / -14pp 1m - no extreme",
     "signal": "base"
   },
   "portfolio": {
-    "current": 517646,
+    "current": 527544,
     "v2029_base": 1.79,
     "income_2029": 65416,
     "income_yield": 2.9
@@ -75,8 +75,8 @@
     "africa": {
       "name": "Africa",
       "desc": "Gold producer + developer",
-      "value": 442534,
-      "pct": 85.5,
+      "value": 452017,
+      "pct": 85.7,
       "npv": "0.897 - 2.641",
       "jur": "8% disc",
       "jsig": "base",
@@ -84,14 +84,14 @@
       "next": "New mine FID",
       "liq": "7.3d @ 20% ADV",
       "lsig": "base",
-      "adtv": 305183,
-      "ltrend": 1.63
+      "adtv": 311722,
+      "ltrend": 1.64
     },
     "asia": {
       "name": "Asia",
       "desc": "Gold developer (construction)",
-      "value": 75112,
-      "pct": 14.5,
+      "value": 75527,
+      "pct": 14.3,
       "npv": "0.263 - 0.72",
       "jur": "11% disc",
       "jsig": "bear",
@@ -99,7 +99,7 @@
       "next": "Flagship first gold",
       "liq": "0.8d @ 20% ADV",
       "lsig": "bull",
-      "adtv": 483326,
+      "adtv": 485992,
       "ltrend": 0.93
     }
   },
@@ -176,6 +176,6 @@
   "fetch_notes": [],
   "_raw": {
     "real_yield": 2.35,
-    "dxy": 98.65399932861328
+    "dxy": 98.73899841308594
   }
 }
