@@ -83,7 +83,7 @@ function render(D){
         <span style="font-weight:600">${x.value!=null?"\u00a3"+f0(x.value):"\u2014"} \u00b7 <span style="color:var(--link)">${x.pct!=null?x.pct+"%":"\u2014"}</span></span></div>
       <div class="kv"><span class="lbl">NPV \u00a3/sh (bear\u2013bull)</span><span style="font-weight:600">${x.npv}</span></div>
       <div class="kv"><span class="lbl">Risk lens</span><span style="font-weight:600">${x.lens||"\u2014"}</span></div>
-      <div class="kv"><span class="lbl">Gold \u03b2 (GBP, ${x.beta_r2!=null?"R\u00b2 "+x.beta_r2:"n/a"})</span><span style="font-weight:600">${x.beta!=null?x.beta+"\u00d7":"\u2014"}</span></div>
+      <div class="kv"><span class="lbl">Gold \u03b2 up \u00b7 down (GBP)</span><span style="font-weight:600${x.beta_adverse?";color:var(--neg)":""}">${x.beta_up!=null&&x.beta_down!=null?x.beta_up+"\u00d7 \u00b7 "+x.beta_down+"\u00d7":(x.beta!=null?x.beta+"\u00d7":"\u2014")}</span></div>
       <div class="kv"><span class="lbl">Exit liquidity</span><span style="font-weight:600${x.lsig==="bear"?";color:var(--neg)":""}">${x.liq||"\u2014"}</span></div>
       <div style="font-size:11px;color:var(--t3);margin-top:8px">Next: ${x.next}</div></div>`;};
   const acts=D.actions.map(a=>`<div class="act"><div class="when"><div class="wt">${a.when}</div>
@@ -150,15 +150,16 @@ function render(D){
 
   const rotBlock=(()=>{
     const r=D.rotation,ha=h.africa||{},hb=h.asia||{},sgn=n=>n==null?"\u2014":(n>0?"+":"")+n;
-    const ba=ha.beta,bb=hb.beta;
-    if(!r&&ba==null&&bb==null) return `<div class="card" style="margin-bottom:12px"><div class="row">
+    const bx=(o)=>o.beta_up!=null&&o.beta_down!=null?`${o.beta_up}\u00d7 up \u00b7 ${o.beta_down}\u00d7 down`:(o.beta!=null?o.beta+"\u00d7":"\u2014");
+    if(!r&&ha.beta==null&&hb.beta==null) return `<div class="card" style="margin-bottom:12px"><div class="row">
       <span style="font-size:13px;font-weight:600">Gold beta \u00b7 rotation</span>
       <span class="pill sm p-base">N/A</span></div>
-      <div class="sub" style="margin-top:6px">Awaiting beta history \u2014 needs 25+ aligned sessions.</div></div>`;
-    const pill=r?(r.signal==="bull"?"p-bull":r.signal==="bear"?"p-bear":"p-base"):"p-base";
-    const lbl=r?(r.signal==="bull"?"ASIA AHEAD":r.signal==="bear"?"AFRICA RICH":"IN LINE"):"IN LINE";
-    const rcol=r&&r.residual_pp>0?"var(--neg)":r&&r.residual_pp<0?"var(--pos)":"var(--t1)";
-    const weak=(ha.beta_r2!=null&&ha.beta_r2<0.3)||(hb.beta_r2!=null&&hb.beta_r2<0.3);
+      <div class="sub" style="margin-top:6px">Awaiting beta history \u2014 needs 60+ aligned sessions.</div></div>`;
+    const weak=r?r.low_confidence:true;
+    const pill=weak?"p-base":(r.signal==="bull"?"p-bull":r.signal==="bear"?"p-bear":"p-base");
+    const lbl=weak?"LOW CONFIDENCE":(r.signal==="bull"?"ASIA AHEAD":r.signal==="bear"?"AFRICA RICH":"IN LINE");
+    const rcol=(!r||weak)?"var(--t1)":r.residual_pp>0?"var(--neg)":"var(--pos)";
+    const adv=(hb.beta_adverse||ha.beta_adverse);
     return `<div class="card" style="margin-bottom:12px">
       <div class="row">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -166,19 +167,17 @@ function render(D){
           <span class="pill ${pill}">${lbl}</span>
           <span style="font-size:15px;font-weight:600">${r?r.verdict:"Beta only \u2014 no residual yet"}</span>
         </div>
-        <div style="text-align:right"><div class="sub">Residual ${r?r.sessions+"d":""}</div>
+        <div style="text-align:right"><div class="sub">Residual ${r?r.sessions+"d \u00b7 "+r.regime:""}</div>
           <div style="font-size:15px;font-weight:600;color:${rcol}">${r?sgn(r.residual_pp)+"pp":"\u2014"}</div></div>
       </div>
       <div class="grid3" style="margin-top:10px">
-        <div class="metric"><div class="k">Africa \u03b2 \u00b7 Asia \u03b2</div>
-          <div class="v">${ba!=null?ba+"\u00d7":"\u2014"} \u00b7 ${bb!=null?bb+"\u00d7":"\u2014"}</div>
-          <div class="s">GBP \u00b7 Dimson \u00b7 R\u00b2 ${ha.beta_r2!=null?ha.beta_r2:"\u2014"} / ${hb.beta_r2!=null?hb.beta_r2:"\u2014"}</div></div>
-        <div class="metric"><div class="k">Actual \u00b7 expected spread</div>
-          <div class="v">${r?sgn(Math.round((r.r_africa_pct-r.r_asia_pct)*100)/100)+"% \u00b7 "+sgn(r.expected_spread_pct)+"%":"\u2014"}</div>
-          <div class="s">\u03b2 spread ${r?r.beta_spread+"\u00d7":"\u2014"} \u00b7 gold ${r?sgn(r.r_gold_gbp_pct)+"% GBP":"\u2014"}</div></div>
-        <div class="metric"><div class="k">Trigger</div>
-          <div class="v">${r?"\u00b1"+r.threshold_pp+"pp":"\u2014"}</div>
-          <div class="s">${weak?"R\u00b2 low \u2014 do not trade":"fires on beta-adjusted move only"}</div></div>
+        <div class="metric"><div class="k">Africa \u03b2</div><div class="v">${bx(ha)}</div>
+          <div class="s">GBP \u00b7 weekly \u00b7 R\u00b2 ${ha.beta_r2!=null?ha.beta_r2:"\u2014"}</div></div>
+        <div class="metric"><div class="k">Asia \u03b2</div><div class="v">${bx(hb)}</div>
+          <div class="s">${hb.beta_adverse?"adverse: falls, not rallies":"GBP \u00b7 weekly \u00b7 R\u00b2 "+(hb.beta_r2!=null?hb.beta_r2:"\u2014")}</div></div>
+        <div class="metric"><div class="k">Spread \u00b7 trigger</div>
+          <div class="v">${r?r.beta_spread+"\u00d7":"\u2014"} \u00b7 ${r?"\u00b1"+r.threshold_pp+"pp":"\u2014"}</div>
+          <div class="s">${weak?"fit too weak \u2014 do not trade":adv?"regime-matched spread":"beta-adjusted only"}</div></div>
       </div></div>`;
   })();
 
