@@ -71,6 +71,7 @@ const sigTxt={bull:"BULL",base:"BASE",bear:"BEAR"};
 function render(D){
   const g=D.gold,p=D.portfolio,h=D.holdings,s=D.scenarios;
   const compPct=Math.max(0,Math.min(100,g.composite+50));
+  const incYield=(p.income_2029!=null&&s["2029"]&&s["2029"].base)?Math.round(1000*p.income_2029/(s["2029"].base*1e6))/10:null;
   const drivers=D.themes.map(t=>`<div class="driver"><div class="dt">${t.label}
     <span class="pill sm ${sigPill[t.signal]}">${sigTxt[t.signal]}</span></div>
     <div class="dd">${t.reading||""}</div></div>`).join("");
@@ -82,6 +83,7 @@ function render(D){
         <span style="font-weight:600">${x.value!=null?"\u00a3"+f0(x.value):"\u2014"} \u00b7 <span style="color:var(--link)">${x.pct!=null?x.pct+"%":"\u2014"}</span></span></div>
       <div class="kv"><span class="lbl">NPV \u00a3/sh (bear\u2013bull)</span><span style="font-weight:600">${x.npv}</span></div>
       <div class="kv"><span class="lbl">Risk lens</span><span style="font-weight:600">${x.lens||"\u2014"}</span></div>
+      <div class="kv"><span class="lbl">Gold \u03b2 (GBP, ${x.beta_r2!=null?"R\u00b2 "+x.beta_r2:"n/a"})</span><span style="font-weight:600">${x.beta!=null?x.beta+"\u00d7":"\u2014"}</span></div>
       <div class="kv"><span class="lbl">Exit liquidity</span><span style="font-weight:600${x.lsig==="bear"?";color:var(--neg)":""}">${x.liq||"\u2014"}</span></div>
       <div style="font-size:11px;color:var(--t3);margin-top:8px">Next: ${x.next}</div></div>`;};
   const acts=D.actions.map(a=>`<div class="act"><div class="when"><div class="wt">${a.when}</div>
@@ -145,6 +147,41 @@ function render(D){
       </div></div>`;
   })();
 
+
+  const rotBlock=(()=>{
+    const r=D.rotation,ha=h.africa||{},hb=h.asia||{},sgn=n=>n==null?"\u2014":(n>0?"+":"")+n;
+    const ba=ha.beta,bb=hb.beta;
+    if(!r&&ba==null&&bb==null) return `<div class="card" style="margin-bottom:12px"><div class="row">
+      <span style="font-size:13px;font-weight:600">Gold beta \u00b7 rotation</span>
+      <span class="pill sm p-base">N/A</span></div>
+      <div class="sub" style="margin-top:6px">Awaiting beta history \u2014 needs 25+ aligned sessions.</div></div>`;
+    const pill=r?(r.signal==="bull"?"p-bull":r.signal==="bear"?"p-bear":"p-base"):"p-base";
+    const lbl=r?(r.signal==="bull"?"ASIA AHEAD":r.signal==="bear"?"AFRICA RICH":"IN LINE"):"IN LINE";
+    const rcol=r&&r.residual_pp>0?"var(--neg)":r&&r.residual_pp<0?"var(--pos)":"var(--t1)";
+    const weak=(ha.beta_r2!=null&&ha.beta_r2<0.3)||(hb.beta_r2!=null&&hb.beta_r2<0.3);
+    return `<div class="card" style="margin-bottom:12px">
+      <div class="row">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:13px;color:var(--t2)">Gold beta \u00b7 rotation</span>
+          <span class="pill ${pill}">${lbl}</span>
+          <span style="font-size:15px;font-weight:600">${r?r.verdict:"Beta only \u2014 no residual yet"}</span>
+        </div>
+        <div style="text-align:right"><div class="sub">Residual ${r?r.sessions+"d":""}</div>
+          <div style="font-size:15px;font-weight:600;color:${rcol}">${r?sgn(r.residual_pp)+"pp":"\u2014"}</div></div>
+      </div>
+      <div class="grid3" style="margin-top:10px">
+        <div class="metric"><div class="k">Africa \u03b2 \u00b7 Asia \u03b2</div>
+          <div class="v">${ba!=null?ba+"\u00d7":"\u2014"} \u00b7 ${bb!=null?bb+"\u00d7":"\u2014"}</div>
+          <div class="s">GBP \u00b7 Dimson \u00b7 R\u00b2 ${ha.beta_r2!=null?ha.beta_r2:"\u2014"} / ${hb.beta_r2!=null?hb.beta_r2:"\u2014"}</div></div>
+        <div class="metric"><div class="k">Actual \u00b7 expected spread</div>
+          <div class="v">${r?sgn(Math.round((r.r_africa_pct-r.r_asia_pct)*100)/100)+"% \u00b7 "+sgn(r.expected_spread_pct)+"%":"\u2014"}</div>
+          <div class="s">\u03b2 spread ${r?r.beta_spread+"\u00d7":"\u2014"} \u00b7 gold ${r?sgn(r.r_gold_gbp_pct)+"% GBP":"\u2014"}</div></div>
+        <div class="metric"><div class="k">Trigger</div>
+          <div class="v">${r?"\u00b1"+r.threshold_pp+"pp":"\u2014"}</div>
+          <div class="s">${weak?"R\u00b2 low \u2014 do not trade":"fires on beta-adjusted move only"}</div></div>
+      </div></div>`;
+  })();
+
   document.getElementById("app").innerHTML=`
     <div class="row" style="margin-bottom:12px">
       <h1>Gold-miner portfolio monitor</h1>
@@ -155,8 +192,8 @@ function render(D){
         <div class="s">two holdings</div></div>
       <div class="metric"><div class="k">2029 value \u00b7 base</div><div class="v">\u00a3${Number(p.v2029_base).toFixed(2)}m</div>
         <div class="s">blended NPV / P-FCF</div></div>
-      <div class="metric"><div class="k">2029 income \u00b7 base</div><div class="v">\u00a3${f0(p.income_2029)}</div>
-        <div class="s">${p.income_yield}% yield on value</div></div>
+      <div class="metric"><div class="k">2029 income \u00b7 base</div><div class="v">${p.income_2029!=null?"\u00a3"+f0(p.income_2029):"\u2014"}</div>
+        <div class="s">${incYield!=null?incYield+"% yield on 2029 value":"\u2014"}</div></div>
     </div>
     <div class="card" style="margin-bottom:12px">
       <div class="row">
@@ -178,6 +215,7 @@ function render(D){
     </div>
     ${dvBlock}
     ${ocBlock}
+    ${rotBlock}
     <div class="sec">Six thesis drivers</div>
     <div class="grid6">${drivers}</div>
     <div class="grid2">${hold("africa")}${hold("asia")}</div>
