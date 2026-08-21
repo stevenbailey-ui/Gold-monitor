@@ -1,21 +1,21 @@
 {
-  "model_as_of": "2026-06-23",
-  "source": "portfolio_v21.xlsx",
+  "model_as_of": "2026-08-21",
+  "source": "portfolio_v21_fixed_1.xlsx + Aug-26 THX rebuild (Douta charged at PFS AISC $1,890 not phantom $1,027; Senegal 10% free-carry applied; Segilola AISC rebased $927 -> Q2-26 actual $1,262; Douta capex moved to 2027/28 on FID median Q1-27; 2029 treated as ramp year 45koz) + MTL BACS US$27m equipment facility and discount 12% -> 11%",
   "valuation": {
     "africa": {
-      "npv_bull": 3.135,
-      "npv_base": 2.387,
-      "npv_bear": 1.645,
+      "npv_bull": 2.641,
+      "npv_base": 1.77,
+      "npv_bear": 0.897,
       "disc": 0.08,
       "pfcf_mult": 10.0,
       "npv_wt": 0.2,
       "pfcf_wt": 0.8
     },
     "asia": {
-      "npv_bull": 0.552,
-      "npv_base": 0.41,
-      "npv_bear": 0.267,
-      "disc": 0.12,
+      "npv_bull": 0.72,
+      "npv_base": 0.494,
+      "npv_bear": 0.263,
+      "disc": 0.11,
       "pfcf_mult": 6.0,
       "npv_wt": 0.15,
       "pfcf_wt": 0.85
@@ -23,29 +23,29 @@
   },
   "scenarios": {
     "2026": {
-      "bear": 0.91,
-      "base": 1.27,
-      "bull": 1.62
+      "bear": 1.3,
+      "base": 1.93,
+      "bull": 2.57
     },
     "2027": {
-      "bear": 0.7,
-      "base": 1.51,
-      "bull": 2.61
+      "bear": 1.41,
+      "base": 2.17,
+      "bull": 2.94
     },
     "2028": {
-      "bear": 0.98,
-      "base": 2.01,
-      "bull": 3.03
+      "bear": 1.01,
+      "base": 1.67,
+      "bull": 2.33
     },
     "2029": {
-      "bear": 1.19,
-      "base": 1.94,
-      "bull": 3.16
+      "bear": 1.01,
+      "base": 1.79,
+      "bull": 2.57
     },
     "2030": {
-      "bear": 1.16,
-      "base": 1.86,
-      "bull": 2.93
+      "bear": 0.85,
+      "base": 1.64,
+      "bull": 2.42
     }
   },
   "gold_2029_forecast": 4898,
