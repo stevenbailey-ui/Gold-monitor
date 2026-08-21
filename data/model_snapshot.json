@@ -1,6 +1,6 @@
 {
   "model_as_of": "2026-08-21",
-  "source": "portfolio_v21_fixed_1.xlsx + Aug-26 THX rebuild (Douta charged at PFS AISC $1,890 not phantom $1,027; Senegal 10% free-carry applied; Segilola AISC rebased $927 -> Q2-26 actual $1,262; Douta capex moved to 2027/28 on FID median Q1-27; 2029 treated as ramp year 45koz) + MTL BACS US$27m equipment facility and discount 12% -> 11%",
+  "source": "portfolio_v21_fixed_1.xlsx + Aug-26 THX rebuild (Douta charged at PFS AISC $1,890 not phantom $1,027; Senegal 10% free-carry applied; Segilola AISC rebased $927 -> Q2-26 actual $1,262; Douta capex moved to 2027/28 on FID median Q1-27; 2029 treated as ramp year 45koz) + MTL BACS US$27m equipment facility and discount 12% -> 11%. Income rebuilt on corrected 2029 FCF; NET of NR301 withholding.",
   "valuation": {
     "africa": {
       "npv_bull": 2.641,
@@ -22,33 +22,15 @@
     }
   },
   "scenarios": {
-    "2026": {
-      "bear": 1.3,
-      "base": 1.93,
-      "bull": 2.57
-    },
-    "2027": {
-      "bear": 1.41,
-      "base": 2.17,
-      "bull": 2.94
-    },
-    "2028": {
-      "bear": 1.01,
-      "base": 1.67,
-      "bull": 2.33
-    },
-    "2029": {
-      "bear": 1.01,
-      "base": 1.79,
-      "bull": 2.57
-    },
-    "2030": {
-      "bear": 0.85,
-      "base": 1.64,
-      "bull": 2.42
-    }
+    "2026": { "bear": 1.3,  "base": 1.93, "bull": 2.57 },
+    "2027": { "bear": 1.41, "base": 2.17, "bull": 2.94 },
+    "2028": { "bear": 1.01, "base": 1.67, "bull": 2.33 },
+    "2029": { "bear": 1.01, "base": 1.79, "bull": 2.57 },
+    "2030": { "bear": 0.85, "base": 1.64, "bull": 2.42 }
   },
   "gold_2029_forecast": 4898,
-  "income_2029_base": 65416,
-  "income_2029_yield": 2.9
+  "income_2029_base": 65618,
+  "income_2029_gross": 76649,
+  "income_2029_note": "Net of NR301 withholding on the THX CAD dividend (~16.15% effective, not reclaimable in ISA or SIPP). Build: THX FCF/sh GBP 0.3601 x 30% payout x 632,192 sh = 68,305 gross / 57,274 net; MTL FCF/sh GBP 0.0856 x 20% payout x 487,426 sh = 8,344 (UK company, no WHT). Payout ratios are model assumptions (Assumptions H48 / H66), not declared policy. MTL dividend initiation from 2028 is CEO signalling only and sits behind BACS debt service running to Aug 2031 - if MTL pays nothing, 2029 income falls to GBP 57,274 net.",
+  "income_2029_yield": 3.7
 }
