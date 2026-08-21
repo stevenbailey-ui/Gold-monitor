@@ -378,6 +378,52 @@ def rotation_residual(t_ticker, m_ticker, gold_lvl, sessions, betas, notes):
     }
 
 
+def exit_income(snap, manual, notes):
+    """2029 income under the exit plan, not under miner dividend policy.
+
+    The holdings are a capital sum to be converted, not a dividend stream: at
+    least half is expected to move into income funds by 2029. Above the miner
+    net yield, transferring RAISES income while shedding single-name,
+    single-jurisdiction and pre-production risk - so the transfer is a
+    de-risking decision that happens to be income-positive.
+
+        income = V * [ transfer * fund_yield + (1 - transfer) * miner_net ]
+
+    Terminal value dominates: across bear-bull the income spread is ~GBP 64k,
+    versus ~GBP 8k across the whole transfer/yield grid. Publishes the drivers
+    so the tile shows what is assumed rather than a bare number.
+    """
+    ex = (manual.get("exit_plan") or {})
+    tr = ex.get("transfer_share")
+    fy = ex.get("fund_yield")
+    v = (snap.get("scenarios", {}).get("2029", {}) or {}).get("base")
+    inc_net = snap.get("income_2029_base")
+    if v is None:
+        notes.append("income:no_2029_scenario")
+        return None
+    V = v * 1e6
+    miner_net = (inc_net / V) if inc_net else None
+    if tr is None or fy is None or miner_net is None:
+        # Fall back to the pure-miner figure rather than inventing a plan.
+        return {"income": round(inc_net) if inc_net else None,
+                "yield_pct": round(100 * miner_net, 1) if miner_net else None,
+                "transfer_share": None, "fund_yield_pct": None,
+                "miner_yield_pct": round(100 * miner_net, 1) if miner_net else None,
+                "basis": "miner dividends only (no exit_plan in manual inputs)"}
+    income = V * (tr * fy + (1 - tr) * miner_net)
+    return {
+        "income": round(income),
+        "yield_pct": round(100 * income / V, 1),
+        "transfer_share": round(100 * tr),
+        "fund_yield_pct": round(100 * fy, 1),
+        "miner_yield_pct": round(100 * miner_net, 1),
+        "breakeven_note": ("transfer raises income" if fy > miner_net
+                           else "transfer costs income"),
+        "basis": (f"{round(100*tr)}% to income funds @ {100*fy:.1f}%, "
+                  f"balance at miner net {100*miner_net:.2f}%"),
+    }
+
+
 def n_session_change(sym_key, window, unit, notes):
     """Change in a Yahoo series over `window` completed sessions.
 
@@ -695,6 +741,8 @@ def main():
             "ltrend": (liq[key]["trend_20_60"] if liq[key] else None),
         }
 
+    inc = exit_income(snap, manual, notes)
+
     out = {
         "as_of": datetime.date.today().isoformat(),
         "manual_as_of": manual.get("manual_as_of"),
@@ -709,12 +757,12 @@ def main():
         "opportunity_cost": oc,
         "portfolio": {"current": total or None,
                       "v2029_base": snap["scenarios"]["2029"]["base"],
-                      "income_2029": snap.get("income_2029_base"),
-                      "income_yield": (round(100 * snap["income_2029_base"]
-                                             / (snap["scenarios"]["2029"]["base"] * 1e6), 1)
-                                       if snap.get("income_2029_base")
-                                       and snap.get("scenarios", {}).get("2029", {}).get("base")
-                                       else None)},
+                      "income_2029": (inc["income"] if inc else None),
+                      "income_yield": (inc["yield_pct"] if inc else None),
+                      "income_basis": (inc["basis"] if inc else None),
+                      "income_transfer_pct": (inc.get("transfer_share") if inc else None),
+                      "income_fund_yield_pct": (inc.get("fund_yield_pct") if inc else None),
+                      "income_miner_yield_pct": (inc.get("miner_yield_pct") if inc else None)},
         "holdings": holdings,
         "rotation": resid,
         "scenarios": snap["scenarios"],
