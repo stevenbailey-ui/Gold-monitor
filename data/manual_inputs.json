@@ -1,6 +1,11 @@
 {
   "manual_as_of": "2026-08-21",
   "gold_fallback": 4520,
+  "exit_plan": {
+    "transfer_share": 0.5,
+    "fund_yield": 0.045,
+    "note": "2029 exit plan: at least half the portfolio moves into income funds. Miner net yield on 2029 value is ~3.7% (after ~16.15% NR301 withholding on the THX CAD dividend, not reclaimable in ISA/SIPP), so any fund yield above that raises income while shedding single-name and pre-production risk. Terminal value dominates: bear-bull swings 2029 income by ~GBP 64k vs ~GBP 8k across the whole transfer/yield grid. Edit transfer_share (0-1) and fund_yield (0-1) to re-plan."
+  },
   "metrics": {
     "wgc_cb_purchases_t": {
       "value": 195,
