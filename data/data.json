@@ -3,7 +3,7 @@
   "manual_as_of": "2026-08-21",
   "model_as_of": "2026-08-21",
   "gold": {
-    "spot": 4642,
+    "spot": 4638,
     "trailing24": 3605,
     "ratio": 1.29,
     "forecast_2029": 4898,
@@ -40,11 +40,11 @@
   ],
   "divergence": {
     "d_real_yield_bp": 0.0,
-    "d_dxy_pct": 0.02,
-    "expected_gold_pct": -0.02,
-    "actual_gold_pct": 0.29,
-    "residual_pp": 0.31,
-    "verdict": "Tracking textbook within 0.3pp",
+    "d_dxy_pct": 0.01,
+    "expected_gold_pct": -0.01,
+    "actual_gold_pct": -0.09,
+    "residual_pp": -0.08,
+    "verdict": "Tracking textbook within 0.1pp",
     "signal": "textbook"
   },
   "real_curve_slope": {
@@ -55,10 +55,10 @@
     "change_bp": -7.0
   },
   "opportunity_cost": {
-    "gap_1m": -14.0,
-    "gap_3m": -2.5,
+    "gap_1m": -13.9,
+    "gap_3m": -2.4,
     "ndx_1m": 0.7,
-    "gold_1m": 14.7,
+    "gold_1m": 14.6,
     "ndx_3m": -0.3,
     "gold_3m": 2.2,
     "gdxj_3m": 13.9,
@@ -66,17 +66,17 @@
     "signal": "base"
   },
   "portfolio": {
-    "current": 526039,
+    "current": 532310,
     "v2029_base": 1.79,
-    "income_2029": 65416,
+    "income_2029": 65618,
     "income_yield": 3.7
   },
   "holdings": {
     "africa": {
       "name": "Africa",
       "desc": "Gold producer + developer",
-      "value": 450500,
-      "pct": 85.6,
+      "value": 456759,
+      "pct": 85.8,
       "npv": "0.897 - 2.641",
       "jur": "8% disc",
       "jsig": "base",
@@ -89,14 +89,14 @@
       "beta_r2": 0.518,
       "beta_adverse": false,
       "lsig": "base",
-      "adtv": 310676,
+      "adtv": 314992,
       "ltrend": 1.69
     },
     "asia": {
       "name": "Asia",
       "desc": "Gold developer (construction)",
-      "value": 75539,
-      "pct": 14.4,
+      "value": 75551,
+      "pct": 14.2,
       "npv": "0.263 - 0.72",
       "jur": "11% disc",
       "jsig": "bear",
@@ -109,23 +109,23 @@
       "beta_r2": 0.185,
       "beta_adverse": true,
       "lsig": "bull",
-      "adtv": 486070,
+      "adtv": 486149,
       "ltrend": 0.93
     }
   },
   "rotation": {
     "sessions": 5,
     "regime": "up",
-    "r_africa_pct": 22.86,
-    "r_asia_pct": 9.91,
-    "r_gold_gbp_pct": 4.2,
+    "r_africa_pct": 24.57,
+    "r_asia_pct": 9.93,
+    "r_gold_gbp_pct": 4.1,
     "beta_spread": 1.85,
-    "expected_spread_pct": 7.76,
-    "residual_pp": 5.19,
+    "expected_spread_pct": 7.58,
+    "residual_pp": 7.06,
     "threshold_pp": 5.0,
     "signal": "bear",
     "low_confidence": false,
-    "verdict": "Africa ahead of beta by 5.2pp over 5 sessions (up-tape)"
+    "verdict": "Africa ahead of beta by 7.1pp over 5 sessions (up-tape)"
   },
   "scenarios": {
     "2026": {
@@ -200,6 +200,6 @@
   "fetch_notes": [],
   "_raw": {
     "real_yield": 2.35,
-    "dxy": 98.76300048828125
+    "dxy": 98.77300262451172
   }
 }
