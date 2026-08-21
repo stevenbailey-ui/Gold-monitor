@@ -199,6 +199,185 @@ def liquidity_profile(ticker, shares, pence, notes):
     }
 
 
+def _ols1(y, x):
+    """Univariate OLS with intercept. Returns (beta, r2, n) or None."""
+    n = len(y)
+    if n < 12:
+        return None
+    my = sum(y) / n
+    mx = sum(x) / n
+    Y = [v - my for v in y]
+    X = [v - mx for v in x]
+    sxx = sum(i * i for i in X)
+    if sxx < 1e-14:
+        return None
+    b = sum(i * j for i, j in zip(X, Y)) / sxx
+    sse = sum((Y[i] - b * X[i]) ** 2 for i in range(n))
+    sst = sum(v * v for v in Y)
+    return b, (1 - sse / sst if sst > 0 else 0.0), n
+
+
+def gbp_gold_levels(window, notes):
+    """Gold in GBP/oz by date, for the last `window` aligned sessions.
+
+    The holdings are GBP-quoted, so GBP gold is the correct factor even though
+    measurement showed it differs from USD gold by only ~2%. Returns
+    {date: level} or None; a dead FX feed disables beta rather than the run.
+    """
+    try:
+        gold = yahoo_daily(C.PRICE_SYMBOLS["gold"], int(window * 1.6), timeout=12)
+        fx = yahoo_daily("GBPUSD=X", int(window * 1.6), timeout=12)
+    except Exception as e:
+        notes.append(f"beta:fx:{type(e).__name__}")
+        return None
+    g = {d.date(): c for d, c in gold}
+    f = {d.date(): c for d, c in fx}
+    days = sorted(set(g) & set(f))
+    if len(days) < 60:
+        notes.append(f"beta:short_gold_series:{len(days)}")
+        return None
+    return {d: g[d] / f[d] for d in days}
+
+
+def beta_profile(ticker, gold_lvl, window, notes):
+    """Gold beta for one holding: blended, up-tape and down-tape.
+
+    Weekly sampling. Daily understates on a thin AIM book; fortnightly loses
+    too many observations (measured: daily 1.29, weekly 1.62, fortnightly 1.23
+    on the same window - the fortnightly fall is small-n noise, so weekly is
+    the usable middle).
+
+    The up/down split is the load-bearing output. A pre-production developer
+    can show near-zero rally participation and full selloff participation, and
+    a single blended beta conceals that entirely.
+
+    Returns None on any failure so a dead feed cannot block the run.
+    """
+    if not ticker or not gold_lvl:
+        return None
+    try:
+        bars = yahoo_daily(ticker, int(window * 1.6), timeout=12)
+    except Exception as e:
+        notes.append(f"beta:{ticker}:{type(e).__name__}")
+        return None
+    px = {d.date(): c for d, c in bars}
+    days = sorted(set(px) & set(gold_lvl))
+    if len(days) < 60:
+        notes.append(f"beta:{ticker}:short_series:{len(days)}")
+        return None
+    step = getattr(C, "BETA_STEP", 5)                  # weekly
+    wk = days[-window:][::step]
+    y, x = [], []
+    for i in range(1, len(wk)):
+        prev, cur = wk[i - 1], wk[i]
+        if not px[prev] or not gold_lvl[prev]:
+            continue
+        y.append(px[cur] / px[prev] - 1)
+        x.append(gold_lvl[cur] / gold_lvl[prev] - 1)
+    all_fit = _ols1(y, x)
+    if not all_fit:
+        notes.append(f"beta:{ticker}:fit_failed:{len(y)}")
+        return None
+    up = [(a, b) for a, b in zip(y, x) if b > 0]
+    dn = [(a, b) for a, b in zip(y, x) if b <= 0]
+    up_fit = _ols1([a for a, _ in up], [b for _, b in up])
+    dn_fit = _ols1([a for a, _ in dn], [b for _, b in dn])
+    out = {
+        "beta": round(all_fit[0], 2),
+        "r2": round(all_fit[1], 3),
+        "n": all_fit[2],
+        "window": window,
+        "step": step,
+        "basis": "GBP",
+        "beta_up": round(up_fit[0], 2) if up_fit else None,
+        "r2_up": round(up_fit[1], 3) if up_fit else None,
+        "n_up": up_fit[2] if up_fit else 0,
+        "beta_down": round(dn_fit[0], 2) if dn_fit else None,
+        "r2_down": round(dn_fit[1], 3) if dn_fit else None,
+        "n_down": dn_fit[2] if dn_fit else 0,
+    }
+    # Flag the case that matters: participates in falls, not in rallies.
+    if out["beta_up"] is not None and out["beta_down"] is not None:
+        out["asymmetry"] = round(out["beta_up"] - out["beta_down"], 2)
+        out["adverse"] = bool(out["beta_up"] < 0.5 * out["beta_down"])
+    else:
+        out["asymmetry"] = None
+        out["adverse"] = False
+    return out
+
+
+def rotation_residual(t_ticker, m_ticker, gold_lvl, sessions, betas, notes):
+    """Relative performance not explained by the regime-appropriate beta spread.
+
+    A raw 'Africa outperformed Asia' rule fires by construction in any up-tape.
+    The informative quantity is the residual:
+
+        residual = (r_africa - r_asia) - spread * r_gold
+
+    where `spread` is taken from the up-tape or down-tape betas according to
+    the sign of the gold move over the window. Using one blended spread across
+    both regimes was the defect in v1: measured up-tape spread is ~1.85x while
+    down-tape is ~0.23x, so a single number is wrong in both states.
+    """
+    if not (betas.get("africa") and betas.get("asia")) or not gold_lvl:
+        return None
+    try:
+        tb = yahoo_daily(t_ticker, sessions * 4, timeout=12)
+        mb = yahoo_daily(m_ticker, sessions * 4, timeout=12)
+    except Exception as e:
+        notes.append(f"resid:{type(e).__name__}")
+        return None
+    tp = {d.date(): c for d, c in tb}
+    mp = {d.date(): c for d, c in mb}
+    days = sorted(set(tp) & set(mp) & set(gold_lvl))
+    if len(days) < sessions + 1:
+        notes.append(f"resid:short_series:{len(days)}")
+        return None
+    win = days[-(sessions + 1):]
+    a, b = win[0], win[-1]
+    if not (tp[a] and mp[a] and gold_lvl[a]):
+        return None
+    r_t = tp[b] / tp[a] - 1
+    r_m = mp[b] / mp[a] - 1
+    r_g = gold_lvl[b] / gold_lvl[a] - 1
+    A, S = betas["africa"], betas["asia"]
+    if r_g > 0 and A.get("beta_up") is not None and S.get("beta_up") is not None:
+        spread, regime = A["beta_up"] - S["beta_up"], "up"
+    elif r_g <= 0 and A.get("beta_down") is not None and S.get("beta_down") is not None:
+        spread, regime = A["beta_down"] - S["beta_down"], "down"
+    else:
+        spread, regime = A["beta"] - S["beta"], "blended"
+    resid = (r_t - r_m) - spread * r_g
+    thresh = getattr(C, "ROTATION_RESID_THRESHOLD", 0.05)
+    weak = (A.get("r2") or 0) < 0.25 or (S.get("r2") or 0) < 0.10
+    if weak:
+        sig = "base"
+    elif resid >= thresh:
+        sig = "bear"          # Africa rich vs Asia, beta-adjusted
+    elif resid <= -thresh:
+        sig = "bull"
+    else:
+        sig = "base"
+    return {
+        "sessions": sessions,
+        "regime": regime,
+        "r_africa_pct": round(100 * r_t, 2),
+        "r_asia_pct": round(100 * r_m, 2),
+        "r_gold_gbp_pct": round(100 * r_g, 2),
+        "beta_spread": round(spread, 2),
+        "expected_spread_pct": round(100 * spread * r_g, 2),
+        "residual_pp": round(100 * resid, 2),
+        "threshold_pp": round(100 * thresh, 1),
+        "signal": sig,
+        "low_confidence": weak,
+        "verdict": (
+            "Beta fit too weak to adjust by" if weak else
+            f"Africa {'ahead of' if resid > 0 else 'behind'} beta by "
+            f"{abs(round(100 * resid, 1))}pp over {sessions} sessions ({regime}-tape)"
+        ),
+    }
+
+
 def n_session_change(sym_key, window, unit, notes):
     """Change in a Yahoo series over `window` completed sessions.
 
@@ -474,6 +653,20 @@ def main():
         pence = live if live else h.get("px_fallback")
         vals[key] = round(h.get("shares", 0) * pence / 100) if (h.get("shares") and pence) else None
         liq[key] = liquidity_profile(h.get("ticker"), h.get("shares"), pence, notes)
+
+    # Gold beta + beta-adjusted rotation residual (v2: 250 sessions, weekly,
+    # GBP factor, up/down-tape split). Any failure yields None and is noted.
+    BETA_WINDOW = getattr(C, "BETA_WINDOW", 250)
+    RESID_SESSIONS = getattr(C, "RESID_SESSIONS", 5)
+    gold_lvl = gbp_gold_levels(BETA_WINDOW, notes)
+    betas = {}
+    for key in ("africa", "asia"):
+        betas[key] = beta_profile(H.get(key, {}).get("ticker"),
+                                  gold_lvl, BETA_WINDOW, notes)
+    resid = rotation_residual(H.get("africa", {}).get("ticker"),
+                              H.get("asia", {}).get("ticker"),
+                              gold_lvl, RESID_SESSIONS, betas, notes)
+
     total = sum(v for v in vals.values() if v) or 0
     pct = lambda v: round(100 * v / total, 1) if (v and total) else None
 
@@ -492,6 +685,11 @@ def main():
             "next": manual["catalysts"][0]["label"] if key == "africa" else manual["catalysts"][1]["label"],
             "liq": (f"{liq[key]['days_to_exit']:g}d @ {round(liq[key]['participation']*100)}% ADV"
                     if (liq[key] and liq[key].get("days_to_exit") is not None) else "\u2014"),
+            "beta": (betas[key]["beta"] if betas.get(key) else None),
+            "beta_up": (betas[key]["beta_up"] if betas.get(key) else None),
+            "beta_down": (betas[key]["beta_down"] if betas.get(key) else None),
+            "beta_r2": (betas[key]["r2"] if betas.get(key) else None),
+            "beta_adverse": (betas[key]["adverse"] if betas.get(key) else False),
             "lsig": (liq[key]["signal"] if liq[key] else "base"),
             "adtv": (liq[key]["adtv_gbp"] if liq[key] else None),
             "ltrend": (liq[key]["trend_20_60"] if liq[key] else None),
@@ -511,8 +709,14 @@ def main():
         "opportunity_cost": oc,
         "portfolio": {"current": total or None,
                       "v2029_base": snap["scenarios"]["2029"]["base"],
-                      "income_2029": snap["income_2029_base"], "income_yield": snap["income_2029_yield"]},
+                      "income_2029": snap.get("income_2029_base"),
+                      "income_yield": (round(100 * snap["income_2029_base"]
+                                             / (snap["scenarios"]["2029"]["base"] * 1e6), 1)
+                                       if snap.get("income_2029_base")
+                                       and snap.get("scenarios", {}).get("2029", {}).get("base")
+                                       else None)},
         "holdings": holdings,
+        "rotation": resid,
         "scenarios": snap["scenarios"],
         "catalysts": manual["catalysts"],
         "actions": manual["actions"],

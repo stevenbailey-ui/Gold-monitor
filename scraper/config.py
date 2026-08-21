@@ -129,3 +129,19 @@ def theme_signal(net, max_w):
 DIVERGENCE_BETA_REAL_YIELD = -10.0   # gold % per +1.00pp 10Y real yield
 DIVERGENCE_BETA_DXY        = -0.9    # gold % per +1.0 DXY point
 DIVERGENCE_BAND_PP         = 0.5     # |residual| within this = tracking textbook
+
+# ---------------------------------------------------------------------------
+# Gold beta (added 21 Aug 2026 after live measurement).
+# Measured, 250 sessions, weekly, GBP gold:
+#   Africa  up-tape 1.85x  down-tape 1.41x   (favourable asymmetry)
+#   Asia    up-tape 0.00x  down-tape 1.18x   (adverse - no rally participation
+#                                             pre-pour; expect this to change
+#                                             once La India is producing)
+# 60-session window rejected: estimate swung 1.71 -> 1.21 between windows.
+# Dimson lag rejected: fortnightly beta fell vs weekly, so the lag was fitting
+# noise rather than genuine AIM non-synchronicity.
+# ---------------------------------------------------------------------------
+BETA_WINDOW = 250               # sessions used for the beta fit
+BETA_STEP = 5                   # weekly sampling within the window
+RESID_SESSIONS = 5              # lookback for the rotation residual
+ROTATION_RESID_THRESHOLD = 0.05 # +/-5pp beta-adjusted move before it signals
