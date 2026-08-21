@@ -3,7 +3,7 @@
   "manual_as_of": "2026-08-21",
   "model_as_of": "2026-08-21",
   "gold": {
-    "spot": 4638,
+    "spot": 4634,
     "trailing24": 3605,
     "ratio": 1.29,
     "forecast_2029": 4898,
@@ -35,15 +35,15 @@
       "id": "mining_equities",
       "label": "Sector re-rate",
       "signal": "bull",
-      "reading": "spot/24m 1.29 . GDXJ/gold 0.028"
+      "reading": "spot/24m 1.29 . GDXJ/gold 0.029"
     }
   ],
   "divergence": {
     "d_real_yield_bp": 0.0,
-    "d_dxy_pct": 0.01,
-    "expected_gold_pct": -0.01,
+    "d_dxy_pct": 0.02,
+    "expected_gold_pct": -0.02,
     "actual_gold_pct": -0.09,
-    "residual_pp": -0.08,
+    "residual_pp": -0.07,
     "verdict": "Tracking textbook within 0.1pp",
     "signal": "textbook"
   },
@@ -55,28 +55,32 @@
     "change_bp": -7.0
   },
   "opportunity_cost": {
-    "gap_1m": -13.9,
+    "gap_1m": -11.7,
     "gap_3m": -2.4,
-    "ndx_1m": 0.7,
-    "gold_1m": 14.6,
+    "ndx_1m": 2.8,
+    "gold_1m": 14.5,
     "ndx_3m": -0.3,
-    "gold_3m": 2.2,
-    "gdxj_3m": 13.9,
-    "verdict": "Gap -2pp 3m / -14pp 1m - no extreme",
+    "gold_3m": 2.1,
+    "gdxj_3m": 18.3,
+    "verdict": "Gap -2pp 3m / -12pp 1m - no extreme",
     "signal": "base"
   },
   "portfolio": {
-    "current": 532310,
+    "current": 518085,
     "v2029_base": 1.79,
-    "income_2029": 65618,
-    "income_yield": 3.7
+    "income_2029": 73084,
+    "income_yield": 4.1,
+    "income_basis": "50% to income funds @ 4.5%, balance at miner net 3.67%",
+    "income_transfer_pct": 50,
+    "income_fund_yield_pct": 4.5,
+    "income_miner_yield_pct": 3.7
   },
   "holdings": {
     "africa": {
       "name": "Africa",
       "desc": "Gold producer + developer",
-      "value": 456759,
-      "pct": 85.8,
+      "value": 442534,
+      "pct": 85.4,
       "npv": "0.897 - 2.641",
       "jur": "8% disc",
       "jsig": "base",
@@ -89,14 +93,14 @@
       "beta_r2": 0.518,
       "beta_adverse": false,
       "lsig": "base",
-      "adtv": 314992,
-      "ltrend": 1.69
+      "adtv": 305183,
+      "ltrend": 1.7
     },
     "asia": {
       "name": "Asia",
       "desc": "Gold developer (construction)",
       "value": 75551,
-      "pct": 14.2,
+      "pct": 14.6,
       "npv": "0.263 - 0.72",
       "jur": "11% disc",
       "jsig": "bear",
@@ -116,16 +120,16 @@
   "rotation": {
     "sessions": 5,
     "regime": "up",
-    "r_africa_pct": 24.57,
+    "r_africa_pct": 20.69,
     "r_asia_pct": 9.93,
-    "r_gold_gbp_pct": 4.1,
+    "r_gold_gbp_pct": 4.04,
     "beta_spread": 1.85,
-    "expected_spread_pct": 7.58,
-    "residual_pp": 7.06,
+    "expected_spread_pct": 7.48,
+    "residual_pp": 3.28,
     "threshold_pp": 5.0,
-    "signal": "bear",
+    "signal": "base",
     "low_confidence": false,
-    "verdict": "Africa ahead of beta by 7.1pp over 5 sessions (up-tape)"
+    "verdict": "Africa ahead of beta by 3.3pp over 5 sessions (up-tape)"
   },
   "scenarios": {
     "2026": {
@@ -200,6 +204,6 @@
   "fetch_notes": [],
   "_raw": {
     "real_yield": 2.35,
-    "dxy": 98.77300262451172
+    "dxy": 98.7969970703125
   }
 }
