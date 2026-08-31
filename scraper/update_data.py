@@ -89,6 +89,19 @@ def fetch_fred_history(series_id, notes, limit=180):
         notes.append(f"{series_id}:FRED_hist:{type(e).__name__}"); return None
 
 
+def fetch_fred_latest(series_id, notes):
+    """Latest (date, value) for a FRED series.
+
+    Uses fetch_fred_history so FRED's '.' placeholders are filtered. The DATE is
+    the point: DFII10 is published on an H.15 lag, so two consecutive runs can
+    read the same print. Without the date a stale print is indistinguishable
+    from a genuinely unchanged yield, and the divergence residual silently
+    attributes a multi-day gold move to a zero rates delta.
+    """
+    h = fetch_fred_history(series_id, notes, limit=10)
+    return h[0] if h else (None, None)
+
+
 def real_curve_slope(notes):
     """Real curve slope = 30y TIPS - 10y TIPS, and its change over ~3 months.
 
@@ -316,8 +329,15 @@ def rotation_residual(t_ticker, m_ticker, gold_lvl, sessions, betas, notes):
 
     where `spread` is taken from the up-tape or down-tape betas according to
     the sign of the gold move over the window. Using one blended spread across
-    both regimes was the defect in v1: measured up-tape spread is ~1.85x while
-    down-tape is ~0.23x, so a single number is wrong in both states.
+    both regimes was the defect in v1.
+
+    NOTE ON SIGN: a POSITIVE residual means Africa is rich against Asia, which
+    is FAVOURABLE to the planned Africa->Asia rotation (you sell the rich leg).
+    Do not reuse the generic bull/bear palette here - it inverts the meaning.
+
+    The spread figures once quoted in this docstring (~1.85x up / ~0.23x down)
+    came from a run where Asia's up-beta read 0.00 on a low-power subsample.
+    They are stale; read beta_spread off the live output instead.
     """
     if not (betas.get("africa") and betas.get("asia")) or not gold_lvl:
         return None
@@ -340,6 +360,17 @@ def rotation_residual(t_ticker, m_ticker, gold_lvl, sessions, betas, notes):
     r_t = tp[b] / tp[a] - 1
     r_m = mp[b] / mp[a] - 1
     r_g = gold_lvl[b] / gold_lvl[a] - 1
+    # The beta factor is GBP gold, so sterling alone can flip the up/down tape
+    # classification and select the wrong beta pair. Compare against USD gold.
+    r_g_usd, fx_driven = None, False
+    try:
+        gb = {d.date(): c for d, c in yahoo_daily(C.PRICE_SYMBOLS["gold"],
+                                                  sessions * 4, timeout=12)}
+        if gb.get(a) and gb.get(b):
+            r_g_usd = gb[b] / gb[a] - 1
+            fx_driven = (r_g > 0) != (r_g_usd > 0)
+    except Exception as e:
+        notes.append(f"resid:usd_gold:{type(e).__name__}")
     A, S = betas["africa"], betas["asia"]
     if r_g > 0 and A.get("beta_up") is not None and S.get("beta_up") is not None:
         spread, regime = A["beta_up"] - S["beta_up"], "up"
@@ -365,6 +396,8 @@ def rotation_residual(t_ticker, m_ticker, gold_lvl, sessions, betas, notes):
         "r_asia_pct": round(100 * r_m, 2),
         "r_gold_gbp_pct": round(100 * r_g, 2),
         "beta_spread": round(spread, 2),
+        "r_gold_usd_pct": (round(100 * r_g_usd, 2) if r_g_usd is not None else None),
+        "regime_fx_driven": fx_driven,
         "expected_spread_pct": round(100 * spread * r_g, 2),
         "residual_pp": round(100 * resid, 2),
         "threshold_pp": round(100 * thresh, 1),
@@ -376,6 +409,55 @@ def rotation_residual(t_ticker, m_ticker, gold_lvl, sessions, betas, notes):
             f"{abs(round(100 * resid, 1))}pp over {sessions} sessions ({regime}-tape)"
         ),
     }
+
+
+def rotation_narrative(r):
+    """Decision-first narrative for the rotation panel.
+
+    The panel's job is the trade, not the statistic. Three fields: a headline
+    verdict, one plain sentence carrying the arithmetic, and one line saying
+    what it means for the entry.
+
+    `tone` is deliberately separate from `signal`. Signal uses the dashboard's
+    portfolio bull/bear vocabulary; tone is about whether the ROTATION setup is
+    favourable. A positive residual (Africa rich) is a bad portfolio read but a
+    good entry, and colouring it red - as the pre-fix panel did - flagged the
+    best setup as a warning.
+    """
+    if not r:
+        return {}
+    resid, exp = r["residual_pp"], r["expected_spread_pct"]
+    thr, n = r["threshold_pp"], r["sessions"]
+    a, b, g = r["r_africa_pct"], r["r_asia_pct"], r["r_gold_gbp_pct"]
+    fx_note = (" Regime set by sterling, not gold - treat the beta pair as provisional."
+               if r.get("regime_fx_driven") else "")
+    if r.get("low_confidence"):
+        return {"headline": "NOT USABLE", "tone": "flat",
+                "plain": f"Africa {a:+.1f}%, Asia {b:+.1f}% over {n} sessions.",
+                "implication": "Beta fit too weak to adjust by. Ignore this panel.",
+                "gap_to_trigger_pp": None}
+    ahead = resid > 0
+    plain = (f"Africa {a:+.1f}%, Asia {b:+.1f}% over {n} sessions. "
+             f"Gold in GBP {g:+.1f}% implied Africa ahead by {exp:+.1f}pp; "
+             f"it finished {abs(resid):.1f}pp "
+             f"{'further ahead of' if ahead else 'behind'} that.")
+    if abs(resid) < thr:
+        gap = round(thr - abs(resid), 1)
+        head, tone = "IN LINE - HOLD", "flat"
+        imp = (f"Within the +/-{thr}pp band. "
+               + (f"Africa firming vs Asia; {gap}pp from an entry window."
+                  if ahead else
+                  f"Asia re-rating faster than beta explains - entry spread "
+                  f"narrowing. {gap}pp from the trigger."))
+    elif ahead:
+        head, tone, gap = "ENTRY WINDOW - AFRICA RICH", "good", 0.0
+        imp = "Africa is rich against Asia beyond the band. Favourable to sell into."
+    else:
+        head, tone, gap = "ENTRY COMPRESSED - ASIA RAN", "bad", 0.0
+        imp = ("Asia has re-rated ahead of beta. Entry spread has gone against "
+               "you; do not chase.")
+    return {"headline": head, "tone": tone, "plain": plain,
+            "implication": imp + fx_note, "gap_to_trigger_pp": gap}
 
 
 def exit_income(snap, manual, notes):
@@ -536,18 +618,25 @@ def score_metric(m, px, fred, manual, prev):
     return fb
 
 
-def divergence(px, fred, prev, notes):
+def divergence(px, fred, prev, notes, ry_date=None, ry_level=None):
     """Orthodox Divergence Diagnostic, computed live from day-over-day deltas.
     Reuses the prior session's stored real-yield/DXY (data.json _raw) and gold spot."""
     pr = prev.get("_raw", {})
-    ry_now, ry_prev = fred.get("dfii10"), pr.get("real_yield")
+    ry_now = ry_level if ry_level is not None else fred.get("dfii10")
+    ry_prev, ry_prev_date = pr.get("real_yield"), pr.get("real_yield_date")
     dxy_now, dxy_prev = px.get("dxy"), pr.get("dxy")
     g_now = px.get("gold")
     g_prev = (prev.get("gold") or {}).get("spot")
     if None in (ry_now, ry_prev, dxy_now, dxy_prev, g_now, g_prev) or not g_prev:
         notes.append("divergence:insufficient_history")
         return None
-    d_ry = ry_now - ry_prev                       # percentage points
+    # If FRED has not published a new DFII10 print since the last run, the rates
+    # leg spans no time at all while the gold leg spans the whole gap. Zero the
+    # rates delta and say so rather than pretending the yield was flat.
+    rates_stale = bool(ry_date and ry_prev_date and ry_date == ry_prev_date)
+    if rates_stale:
+        notes.append(f"divergence:rates_stale:{ry_date}")
+    d_ry = 0.0 if rates_stale else (ry_now - ry_prev)   # percentage points
     d_dxy = dxy_now - dxy_prev                     # DXY index points
     actual = (g_now - g_prev) / g_prev * 100.0     # realised gold move, %
     expected = C.DIVERGENCE_BETA_REAL_YIELD * d_ry + C.DIVERGENCE_BETA_DXY * d_dxy
@@ -559,8 +648,13 @@ def divergence(px, fred, prev, notes):
         signal, verdict = "gold_lagging", f"Gold lagging textbook by {abs(resid):.1f}pp"
     else:
         signal, verdict = "textbook", f"Tracking textbook within {abs(resid):.1f}pp"
+    if rates_stale:
+        verdict += " (rates leg stale)"
     return {
-        "d_real_yield_bp": round(d_ry * 100, 1),
+        "d_real_yield_bp": (None if rates_stale else round(d_ry * 100, 1)),
+        "real_yield_level": ry_now,
+        "real_yield_as_of": ry_date,
+        "rates_stale": rates_stale,
         "d_dxy_pct": round(d_dxy, 2),
         "expected_gold_pct": round(expected, 2),
         "actual_gold_pct": round(actual, 2),
@@ -659,7 +753,10 @@ def main():
     # The divergence panel needs yesterday's 10y real yield and DXY. Those used to be
     # persisted as a side effect of real_yield/dxy being `delta` METRICS. real_yield is no
     # longer a metric, so persist both explicitly - otherwise the panel silently dies.
-    if fred.get("dfii10") is not None: raw_next["real_yield"] = fred["dfii10"]
+    ry_date, ry_level = fetch_fred_latest("DFII10", notes)
+    div = divergence(px, fred, prev, notes, ry_date, ry_level)
+    if ry_level is not None:           raw_next["real_yield"] = ry_level
+    if ry_date is not None:            raw_next["real_yield_date"] = ry_date
     if px.get("dxy") is not None:      raw_next["dxy"] = px["dxy"]
 
     gj = px.get("gdxj")
@@ -712,6 +809,8 @@ def main():
     resid = rotation_residual(H.get("africa", {}).get("ticker"),
                               H.get("asia", {}).get("ticker"),
                               gold_lvl, RESID_SESSIONS, betas, notes)
+    if resid:
+        resid.update(rotation_narrative(resid))
 
     total = sum(v for v in vals.values() if v) or 0
     pct = lambda v: round(100 * v / total, 1) if (v and total) else None
@@ -752,7 +851,7 @@ def main():
                  "forecast_2029": snap.get("gold_2029_forecast"),
                  "trailing_months": n_months, "verdict": vname, "tag": tag, "composite": composite},
         "themes": themes,
-        "divergence": divergence(px, fred, prev, notes),
+        "divergence": div,
         "real_curve_slope": slope,
         "opportunity_cost": oc,
         "portfolio": {"current": total or None,
