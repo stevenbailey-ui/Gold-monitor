@@ -1,11 +1,11 @@
 {
-  "as_of": "2026-08-29",
+  "as_of": "2026-08-31",
   "manual_as_of": "2026-08-21",
-  "model_as_of": "2026-08-21",
+  "model_as_of": "2026-08-31",
   "gold": {
-    "spot": 4504,
+    "spot": 4486,
     "trailing24": 3605,
-    "ratio": 1.25,
+    "ratio": 1.24,
     "forecast_2029": 4898,
     "trailing_months": 24,
     "verdict": "Balanced",
@@ -29,22 +29,22 @@
       "id": "usd_geo",
       "label": "USD & geopolitics",
       "signal": "base",
-      "reading": "DXY 99.7 (-0.1 20d) . Brent $88 (-4% 3m)"
+      "reading": "DXY 99.6 (-0.4 20d) . Brent $89 (-7% 3m)"
     },
     {
       "id": "mining_equities",
       "label": "Sector re-rate",
       "signal": "bull",
-      "reading": "spot/24m 1.25 . GDXJ/gold 0.029"
+      "reading": "spot/24m 1.24 . GDXJ/gold 0.029"
     }
   ],
   "divergence": {
     "d_real_yield_bp": 0.0,
-    "d_dxy_pct": 0.5,
-    "expected_gold_pct": -0.45,
-    "actual_gold_pct": -2.76,
-    "residual_pp": -2.31,
-    "verdict": "Gold lagging textbook by 2.3pp",
+    "d_dxy_pct": -0.12,
+    "expected_gold_pct": 0.11,
+    "actual_gold_pct": -0.39,
+    "residual_pp": -0.5,
+    "verdict": "Gold lagging textbook by 0.5pp",
     "signal": "gold_lagging"
   },
   "real_curve_slope": {
@@ -55,25 +55,25 @@
     "change_bp": -6.0
   },
   "opportunity_cost": {
-    "gap_1m": -5.1,
-    "gap_3m": -1.7,
+    "gap_1m": -6.1,
+    "gap_3m": -3.2,
     "ndx_1m": 4.7,
-    "gold_1m": 9.9,
+    "gold_1m": 10.8,
     "ndx_3m": -3.0,
-    "gold_3m": -1.2,
+    "gold_3m": 0.3,
     "gdxj_3m": 8.0,
-    "verdict": "Gap -2pp 3m / -5pp 1m - no extreme",
+    "verdict": "Gap -3pp 3m / -6pp 1m - no extreme",
     "signal": "base"
   },
   "portfolio": {
     "current": 530005,
-    "v2029_base": 1.79,
-    "income_2029": 73084,
-    "income_yield": 4.1,
-    "income_basis": "50% to income funds @ 4.5%, balance at miner net 3.67%",
+    "v2029_base": 1.64,
+    "income_2029": 69709,
+    "income_yield": 4.3,
+    "income_basis": "50% to income funds @ 4.5%, balance at miner net 4.00%",
     "income_transfer_pct": 50,
     "income_fund_yield_pct": 4.5,
-    "income_miner_yield_pct": 3.7
+    "income_miner_yield_pct": 4.0
   },
   "holdings": {
     "africa": {
@@ -133,29 +133,29 @@
   },
   "scenarios": {
     "2026": {
-      "bear": 1.3,
-      "base": 1.93,
-      "bull": 2.57
+      "bear": 0.5,
+      "base": 1.14,
+      "bull": 1.76
     },
     "2027": {
-      "bear": 1.41,
-      "base": 2.17,
-      "bull": 2.94
+      "bear": 0.55,
+      "base": 1.27,
+      "bull": 1.99
     },
     "2028": {
-      "bear": 1.01,
-      "base": 1.67,
-      "bull": 2.33
+      "bear": 0.67,
+      "base": 1.57,
+      "bull": 2.5
     },
     "2029": {
-      "bear": 1.01,
-      "base": 1.79,
-      "bull": 2.57
+      "bear": 0.69,
+      "base": 1.64,
+      "bull": 2.65
     },
     "2030": {
-      "bear": 0.85,
-      "base": 1.64,
-      "bull": 2.42
+      "bear": 0.65,
+      "base": 1.51,
+      "bull": 2.43
     }
   },
   "catalysts": [
@@ -204,6 +204,6 @@
   "fetch_notes": [],
   "_raw": {
     "real_yield": 2.34,
-    "dxy": 99.677001953125
+    "dxy": 99.552001953125
   }
 }
