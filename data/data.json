@@ -3,9 +3,9 @@
   "manual_as_of": "2026-08-21",
   "model_as_of": "2026-08-31",
   "gold": {
-    "spot": 4486,
+    "spot": 4494,
     "trailing24": 3605,
-    "ratio": 1.24,
+    "ratio": 1.25,
     "forecast_2029": 4898,
     "trailing_months": 24,
     "verdict": "Balanced",
@@ -29,23 +29,26 @@
       "id": "usd_geo",
       "label": "USD & geopolitics",
       "signal": "base",
-      "reading": "DXY 99.6 (-0.4 20d) . Brent $89 (-7% 3m)"
+      "reading": "DXY 99.5 (-0.4 20d) . Brent $89 (-6% 3m)"
     },
     {
       "id": "mining_equities",
       "label": "Sector re-rate",
       "signal": "bull",
-      "reading": "spot/24m 1.24 . GDXJ/gold 0.029"
+      "reading": "spot/24m 1.25 . GDXJ/gold 0.029"
     }
   ],
   "divergence": {
     "d_real_yield_bp": 0.0,
-    "d_dxy_pct": -0.12,
-    "expected_gold_pct": 0.11,
-    "actual_gold_pct": -0.39,
-    "residual_pp": -0.5,
-    "verdict": "Gold lagging textbook by 0.5pp",
-    "signal": "gold_lagging"
+    "real_yield_level": 2.34,
+    "real_yield_as_of": "2026-08-27",
+    "rates_stale": false,
+    "d_dxy_pct": -0.02,
+    "expected_gold_pct": 0.02,
+    "actual_gold_pct": 0.17,
+    "residual_pp": 0.15,
+    "verdict": "Tracking textbook within 0.1pp",
+    "signal": "textbook"
   },
   "real_curve_slope": {
     "as_of": "2026-08-27",
@@ -55,12 +58,12 @@
     "change_bp": -6.0
   },
   "opportunity_cost": {
-    "gap_1m": -6.1,
-    "gap_3m": -3.2,
+    "gap_1m": -6.3,
+    "gap_3m": -3.4,
     "ndx_1m": 4.7,
-    "gold_1m": 10.8,
+    "gold_1m": 11.0,
     "ndx_3m": -3.0,
-    "gold_3m": 0.3,
+    "gold_3m": 0.4,
     "gdxj_3m": 8.0,
     "verdict": "Gap -3pp 3m / -6pp 1m - no extreme",
     "signal": "base"
@@ -124,12 +127,19 @@
     "r_asia_pct": 12.68,
     "r_gold_gbp_pct": 2.7,
     "beta_spread": 0.65,
+    "r_gold_usd_pct": 2.68,
+    "regime_fx_driven": false,
     "expected_spread_pct": 1.76,
     "residual_pp": -2.71,
     "threshold_pp": 5.0,
     "signal": "base",
     "low_confidence": false,
-    "verdict": "Africa behind beta by 2.7pp over 5 sessions (up-tape)"
+    "verdict": "Africa behind beta by 2.7pp over 5 sessions (up-tape)",
+    "headline": "IN LINE - HOLD",
+    "tone": "flat",
+    "plain": "Africa +11.7%, Asia +12.7% over 5 sessions. Gold in GBP +2.7% implied Africa ahead by +1.8pp; it finished 2.7pp behind that.",
+    "implication": "Within the +/-5.0pp band. Asia re-rating faster than beta explains - entry spread narrowing. 2.3pp from the trigger.",
+    "gap_to_trigger_pp": 2.3
   },
   "scenarios": {
     "2026": {
@@ -204,6 +214,7 @@
   "fetch_notes": [],
   "_raw": {
     "real_yield": 2.34,
-    "dxy": 99.552001953125
+    "real_yield_date": "2026-08-27",
+    "dxy": 99.52999877929688
   }
 }
