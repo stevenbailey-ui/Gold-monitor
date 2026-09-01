@@ -1,106 +1,63 @@
 {
- "model_as_of": "2026-08-31",
- "source": "portfolio_v21_fixed_1.xlsx + Aug-26 THX rebuild (Douta charged at PFS AISC $1,890 not phantom $1,027; Senegal 10% free-carry applied; Segilola AISC rebased $927 -> Q2-26 actual $1,262; Douta capex moved to 2027/28 on FID median Q1-27; 2029 treated as ramp year 45koz) + MTL BACS US$27m equipment facility and discount 12% -> 11%. Income rebuilt on corrected 2029 FCF; NET of NR301 withholding.",
- "valuation": {
-  "africa": {
-   "npv_bull": 2.641,
-   "npv_base": 1.77,
-   "npv_bear": 0.897,
-   "disc": 0.08,
-   "pfcf_mult": 10.0,
-   "npv_wt": 0.2,
-   "pfcf_wt": 0.8
+  "model_as_of": "2026-08-31",
+  "source": "portfolio_v22.xlsx",
+  "schema": "v22",
+  "valuation": {
+    "africa": {
+      "npv_bull": 3.655,
+      "npv_base": 2.116,
+      "npv_bear": 1.032,
+      "disc": 0.06,
+      "pfcf_mult": 0.62,
+      "pnav_anchor": 0.269,
+      "npv_wt": 1.0,
+      "pfcf_wt": 0.0
+    },
+    "asia": {
+      "npv_bull": 1.059,
+      "npv_base": 0.636,
+      "npv_bear": 0.338,
+      "disc": 0.06,
+      "pfcf_mult": 0.44,
+      "pnav_anchor": 0.198,
+      "npv_wt": 1.0,
+      "pfcf_wt": 0.0
+    }
   },
-  "asia": {
-   "npv_bull": 0.72,
-   "npv_base": 0.494,
-   "npv_bear": 0.263,
-   "disc": 0.11,
-   "pfcf_mult": 6.0,
-   "npv_wt": 0.15,
-   "pfcf_wt": 0.85
-  }
- },
- "scenarios": {
-  "2026": {
-   "bear": 0.5,
-   "base": 1.14,
-   "bull": 1.76
+  "scenarios": {
+    "2026": {
+      "bear": 0.21,
+      "base": 0.42,
+      "bull": 0.72
+    },
+    "2027": {
+      "bear": 0.28,
+      "base": 0.57,
+      "bull": 0.99
+    },
+    "2028": {
+      "bear": 0.39,
+      "base": 0.78,
+      "bull": 1.35
+    },
+    "2029": {
+      "bear": 0.5,
+      "base": 1.01,
+      "bull": 1.74
+    },
+    "2030": {
+      "bear": 0.6,
+      "base": 1.22,
+      "bull": 2.1
+    }
   },
-  "2027": {
-   "bear": 0.55,
-   "base": 1.27,
-   "bull": 1.99
+  "gold_2029_forecast": 5282,
+  "income_2029_base": 41410,
+  "income_2029_yield": 4.1,
+  "rotation": {
+    "cross_ratio": 1.361,
+    "threshold": 1.15,
+    "signal": "ROTATE"
   },
-  "2028": {
-   "bear": 0.67,
-   "base": 1.57,
-   "bull": 2.5
-  },
-  "2029": {
-   "bear": 0.69,
-   "base": 1.64,
-   "bull": 2.65
-  },
-  "2030": {
-   "bear": 0.65,
-   "base": 1.51,
-   "bull": 2.43
-  }
- },
- "gold_2029_forecast": 4898,
- "income_2029_base": 65618,
- "income_2029_gross": 76649,
- "income_2029_note": "Net of NR301 withholding on the THX CAD dividend (~16.15% effective, not reclaimable in ISA or SIPP). Build: THX FCF/sh GBP 0.3601 x 30% payout x 632,192 sh = 68,305 gross / 57,274 net; MTL FCF/sh GBP 0.0856 x 20% payout x 487,426 sh = 8,344 (UK company, no WHT). Payout ratios are model assumptions (Assumptions H48 / H66), not declared policy. MTL dividend initiation from 2028 is CEO signalling only and sits behind BACS debt service running to Aug 2031 - if MTL pays nothing, 2029 income falls to GBP 57,274 net.",
- "income_2029_yield": 3.7,
- "scenario_basis": {
-  "rebuilt": "2026-08-31",
-  "defect_corrected": "Prior block applied a single flat multiple (THX 10x / MTL 6x) to every year and every scenario, capitalising bear cash flow on a base-case re-rating multiple. Symptoms: 2026 bear GBP1.30m (+145% vs the live mark) and 2027 peaking in all three scenarios. The multiple now carries a year and a scenario dimension, and the NPV blend weight escalates by year per Assumptions B105:F109.",
-  "pfcf_mult_base_by_year": {
-   "africa": {
-    "2026": 5,
-    "2027": 5,
-    "2028": 10,
-    "2029": 10,
-    "2030": 10
-   },
-   "asia": {
-    "2026": 4,
-    "2027": 4,
-    "2028": 6,
-    "2029": 8,
-    "2030": 8
-   }
-  },
-  "scenario_multiple_factor": {
-   "bear": 0.6,
-   "base": 1.0,
-   "bull": 1.2
-  },
-  "scenario_multiple_note": "Asymmetric by design. Bull held at 1.2 not 1.4 because the bull NPV stresses gold only and holds AISC at base (NPV Model row 77), so part of the re-rate is already inside the NPV leg. At 1.4 the multiple accounts for 41% of the base-to-bull delta with no cash-flow support.",
-  "npv_weight_by_year": {
-   "africa": {
-    "2026": 0.2,
-    "2027": 0.3,
-    "2028": 0.45,
-    "2029": 0.55,
-    "2030": 0.65
-   },
-   "asia": {
-    "2026": 0.15,
-    "2027": 0.2,
-    "2028": 0.35,
-    "2029": 0.5,
-    "2030": 0.6
-   }
-  },
-  "open_defects": [
-   "P/FCF leg is pre-growth-capex: Douta $254m and La India residual $53m are never deducted, so peak-capex years overstate free cash. Requires a per-year net cash/debt bridge.",
-   "GBP/USD stale at 1.32 (Assumptions!C8) vs 1.35-1.38 spot. Re-anchoring to 1.38 base / 1.45 bull / 1.28 bear removes a further ~4.5% from base-case GBP values.",
-   "Bull pairs $6,000 gold with 4% AISC inflation (Assumptions D18), below the 6% base. A debasement-driven bull implies higher input-cost inflation, not lower. THX royalty step-up 0.88%->3.83% of revenue is ad valorem and absent from the AISC line.",
-   "Douta mandatory hedging covenant (30-50% of production) caps participation in the bull case and is unmodelled.",
-   "valuation.*.npv_wt and .pfcf_mult still store the 2026 pair only; they drive the dashboard 'lens' string, not this grid."
-  ],
-  "caveat": "Fundamental valuation floor, not a traded price. At 4.3-5.0x GBP-adjusted gold beta a -18% gold tape marks THX materially below the bear grid."
- }
+  "method_note": "Both holdings discounted at a common 6%. Jurisdiction and delivery risk are expressed once, in the delivery probability and the P/NAV path, not in the rate."
 }
