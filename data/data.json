@@ -1,9 +1,9 @@
 {
-  "as_of": "2026-09-04",
+  "as_of": "2026-09-07",
   "manual_as_of": "2026-08-21",
   "model_as_of": "2026-08-31",
   "gold": {
-    "spot": 4477,
+    "spot": 4453,
     "trailing24": 3686,
     "ratio": 1.21,
     "forecast_2029": 5282,
@@ -29,7 +29,7 @@
       "id": "usd_geo",
       "label": "USD & geopolitics",
       "signal": "base",
-      "reading": "DXY 99.2 (-0.4 20d) . Brent $96 (+3% 3m)"
+      "reading": "DXY 99.2 (-0.6 20d) . Brent $97 (+3% 3m)"
     },
     {
       "id": "mining_equities",
@@ -39,15 +39,15 @@
     }
   ],
   "divergence": {
-    "d_real_yield_bp": -3.0,
+    "d_real_yield_bp": null,
     "real_yield_level": 2.42,
     "real_yield_as_of": "2026-09-03",
-    "rates_stale": false,
-    "d_dxy_pct": 0.15,
-    "expected_gold_pct": 0.16,
-    "actual_gold_pct": -0.99,
-    "residual_pp": -1.15,
-    "verdict": "Gold lagging textbook by 1.2pp",
+    "rates_stale": true,
+    "d_dxy_pct": 0.02,
+    "expected_gold_pct": -0.02,
+    "actual_gold_pct": -0.54,
+    "residual_pp": -0.52,
+    "verdict": "Gold lagging textbook by 0.5pp (rates leg stale)",
     "signal": "gold_lagging"
   },
   "real_curve_slope": {
@@ -58,18 +58,18 @@
     "change_bp": -6.0
   },
   "opportunity_cost": {
-    "gap_1m": -5.0,
-    "gap_3m": -1.2,
+    "gap_1m": -2.0,
+    "gap_3m": -0.7,
     "ndx_1m": 0.6,
-    "gold_1m": 5.5,
+    "gold_1m": 2.6,
     "ndx_3m": 2.0,
-    "gold_3m": 3.2,
+    "gold_3m": 2.7,
     "gdxj_3m": 28.3,
-    "verdict": "Gap -1pp 3m / -5pp 1m - no extreme",
+    "verdict": "Gap -1pp 3m / -2pp 1m - no extreme",
     "signal": "base"
   },
   "portfolio": {
-    "current": 549953,
+    "current": 546256,
     "v2029_base": 1.01,
     "income_2029": 43430,
     "income_yield": 4.3,
@@ -82,27 +82,27 @@
     "africa": {
       "name": "Africa",
       "desc": "Gold producer + developer",
-      "value": 467822,
+      "value": 464661,
       "pct": 85.1,
       "npv": "1.032 - 3.655",
       "jur": "6% disc",
       "jsig": "base",
       "lens": "0.62\u00d7 P/FCF \u00b7 100/0 NPV/P-FCF",
       "next": "New mine FID",
-      "liq": "7.5d @ 20% ADV",
+      "liq": "7.6d @ 20% ADV",
       "beta": 1.71,
       "beta_up": 1.1,
       "beta_down": 1.75,
       "beta_r2": 0.533,
       "beta_adverse": false,
       "lsig": "base",
-      "adtv": 313786,
-      "ltrend": 1.77
+      "adtv": 306764,
+      "ltrend": 1.73
     },
     "asia": {
       "name": "Asia",
       "desc": "Gold developer (construction)",
-      "value": 82131,
+      "value": 81595,
       "pct": 14.9,
       "npv": "0.338 - 1.059",
       "jur": "6% disc",
@@ -116,30 +116,30 @@
       "beta_r2": 0.255,
       "beta_adverse": false,
       "lsig": "bull",
-      "adtv": 537720,
-      "ltrend": 1.22
+      "adtv": 534210,
+      "ltrend": 1.23
     }
   },
   "rotation": {
     "sessions": 5,
     "regime": "down",
-    "r_africa_pct": 4.23,
-    "r_asia_pct": 5.97,
-    "r_gold_gbp_pct": -2.06,
+    "r_africa_pct": 3.52,
+    "r_asia_pct": 5.28,
+    "r_gold_gbp_pct": -2.77,
     "beta_spread": 0.54,
-    "r_gold_usd_pct": -2.63,
+    "r_gold_usd_pct": -3.16,
     "regime_fx_driven": false,
-    "expected_spread_pct": -1.11,
-    "residual_pp": -0.64,
+    "expected_spread_pct": -1.5,
+    "residual_pp": -0.26,
     "threshold_pp": 5.0,
     "signal": "base",
     "low_confidence": false,
-    "verdict": "Africa behind beta by 0.6pp over 5 sessions (down-tape)",
+    "verdict": "Africa behind beta by 0.3pp over 5 sessions (down-tape)",
     "headline": "IN LINE - HOLD",
     "tone": "flat",
-    "plain": "Africa +4.2%, Asia +6.0% over 5 sessions. Gold in GBP -2.1% implied Africa ahead by -1.1pp; it finished 0.6pp behind that.",
-    "implication": "Within the +/-5.0pp band. Asia re-rating faster than beta explains - entry spread narrowing. 4.4pp from the trigger.",
-    "gap_to_trigger_pp": 4.4
+    "plain": "Africa +3.5%, Asia +5.3% over 5 sessions. Gold in GBP -2.8% implied Africa ahead by -1.5pp; it finished 0.3pp behind that.",
+    "implication": "Within the +/-5.0pp band. Asia re-rating faster than beta explains - entry spread narrowing. 4.7pp from the trigger.",
+    "gap_to_trigger_pp": 4.7
   },
   "scenarios": {
     "2026": {
@@ -211,10 +211,12 @@
       "body": "Batong Buhay: permit EXPA-079 not yet issued, drilling anticipated H2-26, historical resource non-JORC. Exploration funding competes with debt service until La India generates FCF. <b>Optionality beyond the exit window; no action.</b>"
     }
   ],
-  "fetch_notes": [],
+  "fetch_notes": [
+    "divergence:rates_stale:2026-09-03"
+  ],
   "_raw": {
     "real_yield": 2.42,
     "real_yield_date": "2026-09-03",
-    "dxy": 99.15699768066406
+    "dxy": 99.1760025024414
   }
 }
