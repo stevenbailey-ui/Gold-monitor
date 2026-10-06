@@ -1,11 +1,11 @@
 {
-  "as_of": "2026-10-02",
+  "as_of": "2026-10-06",
   "manual_as_of": "2026-08-21",
   "model_as_of": "2026-08-31",
   "gold": {
-    "spot": 4172,
+    "spot": 4176,
     "trailing24": 3779,
-    "ratio": 1.1,
+    "ratio": 1.11,
     "forecast_2029": 5282,
     "trailing_months": 24,
     "verdict": "Bearish",
@@ -23,49 +23,49 @@
       "id": "macro_rates",
       "label": "Macro & rates",
       "signal": "bear",
-      "reading": "real slope +0.43pp (-10bp 3m)"
+      "reading": "real slope +0.42pp (-13bp 3m)"
     },
     {
       "id": "usd_geo",
       "label": "USD & geopolitics",
       "signal": "bear",
-      "reading": "DXY 101.9 (+2.9 20d) . Brent $103 (+43% 3m)"
+      "reading": "DXY 102.1 (+2.9 20d) . Brent $101 (+36% 3m)"
     },
     {
       "id": "mining_equities",
       "label": "Sector re-rate",
       "signal": "bull",
-      "reading": "spot/24m 1.10 . GDXJ/gold 0.027"
+      "reading": "spot/24m 1.11 . GDXJ/gold 0.027"
     }
   ],
   "divergence": {
-    "d_real_yield_bp": -5.0,
-    "real_yield_level": 2.88,
-    "real_yield_as_of": "2026-10-01",
+    "d_real_yield_bp": 4.0,
+    "real_yield_level": 2.92,
+    "real_yield_as_of": "2026-10-02",
     "rates_stale": false,
-    "d_dxy_pct": -0.07,
-    "expected_gold_pct": 0.56,
-    "actual_gold_pct": -0.97,
-    "residual_pp": -1.53,
-    "verdict": "Gold lagging textbook by 1.5pp",
-    "signal": "gold_lagging"
+    "d_dxy_pct": 0.16,
+    "expected_gold_pct": -0.55,
+    "actual_gold_pct": 0.11,
+    "residual_pp": 0.65,
+    "verdict": "Gold outperforming textbook by 0.7pp",
+    "signal": "structural_bid"
   },
   "real_curve_slope": {
-    "as_of": "2026-10-01",
-    "prior_as_of": "2026-07-02",
-    "slope_now_pp": 0.43,
-    "slope_prior_pp": 0.53,
-    "change_bp": -10.0
+    "as_of": "2026-10-02",
+    "prior_as_of": "2026-07-06",
+    "slope_now_pp": 0.42,
+    "slope_prior_pp": 0.55,
+    "change_bp": -13.0
   },
   "opportunity_cost": {
-    "gap_1m": 11.2,
-    "gap_3m": 3.6,
-    "ndx_1m": 5.7,
-    "gold_1m": -5.5,
-    "ndx_3m": 3.7,
-    "gold_3m": 0.1,
+    "gap_1m": 13.4,
+    "gap_3m": 6.1,
+    "ndx_1m": 5.4,
+    "gold_1m": -8.0,
+    "ndx_3m": 6.5,
+    "gold_3m": 0.5,
     "gdxj_3m": 9.4,
-    "verdict": "Gap +4pp 3m / +11pp 1m - no extreme",
+    "verdict": "Gap +6pp 3m / +13pp 1m - no extreme",
     "signal": "base"
   },
   "portfolio": {
@@ -97,7 +97,7 @@
       "beta_adverse": false,
       "lsig": "base",
       "adtv": 262512,
-      "ltrend": 0.9
+      "ltrend": 0.82
     },
     "asia": {
       "name": "Asia",
@@ -116,8 +116,8 @@
       "beta_r2": 0.191,
       "beta_adverse": true,
       "lsig": "bull",
-      "adtv": 551514,
-      "ltrend": 0.92
+      "adtv": 550350,
+      "ltrend": 0.82
     }
   },
   "rotation": {
@@ -213,8 +213,8 @@
   ],
   "fetch_notes": [],
   "_raw": {
-    "real_yield": 2.88,
-    "real_yield_date": "2026-10-01",
-    "dxy": 101.92400360107422
+    "real_yield": 2.92,
+    "real_yield_date": "2026-10-02",
+    "dxy": 102.08799743652344
   }
 }
