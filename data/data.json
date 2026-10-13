@@ -1,11 +1,11 @@
 {
-  "as_of": "2026-10-10",
+  "as_of": "2026-10-13",
   "manual_as_of": "2026-08-21",
   "model_as_of": "2026-08-31",
   "gold": {
-    "spot": 4220,
+    "spot": 4189,
     "trailing24": 3779,
-    "ratio": 1.12,
+    "ratio": 1.11,
     "forecast_2029": 5282,
     "trailing_months": 24,
     "verdict": "Bearish",
@@ -29,26 +29,26 @@
       "id": "usd_geo",
       "label": "USD & geopolitics",
       "signal": "bear",
-      "reading": "DXY 102.2 (+3.1 20d) . Brent $104 (+25% 3m)"
+      "reading": "DXY 102.4 (+2.8 20d) . Brent $105 (+24% 3m)"
     },
     {
       "id": "mining_equities",
       "label": "Sector re-rate",
       "signal": "bull",
-      "reading": "spot/24m 1.12 . GDXJ/gold 0.026"
+      "reading": "spot/24m 1.11 . GDXJ/gold 0.027"
     }
   ],
   "divergence": {
-    "d_real_yield_bp": -5.0,
+    "d_real_yield_bp": null,
     "real_yield_level": 2.87,
     "real_yield_as_of": "2026-10-08",
-    "rates_stale": false,
-    "d_dxy_pct": 0.13,
-    "expected_gold_pct": 0.38,
-    "actual_gold_pct": 1.23,
-    "residual_pp": 0.85,
-    "verdict": "Gold outperforming textbook by 0.9pp",
-    "signal": "structural_bid"
+    "rates_stale": true,
+    "d_dxy_pct": 0.22,
+    "expected_gold_pct": -0.2,
+    "actual_gold_pct": -0.74,
+    "residual_pp": -0.54,
+    "verdict": "Gold lagging textbook by 0.5pp (rates leg stale)",
+    "signal": "gold_lagging"
   },
   "real_curve_slope": {
     "as_of": "2026-10-08",
@@ -58,18 +58,18 @@
     "change_bp": -10.0
   },
   "opportunity_cost": {
-    "gap_1m": 10.4,
-    "gap_3m": 0.2,
-    "ndx_1m": 6.1,
-    "gold_1m": -4.2,
-    "ndx_3m": 5.5,
-    "gold_3m": 5.4,
-    "gdxj_3m": 12.2,
-    "verdict": "Gap +0pp 3m / +10pp 1m - no extreme",
+    "gap_1m": 8.2,
+    "gap_3m": 0.3,
+    "ndx_1m": 4.4,
+    "gold_1m": -3.7,
+    "ndx_3m": 3.6,
+    "gold_3m": 3.4,
+    "gdxj_3m": 14.8,
+    "verdict": "Gap +0pp 3m / +8pp 1m - no extreme",
     "signal": "base"
   },
   "portfolio": {
-    "current": 452931,
+    "current": 460228,
     "v2029_base": 1.01,
     "income_2029": 43430,
     "income_yield": 4.3,
@@ -82,7 +82,7 @@
     "africa": {
       "name": "Africa",
       "desc": "Gold producer + developer",
-      "value": 372993,
+      "value": 379315,
       "pct": 82.4,
       "npv": "1.032 - 3.655",
       "jur": "6% disc",
@@ -96,13 +96,13 @@
       "beta_r2": 0.394,
       "beta_adverse": false,
       "lsig": "base",
-      "adtv": 245543,
-      "ltrend": 0.81
+      "adtv": 249705,
+      "ltrend": 0.91
     },
     "asia": {
       "name": "Asia",
       "desc": "Gold developer (construction)",
-      "value": 79938,
+      "value": 80913,
       "pct": 17.6,
       "npv": "0.338 - 1.059",
       "jur": "6% disc",
@@ -116,8 +116,8 @@
       "beta_r2": 0.17,
       "beta_adverse": true,
       "lsig": "bull",
-      "adtv": 513379,
-      "ltrend": 0.84
+      "adtv": 519640,
+      "ltrend": 0.79
     }
   },
   "rotation": {
@@ -211,10 +211,12 @@
       "body": "Batong Buhay: permit EXPA-079 not yet issued, drilling anticipated H2-26, historical resource non-JORC. Exploration funding competes with debt service until La India generates FCF. <b>Optionality beyond the exit window; no action.</b>"
     }
   ],
-  "fetch_notes": [],
+  "fetch_notes": [
+    "divergence:rates_stale:2026-10-08"
+  ],
   "_raw": {
     "real_yield": 2.87,
     "real_yield_date": "2026-10-08",
-    "dxy": 102.23100280761719
+    "dxy": 102.44999694824219
   }
 }
