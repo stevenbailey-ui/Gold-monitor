@@ -1,9 +1,9 @@
 {
-  "as_of": "2026-10-23",
+  "as_of": "2026-10-26",
   "manual_as_of": "2026-08-21",
   "model_as_of": "2026-08-31",
   "gold": {
-    "spot": 4010,
+    "spot": 4021,
     "trailing24": 3779,
     "ratio": 1.06,
     "forecast_2029": 5282,
@@ -23,13 +23,13 @@
       "id": "macro_rates",
       "label": "Macro & rates",
       "signal": "bear",
-      "reading": "real slope +0.41pp (-11bp 3m)"
+      "reading": "real slope +0.42pp (-10bp 3m)"
     },
     {
       "id": "usd_geo",
       "label": "USD & geopolitics",
       "signal": "bear",
-      "reading": "DXY 101.8 (+0.8 20d) . Brent $112 (+26% 3m)"
+      "reading": "DXY 102.0 (+0.8 20d) . Brent $110 (+31% 3m)"
     },
     {
       "id": "mining_equities",
@@ -39,37 +39,37 @@
     }
   ],
   "divergence": {
-    "d_real_yield_bp": -12.0,
-    "real_yield_level": 2.64,
-    "real_yield_as_of": "2026-10-22",
+    "d_real_yield_bp": 2.0,
+    "real_yield_level": 2.66,
+    "real_yield_as_of": "2026-10-23",
     "rates_stale": false,
-    "d_dxy_pct": 0.14,
-    "expected_gold_pct": 1.08,
-    "actual_gold_pct": -0.82,
-    "residual_pp": -1.89,
-    "verdict": "Gold lagging textbook by 1.9pp",
-    "signal": "gold_lagging"
+    "d_dxy_pct": 0.28,
+    "expected_gold_pct": -0.45,
+    "actual_gold_pct": 0.28,
+    "residual_pp": 0.72,
+    "verdict": "Gold outperforming textbook by 0.7pp",
+    "signal": "structural_bid"
   },
   "real_curve_slope": {
-    "as_of": "2026-10-22",
-    "prior_as_of": "2026-07-23",
-    "slope_now_pp": 0.41,
+    "as_of": "2026-10-23",
+    "prior_as_of": "2026-07-24",
+    "slope_now_pp": 0.42,
     "slope_prior_pp": 0.52,
-    "change_bp": -11.0
+    "change_bp": -10.0
   },
   "opportunity_cost": {
-    "gap_1m": 1.7,
-    "gap_3m": 4.9,
-    "ndx_1m": -5.0,
-    "gold_1m": -6.7,
-    "ndx_3m": 3.3,
-    "gold_3m": -1.6,
-    "gdxj_3m": 0.4,
-    "verdict": "Gap +5pp 3m / +2pp 1m - no extreme",
+    "gap_1m": 2.6,
+    "gap_3m": 5.9,
+    "ndx_1m": -4.4,
+    "gold_1m": -6.9,
+    "ndx_3m": 5.4,
+    "gold_3m": -0.4,
+    "gdxj_3m": 3.3,
+    "verdict": "Gap +6pp 3m / +3pp 1m - no extreme",
     "signal": "base"
   },
   "portfolio": {
-    "current": 412471,
+    "current": 390436,
     "v2029_base": 1.01,
     "income_2029": 43430,
     "income_yield": 4.3,
@@ -82,64 +82,64 @@
     "africa": {
       "name": "Africa",
       "desc": "Gold producer + developer",
-      "value": 332533,
-      "pct": 80.6,
+      "value": 312935,
+      "pct": 80.2,
       "npv": "1.032 - 3.655",
       "jur": "6% disc",
       "jsig": "base",
       "lens": "0.62\u00d7 P/FCF \u00b7 100/0 NPV/P-FCF",
       "next": "New mine FID",
-      "liq": "6.9d @ 20% ADV",
-      "beta": 1.49,
-      "beta_up": 1.99,
-      "beta_down": 1.11,
-      "beta_r2": 0.475,
+      "liq": "6.8d @ 20% ADV",
+      "beta": 1.63,
+      "beta_up": 1.68,
+      "beta_down": 1.07,
+      "beta_r2": 0.578,
       "beta_adverse": false,
       "lsig": "base",
-      "adtv": 241155,
-      "ltrend": 0.65
+      "adtv": 230411,
+      "ltrend": 0.68
     },
     "asia": {
       "name": "Asia",
       "desc": "Gold developer (construction)",
-      "value": 79938,
-      "pct": 19.4,
+      "value": 77501,
+      "pct": 19.8,
       "npv": "0.338 - 1.059",
       "jur": "6% disc",
       "jsig": "base",
       "lens": "0.44\u00d7 P/FCF \u00b7 100/0 NPV/P-FCF",
       "next": "Flagship first gold",
       "liq": "0.8d @ 20% ADV",
-      "beta": 1.06,
-      "beta_up": 1.66,
-      "beta_down": 1.26,
-      "beta_r2": 0.323,
-      "beta_adverse": false,
+      "beta": 1.16,
+      "beta_up": 0.48,
+      "beta_down": 1.12,
+      "beta_r2": 0.31,
+      "beta_adverse": true,
       "lsig": "bull",
-      "adtv": 487612,
-      "ltrend": 0.85
+      "adtv": 472746,
+      "ltrend": 0.91
     }
   },
   "rotation": {
     "sessions": 5,
     "regime": "down",
-    "r_africa_pct": -2.59,
-    "r_asia_pct": -2.38,
-    "r_gold_gbp_pct": -2.44,
-    "beta_spread": -0.15,
-    "r_gold_usd_pct": -1.16,
+    "r_africa_pct": -10.0,
+    "r_asia_pct": -5.02,
+    "r_gold_gbp_pct": -4.09,
+    "beta_spread": -0.05,
+    "r_gold_usd_pct": -3.58,
     "regime_fx_driven": false,
-    "expected_spread_pct": 0.37,
-    "residual_pp": -0.58,
+    "expected_spread_pct": 0.2,
+    "residual_pp": -5.19,
     "threshold_pp": 5.0,
-    "signal": "base",
+    "signal": "bull",
     "low_confidence": false,
-    "verdict": "Africa behind beta by 0.6pp over 5 sessions (down-tape)",
-    "headline": "IN LINE - HOLD",
-    "tone": "flat",
-    "plain": "Africa -2.6%, Asia -2.4% over 5 sessions. Gold in GBP -2.4% implied Africa ahead by +0.4pp; it finished 0.6pp behind that.",
-    "implication": "Within the +/-5.0pp band. Asia re-rating faster than beta explains - entry spread narrowing. 4.4pp from the trigger.",
-    "gap_to_trigger_pp": 4.4
+    "verdict": "Africa behind beta by 5.2pp over 5 sessions (down-tape)",
+    "headline": "ENTRY COMPRESSED - ASIA RAN",
+    "tone": "bad",
+    "plain": "Africa -10.0%, Asia -5.0% over 5 sessions. Gold in GBP -4.1% implied Africa ahead by +0.2pp; it finished 5.2pp behind that.",
+    "implication": "Asia has re-rated ahead of beta. Entry spread has gone against you; do not chase.",
+    "gap_to_trigger_pp": 0.0
   },
   "scenarios": {
     "2026": {
@@ -213,8 +213,8 @@
   ],
   "fetch_notes": [],
   "_raw": {
-    "real_yield": 2.64,
-    "real_yield_date": "2026-10-22",
-    "dxy": 101.75199890136719
+    "real_yield": 2.66,
+    "real_yield_date": "2026-10-23",
+    "dxy": 102.0270004272461
   }
 }
