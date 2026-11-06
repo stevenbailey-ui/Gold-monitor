@@ -710,6 +710,228 @@ def opportunity_cost(notes, gold_bars=None):
     return out
 
 
+# ---------------------------------------------------------------------------
+# Futures/physical basis & suppression test. Diagnostic only (weight 0).
+# See the config.py block for the test definition.
+# ---------------------------------------------------------------------------
+GC_CODE = {2: "G", 4: "J", 6: "M", 8: "Q", 10: "V", 12: "Z"}   # active COMEX months
+
+
+def _last_bday(year, month):
+    """Last business day of a calendar month (weekends only; holidays ignored)."""
+    d = (datetime.date(year + (month == 12), month % 12 + 1, 1)
+         - datetime.timedelta(days=1))
+    while d.weekday() >= 5:
+        d -= datetime.timedelta(days=1)
+    return d
+
+
+def _active_contracts(today, n=2):
+    """Next n active COMEX gold months still tradeable. First notice day is the
+    last business day of the month BEFORE delivery; roll BASIS_ROLL_BUFFER_DAYS
+    ahead of it, as the open interest does."""
+    buf = getattr(C, "BASIS_ROLL_BUFFER_DAYS", 5)
+    out, y, m = [], today.year, today.month
+    while len(out) < n:
+        if m in GC_CODE:
+            py, pm = (y, m - 1) if m > 1 else (y - 1, 12)
+            fnd = _last_bday(py, pm)
+            if fnd - datetime.timedelta(days=buf) > today:
+                out.append({"sym": f"GC{GC_CODE[m]}{str(y)[2:]}.CMX",
+                            "label": f"{GC_CODE[m]}{str(y)[2:]}",
+                            "delivery": datetime.date(y, m, 15), "fnd": fnd})
+        m += 1
+        if m > 12:
+            m, y = 1, y + 1
+    return out
+
+
+def _pctl(hist, x):
+    """Fraction of `hist` at or below x."""
+    return sum(1 for h in hist if h <= x) / len(hist) if hist else None
+
+
+def _efp_leg(gold_bars, notes):
+    """COMEX front-month premium to LBMA PM, two quarter-block means."""
+    nq = getattr(C, "BASIS_Q_SESSIONS", 63)
+    try:
+        lb = json.loads(_get(C.LBMA_PM_URL, timeout=15))
+        fix = {datetime.date.fromisoformat(r["d"]): float(r["v"][0])
+               for r in lb if r.get("v") and r["v"][0]}
+    except Exception as e:
+        notes.append(f"basis:lbma:{type(e).__name__}"); return None
+    if not gold_bars:
+        notes.append("basis:no_gold_bars"); return None
+    fut = {d.date(): c for d, c in gold_bars}
+    days = sorted(set(fut) & set(fix))
+    if len(days) < 2 * nq:
+        notes.append(f"basis:efp_short({len(days)})"); return None
+    prem = [(fut[d] / fix[d] - 1) * 100 for d in days]
+    q1 = sum(prem[-nq:]) / nq                       # latest quarter
+    q2 = sum(prem[-2 * nq:-nq]) / nq                # quarter before
+    thr = getattr(C, "EFP_DISCOUNT_PCT", 0.0)
+    return {"as_of": days[-1].isoformat(), "prem_now_pct": round(prem[-1], 3),
+            "prem_q1_pct": round(q1, 3), "prem_q2_pct": round(q2, 3),
+            "discount_sustained": bool(q1 < thr and q2 < thr)}
+
+
+def _calendar_leg(notes):
+    """Front vs next active contract: backwardation and implied lease rate.
+    lease = SOFR - annualised futures carry. Spot reading, not quarterly."""
+    try:
+        f, n = _active_contracts(datetime.date.today(), 2)
+        pf, pn = yahoo_last(f["sym"]), yahoo_last(n["sym"])
+    except Exception as e:
+        notes.append(f"basis:calendar:{type(e).__name__}"); return None
+    sofr = fetch_fred("SOFR", notes)
+    yrs = (n["delivery"] - f["delivery"]).days / 365.0
+    carry = ((pn / pf) ** (1 / yrs) - 1) * 100 if (pf and yrs > 0) else None
+    lease = (sofr - carry) if (sofr is not None and carry is not None) else None
+    back = bool(pn < pf)
+    stress = back or (lease is not None and lease >= getattr(C, "LEASE_FLAG_PP", 2.0))
+    return {"front": f["label"], "next": n["label"], "front_px": round(pf, 1),
+            "next_px": round(pn, 1), "carry_pct": (round(carry, 2) if carry is not None else None),
+            "sofr_pct": sofr, "lease_pct": (round(lease, 2) if lease is not None else None),
+            "backwardation": back, "stress": stress}
+
+
+def _cot_col(rec, group, side):
+    """CFTC column names are inconsistent (swap__positions_short_all vs
+    swap_positions_long_all), so match by pattern."""
+    for k in rec:
+        kl = k.lower()
+        if kl.startswith(group) and side in kl and kl.endswith("_all") \
+                and "spread" not in kl and "pct" not in kl and "chg" not in kl:
+            return k
+    return None
+
+
+def _positioning_leg(notes):
+    """Swap-dealer net short percentile vs 10y, per quarter block; MM extreme check."""
+    n = getattr(C, "COT_HIST_WEEKS", 520)
+    nq = getattr(C, "COT_Q_WEEKS", 13)
+    url = ("https://publicreporting.cftc.gov/resource/72hh-3qpy.json"
+           "?cftc_contract_market_code=088691"
+           f"&$order=report_date_as_yyyy_mm_dd%20DESC&$limit={n}")
+    try:
+        rows = json.loads(_get(url, timeout=20))
+    except Exception as e:
+        notes.append(f"basis:cot:{type(e).__name__}"); return None
+    if len(rows) < 2 * nq + 52:
+        notes.append(f"basis:cot_short({len(rows)})"); return None
+    r0 = rows[0]
+    sl, ss = _cot_col(r0, "swap", "long"), _cot_col(r0, "swap", "short")
+    ml, ms = _cot_col(r0, "m_money", "long"), _cot_col(r0, "m_money", "short")
+    if not all((sl, ss, ml, ms)):
+        notes.append("basis:cot_columns"); return None
+    rows = rows[::-1]                                # oldest first
+    def ser(a, b):
+        out = []
+        for r in rows:
+            oi = float(r.get("open_interest_all") or 0)
+            out.append((float(r[a]) - float(r[b])) / oi if oi > 0 else 0.0)
+        return out
+    swap_short = [-x for x in ser(sl, ss)]           # +ve = net short, % OI
+    mm_long = ser(ml, ms)
+    p_q1 = _pctl(swap_short, sum(swap_short[-nq:]) / nq)
+    p_q2 = _pctl(swap_short, sum(swap_short[-2 * nq:-nq]) / nq)
+    mm_p = _pctl(mm_long, sum(mm_long[-nq:]) / nq)
+    thr, mthr = getattr(C, "SWAP_SHORT_PCTL", 0.90), getattr(C, "MM_EXTREME_PCTL", 0.90)
+    return {"as_of": rows[-1].get("report_date_as_yyyy_mm_dd", "")[:10],
+            "weeks": len(rows),
+            "swap_net_short_pct_oi": round(100 * swap_short[-1], 1),
+            "swap_pctl_q1": round(p_q1, 2), "swap_pctl_q2": round(p_q2, 2),
+            "mm_pctl_q1": round(mm_p, 2), "mm_extreme": bool(mm_p >= mthr),
+            "excess_short": bool(p_q1 >= thr and p_q2 >= thr and mm_p < mthr)}
+
+
+def _physical_leg(manual):
+    ps = manual.get("physical_stress") or {}
+    reg, sge = ps.get("registered_3m_chg_pct"), ps.get("sge_premium_usd")
+    if reg is None and sge is None:
+        return {"as_of": ps.get("as_of"), "registered_3m_chg_pct": None,
+                "sge_premium_usd": None, "tight": False, "entered": False}
+    tight = bool((reg is not None and reg <= getattr(C, "REG_DRAW_TIGHT_PCT", -10.0)) or
+                 (sge is not None and sge >= getattr(C, "SGE_PREM_TIGHT_USD", 15.0)))
+    return {"as_of": ps.get("as_of"), "registered_3m_chg_pct": reg,
+            "sge_premium_usd": sge, "tight": tight, "entered": True}
+
+
+def basis_monitor(manual, gold_bars, notes):
+    efp = _efp_leg(gold_bars, notes)
+    cal = _calendar_leg(notes)
+    pos = _positioning_leg(notes)
+    phy = _physical_leg(manual)
+    back = bool((efp and efp["discount_sustained"]) or (cal and cal["stress"]))
+    short = bool(pos and pos["excess_short"])
+    tight = bool(phy["tight"])
+    if back and short and tight:
+        head, tone = "SUPPRESSION SIGNAL", "bad"
+        txt = ("All three legs hold: futures discount/backwardation, excess bank-proxy "
+               "short, tight physical. Check the 2-quarter persistence before acting.")
+    elif back and tight:
+        head, tone = "PHYSICAL TIGHTNESS", "good"
+        txt = ("Backwardation with tight physical but no excess short: shortage, "
+               "which is bullish - not suppression.")
+    elif back or short:
+        head, tone = "WATCH", "warn"
+        txt = ("One leg sustained: " + ("basis stress" if back else "excess bank-proxy short")
+               + ". Needs the other two before it means anything.")
+    else:
+        head, tone = "NO SIGNAL", "flat"
+        txt = "Normal contango, no excess short. Suppression thesis not supported by the tape."
+    if not phy["entered"]:
+        txt += " Physical leg not entered (manual)."
+    return {"headline": head, "tone": tone, "plain": txt,
+            "efp": efp, "calendar": cal, "positioning": pos, "physical": phy,
+            "scored": False}
+
+
+# ---------------------------------------------------------------------------
+# Swap P/L (display only). Terms from the SWAP secret / data/swap.local.json.
+# ---------------------------------------------------------------------------
+def load_swap(notes):
+    raw = os.environ.get("SWAP")
+    if raw:
+        try:
+            return json.loads(raw)
+        except Exception:
+            notes.append("SWAP:bad_json"); return None
+    local = os.path.join(DATA, "swap.local.json")
+    if os.path.exists(local):
+        return json.load(open(local))
+    return None                      # absent is normal - tile simply hides
+
+
+def swap_pl(sw, live_pence, notes):
+    """P/L of the swap against having kept the shares sold, GBP.
+
+        pl = bought_shares * buy_now - sold_shares * sell_now
+             + (proceeds - cost) - dealing
+
+    proceeds/cost default to shares * deal price; override with the contract-note
+    figures (proceeds_gbp / cost_gbp) when known. Only live prices are used: if
+    either leg is on a fallback price the figure is withheld rather than stale.
+    """
+    if not sw:
+        return None
+    try:
+        bk, sk = sw["buy_key"], sw["sell_key"]
+        bn, sn = float(sw["buy_shares"]), float(sw["sell_shares"])
+        cost = sw.get("cost_gbp") or bn * float(sw["buy_px_p"]) / 100
+        proc = sw.get("proceeds_gbp") or sn * float(sw["sell_px_p"]) / 100
+    except Exception as e:
+        notes.append(f"swap:terms:{type(e).__name__}"); return None
+    pb, ps = live_pence.get(bk), live_pence.get(sk)
+    if not (pb and ps):
+        notes.append("swap:no_live_price")
+        return {"pl_gbp": None, "stale": True}
+    deal = getattr(C, "AJBELL_DEAL_GBP", 5.0) * getattr(C, "SWAP_DEALS", 2)
+    stamp = getattr(C, "SWAP_STAMP_PCT", 0.0) * cost
+    pl = bn * pb / 100 - sn * ps / 100 + (proc - cost) - deal - stamp
+    return {"pl_gbp": round(pl), "costs_gbp": round(deal + stamp, 2), "stale": False}
+
+
 def main():
     manual = json.load(open(os.path.join(DATA, "manual_inputs.json")))
     snap = json.load(open(os.path.join(DATA, "model_snapshot.json")))
@@ -735,6 +957,10 @@ def main():
         notes.append(f"gold_daily:{type(e).__name__}"); gold_bars = None
     oc = opportunity_cost(notes, gold_bars)
     px["oc_gap_1m"], px["oc_gap_3m"] = oc["gap_1m"], oc["gap_3m"]
+    try:
+        bm = basis_monitor(manual, gold_bars, notes)
+    except Exception as e:               # diagnostic must never block the run
+        notes.append(f"basis:{type(e).__name__}"); bm = None
     gold = px.get("gold") or manual.get("gold_fallback", 4360)
     px["gold"] = gold
     trail, n_months = trailing_24m(manual, notes, gold_bars)
@@ -771,7 +997,11 @@ def main():
             f"COT {round(cot_v*100,1)}% OI",
             f"CB {mm['wgc_cb_purchases_t']['value']} t/qtr",
         ]),
-        "macro_rates": slope_txt,
+        "macro_rates": " . ".join([
+            (f"deficit {fred['deficit_gdp']:+.1f}% GDP" if fred.get("deficit_gdp") is not None
+             else f"deficit -{mm['deficit_pct_gdp']['value']}% GDP"),
+            slope_txt + " (unscored)",
+        ]),
         "usd_geo": " . ".join([
             (f"DXY {round(px.get('dxy') or 0,1)} ({px['_chg_dxy']:+.1f} 20d)"
              if px.get("_chg_dxy") is not None else f"DXY {round(px.get('dxy') or 0,1)}"),
@@ -789,10 +1019,11 @@ def main():
 
     # Holdings -> GBP value + %, anonymised. No shares, no per-share price published.
     H = load_holdings(notes)
-    vals, liq = {}, {}
+    vals, liq, live_px = {}, {}, {}
     for key in ("africa", "asia"):
         h = H.get(key, {})
         live = fetch_holding_price(h["ticker"], notes) if h.get("ticker") else None
+        live_px[key] = live
         pence = live if live else h.get("px_fallback")
         vals[key] = round(h.get("shares", 0) * pence / 100) if (h.get("shares") and pence) else None
         liq[key] = liquidity_profile(h.get("ticker"), h.get("shares"), pence, notes)
@@ -841,6 +1072,10 @@ def main():
         }
 
     inc = exit_income(snap, manual, notes)
+    try:
+        swp = swap_pl(load_swap(notes), live_px, notes)
+    except Exception as e:               # display tile must never block the run
+        notes.append(f"swap:{type(e).__name__}"); swp = None
 
     out = {
         "as_of": datetime.date.today().isoformat(),
@@ -854,6 +1089,8 @@ def main():
         "divergence": div,
         "real_curve_slope": slope,
         "opportunity_cost": oc,
+        "basis_monitor": bm,
+        "swap": swp,
         "portfolio": {"current": total or None,
                       "v2029_base": snap["scenarios"]["2029"]["base"],
                       "income_2029": (inc["income"] if inc else None),

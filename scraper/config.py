@@ -39,6 +39,13 @@ v23 (2026-08-03) recalibration of the usd_geo theme. Both metrics were measured 
   oil -> CPI -> hawkish-Fed channel). It will therefore misread a large oil decline
   driven by demand destruction, which the old <50 bear state was meant to catch but
   never did. Accepted deliberately: an unreachable state catches nothing.
+
+v24 (2026-11-06) real_curve_slope removed from scoring. The September review found the
+30y-10y TIPS slope invalid as a forward signal; it stays in data.json as an unscored
+diagnostic. Its 12 points were redistributed pro-rata across the remaining eight metrics
+(etf 20->23, spot_trailing 16->18, dxy 12->14, cot 10->11, gdxj_gold 10->11,
+cb 8->9, deficit 6->7, brent 6->7). CAVEAT: Macro & rates now rests on deficit alone.
+Added: basis/suppression monitor (diagnostic, weight 0) and swap P/L tile (display only).
 """
 
 THEMES = ["demand_flows", "macro_rates", "usd_geo", "mining_equities"]
@@ -74,36 +81,34 @@ LIQ_WINDOW_LONG = 60        # sessions for the headline median volume
 LIQ_WINDOW_SHORT = 20       # sessions for the deterioration/improvement trend
 
 METRICS = [
-    # --- Demand & flows -------------------------------------------------- 38
-    {"id": "etf_aum_delta_t", "theme": "demand_flows", "weight": 20, "kind": "manual",
+    # --- Demand & flows -------------------------------------------------- 43
+    {"id": "etf_aum_delta_t", "theme": "demand_flows", "weight": 23, "kind": "manual",
      "label": "Gold ETF holdings change / demand (t/mo)"},
-    {"id": "cot_mm_net_pct_oi", "theme": "demand_flows", "weight": 10, "kind": "level",
+    {"id": "cot_mm_net_pct_oi", "theme": "demand_flows", "weight": 11, "kind": "level",
      "src": "cot", "bull_at": 0.10, "bear_at": 0.35, "higher_is_bull": False,
      "label": "COMEX Managed Money net % OI [contrarian: <=0.10 bull, >=0.35 bear]"},
-    {"id": "wgc_cb_purchases_t", "theme": "demand_flows", "weight": 8, "kind": "manual",
+    {"id": "wgc_cb_purchases_t", "theme": "demand_flows", "weight": 9, "kind": "manual",
      "label": "WGC central-bank net purchases (t/qtr) [quarterly, lagged, revision-prone]"},
 
-    # --- Macro & rates --------------------------------------------------- 18
-    {"id": "real_curve_slope", "theme": "macro_rates", "weight": 12, "kind": "slope3m",
-     "bull_at": 10.0, "bear_at": -10.0,
-     "label": "Real curve slope 30y-10y TIPS, 3m change (bp) [steepening = bull]"},
-    {"id": "deficit_pct_gdp", "theme": "macro_rates", "weight": 6, "kind": "level",
+    # --- Macro & rates ---------------------------------------------------- 7
+    # real_curve_slope de-scored v24 (unscored diagnostic only - see docstring).
+    {"id": "deficit_pct_gdp", "theme": "macro_rates", "weight": 7, "kind": "level",
      "src": "deficit_gdp", "bull_at": -6, "bear_at": -3, "higher_is_bull": False,
      "label": "US federal deficit (% GDP) [FRED signed: -6=6% deficit; bull <=-6, bear >=-3]"},
 
-    # --- USD & geopolitics ----------------------------------------------- 18
-    {"id": "dxy", "theme": "usd_geo", "weight": 12, "kind": "chg_n",
+    # --- USD & geopolitics ----------------------------------------------- 21
+    {"id": "dxy", "theme": "usd_geo", "weight": 14, "kind": "chg_n",
      "sym": "dxy", "window": 20, "unit": "abs", "bull_at": -2.0, "bear_at": 2.0,
      "label": "DXY, 20-session change (index pts) [falling dollar = bull]"},
-    {"id": "brent", "theme": "usd_geo", "weight": 6, "kind": "chg_n",
+    {"id": "brent", "theme": "usd_geo", "weight": 7, "kind": "chg_n",
      "sym": "brent", "window": 63, "unit": "pct", "bull_at": -15.0, "bear_at": 15.0,
      "label": "Brent crude, 3m change (%) [falling oil eases the CPI -> hawkish-Fed channel]"},
 
-    # --- Sector re-rate --------------------------------------------------- 26
-    {"id": "spot_trailing", "theme": "mining_equities", "weight": 16, "kind": "ratio_trailing",
+    # --- Sector re-rate --------------------------------------------------- 29
+    {"id": "spot_trailing", "theme": "mining_equities", "weight": 18, "kind": "ratio_trailing",
      "bull_lo": 0.90, "bull_hi": 1.40, "bear_at": 1.55,
      "label": "Gold spot / 24m trailing [momentum - only forward-looking metric]"},
-    {"id": "gdxj_gold", "theme": "mining_equities", "weight": 10, "kind": "ratio",
+    {"id": "gdxj_gold", "theme": "mining_equities", "weight": 11, "kind": "ratio",
      "num": "gdxj", "den": "gold", "bull_at": 0.022, "bear_at": 0.026, "higher_is_bull": False,
      "label": "GDXJ / gold [inverted: low=bull]"},
 ]
@@ -145,3 +150,45 @@ BETA_WINDOW = 250               # sessions used for the beta fit
 BETA_STEP = 5                   # weekly sampling within the window
 RESID_SESSIONS = 5              # lookback for the rotation residual
 ROTATION_RESID_THRESHOLD = 0.05 # +/-5pp beta-adjusted move before it signals
+
+
+# ---------------------------------------------------------------------------
+# Futures/physical basis & suppression test (added v24).
+# DIAGNOSTIC ONLY - weight 0, not in METRICS, never moves the composite.
+# Falsification test for the "paper suppression" thesis. All three legs must
+# hold for 2 consecutive quarters before it reads SUPPRESSION SIGNAL:
+#   1. COMEX front-month at a quarterly-average DISCOUNT to LBMA PM spot
+#      (or calendar backwardation / implied lease >= LEASE_FLAG_PP)
+#   2. Swap-dealer (bank proxy) net short in its top decile vs 10y history
+#      while Managed Money is NOT at an extreme (else it is just the mirror)
+#   3. Physical tightness: COMEX registered draw or wide Shanghai premium
+#      (manual inputs - no reliable free feed)
+# Backwardation + tight physical WITHOUT the excess-short leg = shortage,
+# which is bullish, not suppression. Thresholds are first-pass, uncalibrated.
+# Timing caveat: GC=F settles ~13:30 ET, LBMA PM fixes 15:00 London - a
+# ~1.5h gap, which adds noise to daily premia but washes out in quarter means.
+# ---------------------------------------------------------------------------
+BASIS_HIST_DAYS = 220           # calendar days of daily bars (~2 quarters + buffer)
+BASIS_Q_SESSIONS = 63           # sessions per quarter block
+BASIS_ROLL_BUFFER_DAYS = 5      # roll off front contract this many days before FND
+LEASE_FLAG_PP = 2.0             # implied lease (SOFR - futures carry) above this = stress
+EFP_DISCOUNT_PCT = 0.0          # quarterly mean COMEX premium below this = discount
+COT_HIST_WEEKS = 520            # 10y weekly history for percentile ranks
+COT_Q_WEEKS = 13                # weeks per quarter block
+SWAP_SHORT_PCTL = 0.90          # swap-dealer net short percentile = "heavy"
+MM_EXTREME_PCTL = 0.90          # MM net long percentile above this = mirror, not excess
+REG_DRAW_TIGHT_PCT = -10.0      # COMEX registered 3m change <= this = tight
+SGE_PREM_TIGHT_USD = 15.0       # Shanghai premium over London >= this ($/oz) = tight
+LBMA_PM_URL = "https://prices.lbma.org.uk/json/gold_pm.json"
+
+# ---------------------------------------------------------------------------
+# Swap P/L tile (added v24). Display only - never scored.
+# Swap terms (share counts, prices) come from the SWAP secret /
+# data/swap.local.json, never from this file. P/L is measured against having
+# kept the shares sold:  bought_now - sold_now + (proceeds - cost) - dealing.
+# AJ Bell standard online share deal GBP 5 (GBP 3.50 only with 10+ deals the
+# prior month). Both lines are AIM-quoted, so no stamp duty / SDRT.
+# ---------------------------------------------------------------------------
+AJBELL_DEAL_GBP = 5.00
+SWAP_DEALS = 2                  # sell leg + buy leg
+SWAP_STAMP_PCT = 0.0            # AIM exempt
