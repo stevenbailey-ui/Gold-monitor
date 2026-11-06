@@ -1,0 +1,600 @@
+diff --git a/.github/workflows/update.yml b/.github/workflows/update.yml
+index c987808..3dfb29b 100644
+--- a/.github/workflows/update.yml
++++ b/.github/workflows/update.yml
+@@ -20,6 +20,7 @@ jobs:
+         env:
+           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}   # optional; rates fall back if unset
+           HOLDINGS: ${{ secrets.HOLDINGS }}           # share counts; injected from secret, never committed
++          SWAP: ${{ secrets.SWAP }}                   # Sep-26 swap terms for the P/L tile; never committed
+         run: python scraper/update_data.py
+       - name: Commit refreshed data
+         run: |
+diff --git a/data/manual_inputs.json b/data/manual_inputs.json
+index 5592990..a870938 100644
+--- a/data/manual_inputs.json
++++ b/data/manual_inputs.json
+@@ -1,5 +1,5 @@
+ {
+-  "manual_as_of": "2026-08-21",
++  "manual_as_of": "2026-11-06",
+   "gold_fallback": 4520,
+   "exit_plan": {
+     "transfer_share": 0.5,
+@@ -8,17 +8,17 @@
+   },
+   "metrics": {
+     "wgc_cb_purchases_t": {
+-      "value": 195,
+-      "signal": "base",
++      "value": 219,
++      "signal": "bull",
+       "cadence": "quarterly",
+-      "note": "WGC net purchases, trailing 4-qtr avg (t/qtr). Q3'25 226.3 + Q4'25 208.2 + Q1'26 56.5 (revised down from 244) + Q2'26 288.9 = 779.9t / 4 = 195.0. Base: 175-200 band (bull >=200, bear <=150). H1'26 345t is the weakest first half since 2022; WGC guides FY26 below FY25. Quarterly prints ranged 56.5-288.9 in two consecutive quarters - use the trailing average, never the spot quarter.",
++      "note": "WGC net purchases, trailing 4-qtr avg (t/qtr). Q4'25 208.2 + Q1'26 56.5 + Q2'26 288.9 + Q3'26 321 (GDT Q3-26; ~63% WGC estimate, not reported) = 874.6t / 4 = 218.7. Prior-quarter revisions in the Q3 GDT NOT yet checked - re-tally from the GDT tables. Bull >=200, base 175-200, bear <=150. WGC: price/CB-buying correlation is negative but not stable enough to imply a firm floor. Use the trailing average, never the spot quarter.",
+       "ref": "https://www.gold.org/goldhub/data/gold-reserves-by-country"
+     },
+     "etf_aum_delta_t": {
+-      "value": 23,
++      "value": 16,
+       "signal": "base",
+       "cadence": "monthly",
+-      "note": "Gold ETF holdings change / demand (t/mo); Jul-26 +23t (WGC), reversing Jun-26 -74.3t. Heaviest metric (weight 20): contemporaneous R2 0.432 vs monthly gold return post-2022. Enter the RAW MONTHLY FLOW - not a 3m average and not an acceleration; both tested worse.",
++      "note": "Gold ETF holdings change (t/mo); Oct-26 +16t / ~US$2bn (WGC Oct commentary; Europe then Asia led, N America small outflows). Q3-26 211t / record US$31bn. Heaviest metric (weight 23): contemporaneous R2 0.432 vs monthly gold return post-2022. Enter the RAW MONTHLY FLOW - not a 3m average and not an acceleration; both tested worse.",
+       "ref": "https://www.gold.org/goldhub/data/gold-etfs-holdings-and-flows"
+     },
+     "deficit_pct_gdp": {
+@@ -60,10 +60,18 @@
+     },
+     "real_curve_slope": {
+       "signal": "base",
+-      "note": "30y-10y TIPS slope, 3m change (bp) - last-known-good; scraper overwrites when FRED responds. Divergence residual -0.61pp at 2026-08-20 (gold lagging textbook); the Jul-26 orthodox re-coupling concern (residual -0.15) has receded. Log each period as a two-sided marker.",
++      "note": "UNSCORED DIAGNOSTIC since v24 (Sep-26 review: invalid as a forward signal). 30y-10y TIPS slope, 3m change (bp); scraper overwrites when FRED responds. Kept for display only; signal here has no effect.",
+       "ref": "https://fred.stlouisfed.org/series/DFII30"
+     }
+   },
++  "physical_stress": {
++    "as_of": null,
++    "comex_registered_t": null,
++    "registered_3m_chg_pct": null,
++    "sge_premium_usd": null,
++    "note": "Physical leg of the suppression test (diagnostic, weight 0). Tight if COMEX registered 3m change <= -10% or Shanghai premium over London >= $15/oz. Leave null if not checked - the panel says so.",
++    "ref": "https://www.cmegroup.com/delivery_reports/Gold_Stocks.xls"
++  },
+   "catalysts": [
+     {
+       "label": "New mine FID",
+@@ -73,7 +81,7 @@
+     },
+     {
+       "label": "Flagship first gold",
+-      "date": "Dec-26",
++      "date": "Q1-27",
+       "pos": 50,
+       "live": true
+     },
+@@ -88,16 +96,16 @@
+     {
+       "when": "New mine FID",
+       "date": "Q1-27",
+-      "tag": "SLIPPED",
++      "tag": "GATED",
+       "cls": "p-amber",
+-      "body": "FID slipped from H2-26; median now Q1-27, gated behind the optimised PFS (end-26) and the mining convention signature. No convention RNS filed. 40,000m drill programme running, designed to convert inferred material inside existing pit shells. <b>Hold; no top-up until the convention is signed.</b>"
++      "body": "EPC terms agreed (Nov-26), conditional on convention approval - construction can start on award. Convention is now the sole milestone before FID; median Q1-27. Optimised PFS + updated MRE due year-end; minority buyout still needs ministerial approval. Producer FY26 guidance cut to 70-72koz (rainfall). <b>Hold; no top-up until the convention is signed.</b>"
+     },
+     {
+       "when": "Flagship",
+-      "date": "Dec-26",
+-      "tag": "FUNDED",
+-      "cls": "p-base",
+-      "body": "Construction ~50% SMPEI, on schedule. US$27m equipment facility drawn (21 Aug 26); funding binary substantially closed and equity-raise risk cut to ~5%. TSF at 60% and the main substation (Dec-26, zero float) are now the binding constraints, plus Iran-linked shipping disruption. <b>Re-rate gated on TSF progress, not the pour date.</b>"
++      "date": "Q1-27",
++      "tag": "SLIPPED",
++      "cls": "p-amber",
++      "body": "First gold slipped Dec-26 to Q1-27 (cabling stolen in transit); construction ~75%. Capex US$171m to US$186m. Sep-26 cash US$31.8m gross includes the fully drawn US$27m equipment loan (net ~US$5m); pre-pay part-used; 'fully funded' wording softened. Fatality 19 Oct, works resumed. Current mine extended to end-Jan 27. <b>Funding risk re-opened - an equity raise is an entry opportunity, not a thesis break. Freeze rotation trigger on any share-count change.</b>"
+     },
+     {
+       "when": "Licence",
+@@ -113,4 +121,4 @@
+       "etf_aum_delta_t"
+     ]
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/index.html b/index.html
+index 2d1c992..de59f93 100644
+--- a/index.html
++++ b/index.html
+@@ -25,7 +25,8 @@
+   .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0 12px}
+   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+   .grid6{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+-  @media(max-width:560px){.grid3,.grid6{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
++  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0 12px}
++  @media(max-width:560px){.grid3,.grid6,.grid4{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+   .metric{background:var(--surface2);border-radius:8px;padding:12px 14px}
+   .metric .k{font-size:12px;color:var(--t2)}.metric .v{font-size:23px;font-weight:600;margin-top:1px}.metric .s{font-size:11px;color:var(--t3)}
+   .card{background:var(--surface);border:.5px solid var(--line);border-radius:12px;padding:14px 16px}
+@@ -149,6 +150,40 @@ function render(D){
+   })();
+ 
+ 
++  const bmBlock=(()=>{
++    const b=D.basis_monitor,sgn=(n,d=2)=>n==null?"\u2014":(n>0?"+":"")+Number(n).toFixed(d);
++    if(!b) return `<div class="card" style="margin-bottom:12px"><div class="row">
++      <span style="font-size:13px;font-weight:600">Futures vs physical \u00b7 suppression test</span>
++      <span class="pill sm p-base">N/A</span></div>
++      <div class="sub" style="margin-top:6px">Awaiting first run of the basis feeds.</div></div>`;
++    const pill={bad:"p-bear",good:"p-bull",warn:"p-amber",flat:"p-base"}[b.tone]||"p-base";
++    const e=b.efp,c=b.calendar,q=b.positioning,ph=b.physical||{};
++    const yn=v=>v?"<b style='color:var(--neg)'>YES</b>":"no";
++    return `<div class="card" style="margin-bottom:12px">
++      <div class="row">
++        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
++          <span style="font-size:13px;color:var(--t2)">Futures vs physical \u00b7 suppression test</span>
++          <span class="pill ${pill}">${b.headline}</span>
++        </div>
++        <span class="sub">diagnostic \u00b7 weight 0 \u00b7 not scored</span>
++      </div>
++      <div class="sub" style="margin-top:6px;font-size:14px;color:var(--t1)">${b.plain}</div>
++      <div class="grid4" style="margin-top:10px">
++        <div class="metric"><div class="k">COMEX vs LBMA PM</div>
++          <div class="v" style="font-size:17px">${e?sgn(e.prem_q1_pct)+"% \u00b7 "+sgn(e.prem_q2_pct)+"%":"\u2014"}</div>
++          <div class="s">qtr means (latest \u00b7 prior) \u00b7 discount 2Q: ${e?yn(e.discount_sustained):"\u2014"}</div></div>
++        <div class="metric"><div class="k">Calendar ${c?c.front+"/"+c.next:""}</div>
++          <div class="v" style="font-size:17px">${c&&c.lease_pct!=null?"lease "+sgn(c.lease_pct)+"%":(c?"carry "+sgn(c.carry_pct)+"%":"\u2014")}</div>
++          <div class="s">${c?"carry "+sgn(c.carry_pct)+"% \u00b7 backwardation: "+yn(c.backwardation):"\u2014"}</div></div>
++        <div class="metric"><div class="k">Swap dealers net short</div>
++          <div class="v" style="font-size:17px">${q?q.swap_net_short_pct_oi+"% OI":"\u2014"}</div>
++          <div class="s">${q?"10y pctl "+q.swap_pctl_q1+" \u00b7 "+q.swap_pctl_q2+(q.mm_extreme?" \u00b7 MM extreme":"")+" \u00b7 excess: "+yn(q.excess_short):"\u2014"}</div></div>
++        <div class="metric"><div class="k">Physical (manual)</div>
++          <div class="v" style="font-size:17px">${ph.entered?(ph.registered_3m_chg_pct!=null?sgn(ph.registered_3m_chg_pct,1)+"%":"\u2014")+" \u00b7 "+(ph.sge_premium_usd!=null?"$"+ph.sge_premium_usd:"\u2014"):"\u2014"}</div>
++          <div class="s">${ph.entered?"COMEX reg 3m \u00b7 SGE prem \u00b7 tight: "+yn(ph.tight):"not entered \u2014 edit inputs"}</div></div>
++      </div></div>`;
++  })();
++
+   const rotBlock=(()=>{
+     const r=D.rotation,ha=h.africa||{},hb=h.asia||{},sgn=n=>n==null?"\u2014":(n>0?"+":"")+n;
+     const bx=(o)=>o.beta_up!=null&&o.beta_down!=null?`${o.beta_up}\u00d7 up \u00b7 ${o.beta_down}\u00d7 down`:(o.beta!=null?o.beta+"\u00d7":"\u2014");
+@@ -182,18 +217,26 @@ function render(D){
+       </div></div>`;
+   })();
+ 
++  const swTile=(()=>{const w=D.swap;if(!w) return "";
++    const v=w.pl_gbp,col=v==null?"var(--t3)":v>=0?"var(--pos)":"var(--neg)";
++    const txt=v==null?"\u2014":(v>=0?"+\u00a3":"\u2212\u00a3")+f0(Math.abs(v));
++    return `<div class="metric"><div class="k">Sep swap P/L</div>
++      <div class="v" style="color:${col}">${txt}</div>
++      <div class="s">${w.stale?"live price unavailable":"vs holding \u00b7 after \u00a3"+f0(w.costs_gbp)+" dealing"}</div></div>`;})();
++
+   document.getElementById("app").innerHTML=`
+     <div class="row" style="margin-bottom:12px">
+       <h1>Gold-miner portfolio monitor</h1>
+       <div class="sub">Model <b style="color:var(--t2)">${D.model_as_of||"\u2014"}</b> \u00b7 manual <b style="color:var(--t2)">${D.manual_as_of||"\u2014"}</b> \u00b7 prices <b style="color:var(--t2)">${D.as_of||"\u2014"}</b></div>
+     </div>
+-    <div class="grid3">
++    <div class="${D.swap?"grid4":"grid3"}">
+       <div class="metric"><div class="k">Current value (mark-to-market)</div><div class="v">${p.current!=null?"\u00a3"+f0(p.current):"\u2014"}</div>
+         <div class="s">two holdings</div></div>
+       <div class="metric"><div class="k">2029 value \u00b7 base</div><div class="v">\u00a3${Number(p.v2029_base).toFixed(2)}m</div>
+         <div class="s">blended NPV / P-FCF</div></div>
+       <div class="metric"><div class="k">2029 income \u00b7 exit plan</div><div class="v">${p.income_2029!=null?"\u00a3"+f0(p.income_2029):"\u2014"}</div>
+         <div class="s">${p.income_yield!=null?p.income_yield+"% \u00b7 "+(p.income_transfer_pct!=null?p.income_transfer_pct+"% to funds @ "+p.income_fund_yield_pct+"% \u00b7 miners "+p.income_miner_yield_pct+"%":"miner dividends only"):"\u2014"}</div></div>
++      ${swTile}
+     </div>
+     <div class="card" style="margin-bottom:12px">
+       <div class="row">
+@@ -215,6 +258,7 @@ function render(D){
+     </div>
+     ${dvBlock}
+     ${ocBlock}
++    ${bmBlock}
+     ${rotBlock}
+     <div class="sec">Six thesis drivers</div>
+     <div class="grid6">${drivers}</div>
+diff --git a/scraper/config.py b/scraper/config.py
+index b99cd9c..5fb8e26 100644
+--- a/scraper/config.py
++++ b/scraper/config.py
+@@ -39,6 +39,13 @@ v23 (2026-08-03) recalibration of the usd_geo theme. Both metrics were measured
+   oil -> CPI -> hawkish-Fed channel). It will therefore misread a large oil decline
+   driven by demand destruction, which the old <50 bear state was meant to catch but
+   never did. Accepted deliberately: an unreachable state catches nothing.
++
++v24 (2026-11-06) real_curve_slope removed from scoring. The September review found the
++30y-10y TIPS slope invalid as a forward signal; it stays in data.json as an unscored
++diagnostic. Its 12 points were redistributed pro-rata across the remaining eight metrics
++(etf 20->23, spot_trailing 16->18, dxy 12->14, cot 10->11, gdxj_gold 10->11,
++cb 8->9, deficit 6->7, brent 6->7). CAVEAT: Macro & rates now rests on deficit alone.
++Added: basis/suppression monitor (diagnostic, weight 0) and swap P/L tile (display only).
+ """
+ 
+ THEMES = ["demand_flows", "macro_rates", "usd_geo", "mining_equities"]
+@@ -74,36 +81,34 @@ LIQ_WINDOW_LONG = 60        # sessions for the headline median volume
+ LIQ_WINDOW_SHORT = 20       # sessions for the deterioration/improvement trend
+ 
+ METRICS = [
+-    # --- Demand & flows -------------------------------------------------- 38
+-    {"id": "etf_aum_delta_t", "theme": "demand_flows", "weight": 20, "kind": "manual",
++    # --- Demand & flows -------------------------------------------------- 43
++    {"id": "etf_aum_delta_t", "theme": "demand_flows", "weight": 23, "kind": "manual",
+      "label": "Gold ETF holdings change / demand (t/mo)"},
+-    {"id": "cot_mm_net_pct_oi", "theme": "demand_flows", "weight": 10, "kind": "level",
++    {"id": "cot_mm_net_pct_oi", "theme": "demand_flows", "weight": 11, "kind": "level",
+      "src": "cot", "bull_at": 0.10, "bear_at": 0.35, "higher_is_bull": False,
+      "label": "COMEX Managed Money net % OI [contrarian: <=0.10 bull, >=0.35 bear]"},
+-    {"id": "wgc_cb_purchases_t", "theme": "demand_flows", "weight": 8, "kind": "manual",
++    {"id": "wgc_cb_purchases_t", "theme": "demand_flows", "weight": 9, "kind": "manual",
+      "label": "WGC central-bank net purchases (t/qtr) [quarterly, lagged, revision-prone]"},
+ 
+-    # --- Macro & rates --------------------------------------------------- 18
+-    {"id": "real_curve_slope", "theme": "macro_rates", "weight": 12, "kind": "slope3m",
+-     "bull_at": 10.0, "bear_at": -10.0,
+-     "label": "Real curve slope 30y-10y TIPS, 3m change (bp) [steepening = bull]"},
+-    {"id": "deficit_pct_gdp", "theme": "macro_rates", "weight": 6, "kind": "level",
++    # --- Macro & rates ---------------------------------------------------- 7
++    # real_curve_slope de-scored v24 (unscored diagnostic only - see docstring).
++    {"id": "deficit_pct_gdp", "theme": "macro_rates", "weight": 7, "kind": "level",
+      "src": "deficit_gdp", "bull_at": -6, "bear_at": -3, "higher_is_bull": False,
+      "label": "US federal deficit (% GDP) [FRED signed: -6=6% deficit; bull <=-6, bear >=-3]"},
+ 
+-    # --- USD & geopolitics ----------------------------------------------- 18
+-    {"id": "dxy", "theme": "usd_geo", "weight": 12, "kind": "chg_n",
++    # --- USD & geopolitics ----------------------------------------------- 21
++    {"id": "dxy", "theme": "usd_geo", "weight": 14, "kind": "chg_n",
+      "sym": "dxy", "window": 20, "unit": "abs", "bull_at": -2.0, "bear_at": 2.0,
+      "label": "DXY, 20-session change (index pts) [falling dollar = bull]"},
+-    {"id": "brent", "theme": "usd_geo", "weight": 6, "kind": "chg_n",
++    {"id": "brent", "theme": "usd_geo", "weight": 7, "kind": "chg_n",
+      "sym": "brent", "window": 63, "unit": "pct", "bull_at": -15.0, "bear_at": 15.0,
+      "label": "Brent crude, 3m change (%) [falling oil eases the CPI -> hawkish-Fed channel]"},
+ 
+-    # --- Sector re-rate --------------------------------------------------- 26
+-    {"id": "spot_trailing", "theme": "mining_equities", "weight": 16, "kind": "ratio_trailing",
++    # --- Sector re-rate --------------------------------------------------- 29
++    {"id": "spot_trailing", "theme": "mining_equities", "weight": 18, "kind": "ratio_trailing",
+      "bull_lo": 0.90, "bull_hi": 1.40, "bear_at": 1.55,
+      "label": "Gold spot / 24m trailing [momentum - only forward-looking metric]"},
+-    {"id": "gdxj_gold", "theme": "mining_equities", "weight": 10, "kind": "ratio",
++    {"id": "gdxj_gold", "theme": "mining_equities", "weight": 11, "kind": "ratio",
+      "num": "gdxj", "den": "gold", "bull_at": 0.022, "bear_at": 0.026, "higher_is_bull": False,
+      "label": "GDXJ / gold [inverted: low=bull]"},
+ ]
+@@ -145,3 +150,45 @@ BETA_WINDOW = 250               # sessions used for the beta fit
+ BETA_STEP = 5                   # weekly sampling within the window
+ RESID_SESSIONS = 5              # lookback for the rotation residual
+ ROTATION_RESID_THRESHOLD = 0.05 # +/-5pp beta-adjusted move before it signals
++
++
++# ---------------------------------------------------------------------------
++# Futures/physical basis & suppression test (added v24).
++# DIAGNOSTIC ONLY - weight 0, not in METRICS, never moves the composite.
++# Falsification test for the "paper suppression" thesis. All three legs must
++# hold for 2 consecutive quarters before it reads SUPPRESSION SIGNAL:
++#   1. COMEX front-month at a quarterly-average DISCOUNT to LBMA PM spot
++#      (or calendar backwardation / implied lease >= LEASE_FLAG_PP)
++#   2. Swap-dealer (bank proxy) net short in its top decile vs 10y history
++#      while Managed Money is NOT at an extreme (else it is just the mirror)
++#   3. Physical tightness: COMEX registered draw or wide Shanghai premium
++#      (manual inputs - no reliable free feed)
++# Backwardation + tight physical WITHOUT the excess-short leg = shortage,
++# which is bullish, not suppression. Thresholds are first-pass, uncalibrated.
++# Timing caveat: GC=F settles ~13:30 ET, LBMA PM fixes 15:00 London - a
++# ~1.5h gap, which adds noise to daily premia but washes out in quarter means.
++# ---------------------------------------------------------------------------
++BASIS_HIST_DAYS = 220           # calendar days of daily bars (~2 quarters + buffer)
++BASIS_Q_SESSIONS = 63           # sessions per quarter block
++BASIS_ROLL_BUFFER_DAYS = 5      # roll off front contract this many days before FND
++LEASE_FLAG_PP = 2.0             # implied lease (SOFR - futures carry) above this = stress
++EFP_DISCOUNT_PCT = 0.0          # quarterly mean COMEX premium below this = discount
++COT_HIST_WEEKS = 520            # 10y weekly history for percentile ranks
++COT_Q_WEEKS = 13                # weeks per quarter block
++SWAP_SHORT_PCTL = 0.90          # swap-dealer net short percentile = "heavy"
++MM_EXTREME_PCTL = 0.90          # MM net long percentile above this = mirror, not excess
++REG_DRAW_TIGHT_PCT = -10.0      # COMEX registered 3m change <= this = tight
++SGE_PREM_TIGHT_USD = 15.0       # Shanghai premium over London >= this ($/oz) = tight
++LBMA_PM_URL = "https://prices.lbma.org.uk/json/gold_pm.json"
++
++# ---------------------------------------------------------------------------
++# Swap P/L tile (added v24). Display only - never scored.
++# Swap terms (share counts, prices) come from the SWAP secret /
++# data/swap.local.json, never from this file. P/L is measured against having
++# kept the shares sold:  bought_now - sold_now + (proceeds - cost) - dealing.
++# AJ Bell standard online share deal GBP 5 (GBP 3.50 only with 10+ deals the
++# prior month). Both lines are AIM-quoted, so no stamp duty / SDRT.
++# ---------------------------------------------------------------------------
++AJBELL_DEAL_GBP = 5.00
++SWAP_DEALS = 2                  # sell leg + buy leg
++SWAP_STAMP_PCT = 0.0            # AIM exempt
+diff --git a/scraper/update_data.py b/scraper/update_data.py
+index f1c901e..360f760 100644
+--- a/scraper/update_data.py
++++ b/scraper/update_data.py
+@@ -710,6 +710,228 @@ def opportunity_cost(notes, gold_bars=None):
+     return out
+ 
+ 
++# ---------------------------------------------------------------------------
++# Futures/physical basis & suppression test. Diagnostic only (weight 0).
++# See the config.py block for the test definition.
++# ---------------------------------------------------------------------------
++GC_CODE = {2: "G", 4: "J", 6: "M", 8: "Q", 10: "V", 12: "Z"}   # active COMEX months
++
++
++def _last_bday(year, month):
++    """Last business day of a calendar month (weekends only; holidays ignored)."""
++    d = (datetime.date(year + (month == 12), month % 12 + 1, 1)
++         - datetime.timedelta(days=1))
++    while d.weekday() >= 5:
++        d -= datetime.timedelta(days=1)
++    return d
++
++
++def _active_contracts(today, n=2):
++    """Next n active COMEX gold months still tradeable. First notice day is the
++    last business day of the month BEFORE delivery; roll BASIS_ROLL_BUFFER_DAYS
++    ahead of it, as the open interest does."""
++    buf = getattr(C, "BASIS_ROLL_BUFFER_DAYS", 5)
++    out, y, m = [], today.year, today.month
++    while len(out) < n:
++        if m in GC_CODE:
++            py, pm = (y, m - 1) if m > 1 else (y - 1, 12)
++            fnd = _last_bday(py, pm)
++            if fnd - datetime.timedelta(days=buf) > today:
++                out.append({"sym": f"GC{GC_CODE[m]}{str(y)[2:]}.CMX",
++                            "label": f"{GC_CODE[m]}{str(y)[2:]}",
++                            "delivery": datetime.date(y, m, 15), "fnd": fnd})
++        m += 1
++        if m > 12:
++            m, y = 1, y + 1
++    return out
++
++
++def _pctl(hist, x):
++    """Fraction of `hist` at or below x."""
++    return sum(1 for h in hist if h <= x) / len(hist) if hist else None
++
++
++def _efp_leg(gold_bars, notes):
++    """COMEX front-month premium to LBMA PM, two quarter-block means."""
++    nq = getattr(C, "BASIS_Q_SESSIONS", 63)
++    try:
++        lb = json.loads(_get(C.LBMA_PM_URL, timeout=15))
++        fix = {datetime.date.fromisoformat(r["d"]): float(r["v"][0])
++               for r in lb if r.get("v") and r["v"][0]}
++    except Exception as e:
++        notes.append(f"basis:lbma:{type(e).__name__}"); return None
++    if not gold_bars:
++        notes.append("basis:no_gold_bars"); return None
++    fut = {d.date(): c for d, c in gold_bars}
++    days = sorted(set(fut) & set(fix))
++    if len(days) < 2 * nq:
++        notes.append(f"basis:efp_short({len(days)})"); return None
++    prem = [(fut[d] / fix[d] - 1) * 100 for d in days]
++    q1 = sum(prem[-nq:]) / nq                       # latest quarter
++    q2 = sum(prem[-2 * nq:-nq]) / nq                # quarter before
++    thr = getattr(C, "EFP_DISCOUNT_PCT", 0.0)
++    return {"as_of": days[-1].isoformat(), "prem_now_pct": round(prem[-1], 3),
++            "prem_q1_pct": round(q1, 3), "prem_q2_pct": round(q2, 3),
++            "discount_sustained": bool(q1 < thr and q2 < thr)}
++
++
++def _calendar_leg(notes):
++    """Front vs next active contract: backwardation and implied lease rate.
++    lease = SOFR - annualised futures carry. Spot reading, not quarterly."""
++    try:
++        f, n = _active_contracts(datetime.date.today(), 2)
++        pf, pn = yahoo_last(f["sym"]), yahoo_last(n["sym"])
++    except Exception as e:
++        notes.append(f"basis:calendar:{type(e).__name__}"); return None
++    sofr = fetch_fred("SOFR", notes)
++    yrs = (n["delivery"] - f["delivery"]).days / 365.0
++    carry = ((pn / pf) ** (1 / yrs) - 1) * 100 if (pf and yrs > 0) else None
++    lease = (sofr - carry) if (sofr is not None and carry is not None) else None
++    back = bool(pn < pf)
++    stress = back or (lease is not None and lease >= getattr(C, "LEASE_FLAG_PP", 2.0))
++    return {"front": f["label"], "next": n["label"], "front_px": round(pf, 1),
++            "next_px": round(pn, 1), "carry_pct": (round(carry, 2) if carry is not None else None),
++            "sofr_pct": sofr, "lease_pct": (round(lease, 2) if lease is not None else None),
++            "backwardation": back, "stress": stress}
++
++
++def _cot_col(rec, group, side):
++    """CFTC column names are inconsistent (swap__positions_short_all vs
++    swap_positions_long_all), so match by pattern."""
++    for k in rec:
++        kl = k.lower()
++        if kl.startswith(group) and side in kl and kl.endswith("_all") \
++                and "spread" not in kl and "pct" not in kl and "chg" not in kl:
++            return k
++    return None
++
++
++def _positioning_leg(notes):
++    """Swap-dealer net short percentile vs 10y, per quarter block; MM extreme check."""
++    n = getattr(C, "COT_HIST_WEEKS", 520)
++    nq = getattr(C, "COT_Q_WEEKS", 13)
++    url = ("https://publicreporting.cftc.gov/resource/72hh-3qpy.json"
++           "?cftc_contract_market_code=088691"
++           f"&$order=report_date_as_yyyy_mm_dd%20DESC&$limit={n}")
++    try:
++        rows = json.loads(_get(url, timeout=20))
++    except Exception as e:
++        notes.append(f"basis:cot:{type(e).__name__}"); return None
++    if len(rows) < 2 * nq + 52:
++        notes.append(f"basis:cot_short({len(rows)})"); return None
++    r0 = rows[0]
++    sl, ss = _cot_col(r0, "swap", "long"), _cot_col(r0, "swap", "short")
++    ml, ms = _cot_col(r0, "m_money", "long"), _cot_col(r0, "m_money", "short")
++    if not all((sl, ss, ml, ms)):
++        notes.append("basis:cot_columns"); return None
++    rows = rows[::-1]                                # oldest first
++    def ser(a, b):
++        out = []
++        for r in rows:
++            oi = float(r.get("open_interest_all") or 0)
++            out.append((float(r[a]) - float(r[b])) / oi if oi > 0 else 0.0)
++        return out
++    swap_short = [-x for x in ser(sl, ss)]           # +ve = net short, % OI
++    mm_long = ser(ml, ms)
++    p_q1 = _pctl(swap_short, sum(swap_short[-nq:]) / nq)
++    p_q2 = _pctl(swap_short, sum(swap_short[-2 * nq:-nq]) / nq)
++    mm_p = _pctl(mm_long, sum(mm_long[-nq:]) / nq)
++    thr, mthr = getattr(C, "SWAP_SHORT_PCTL", 0.90), getattr(C, "MM_EXTREME_PCTL", 0.90)
++    return {"as_of": rows[-1].get("report_date_as_yyyy_mm_dd", "")[:10],
++            "weeks": len(rows),
++            "swap_net_short_pct_oi": round(100 * swap_short[-1], 1),
++            "swap_pctl_q1": round(p_q1, 2), "swap_pctl_q2": round(p_q2, 2),
++            "mm_pctl_q1": round(mm_p, 2), "mm_extreme": bool(mm_p >= mthr),
++            "excess_short": bool(p_q1 >= thr and p_q2 >= thr and mm_p < mthr)}
++
++
++def _physical_leg(manual):
++    ps = manual.get("physical_stress") or {}
++    reg, sge = ps.get("registered_3m_chg_pct"), ps.get("sge_premium_usd")
++    if reg is None and sge is None:
++        return {"as_of": ps.get("as_of"), "registered_3m_chg_pct": None,
++                "sge_premium_usd": None, "tight": False, "entered": False}
++    tight = bool((reg is not None and reg <= getattr(C, "REG_DRAW_TIGHT_PCT", -10.0)) or
++                 (sge is not None and sge >= getattr(C, "SGE_PREM_TIGHT_USD", 15.0)))
++    return {"as_of": ps.get("as_of"), "registered_3m_chg_pct": reg,
++            "sge_premium_usd": sge, "tight": tight, "entered": True}
++
++
++def basis_monitor(manual, gold_bars, notes):
++    efp = _efp_leg(gold_bars, notes)
++    cal = _calendar_leg(notes)
++    pos = _positioning_leg(notes)
++    phy = _physical_leg(manual)
++    back = bool((efp and efp["discount_sustained"]) or (cal and cal["stress"]))
++    short = bool(pos and pos["excess_short"])
++    tight = bool(phy["tight"])
++    if back and short and tight:
++        head, tone = "SUPPRESSION SIGNAL", "bad"
++        txt = ("All three legs hold: futures discount/backwardation, excess bank-proxy "
++               "short, tight physical. Check the 2-quarter persistence before acting.")
++    elif back and tight:
++        head, tone = "PHYSICAL TIGHTNESS", "good"
++        txt = ("Backwardation with tight physical but no excess short: shortage, "
++               "which is bullish - not suppression.")
++    elif back or short:
++        head, tone = "WATCH", "warn"
++        txt = ("One leg sustained: " + ("basis stress" if back else "excess bank-proxy short")
++               + ". Needs the other two before it means anything.")
++    else:
++        head, tone = "NO SIGNAL", "flat"
++        txt = "Normal contango, no excess short. Suppression thesis not supported by the tape."
++    if not phy["entered"]:
++        txt += " Physical leg not entered (manual)."
++    return {"headline": head, "tone": tone, "plain": txt,
++            "efp": efp, "calendar": cal, "positioning": pos, "physical": phy,
++            "scored": False}
++
++
++# ---------------------------------------------------------------------------
++# Swap P/L (display only). Terms from the SWAP secret / data/swap.local.json.
++# ---------------------------------------------------------------------------
++def load_swap(notes):
++    raw = os.environ.get("SWAP")
++    if raw:
++        try:
++            return json.loads(raw)
++        except Exception:
++            notes.append("SWAP:bad_json"); return None
++    local = os.path.join(DATA, "swap.local.json")
++    if os.path.exists(local):
++        return json.load(open(local))
++    return None                      # absent is normal - tile simply hides
++
++
++def swap_pl(sw, live_pence, notes):
++    """P/L of the swap against having kept the shares sold, GBP.
++
++        pl = bought_shares * buy_now - sold_shares * sell_now
++             + (proceeds - cost) - dealing
++
++    proceeds/cost default to shares * deal price; override with the contract-note
++    figures (proceeds_gbp / cost_gbp) when known. Only live prices are used: if
++    either leg is on a fallback price the figure is withheld rather than stale.
++    """
++    if not sw:
++        return None
++    try:
++        bk, sk = sw["buy_key"], sw["sell_key"]
++        bn, sn = float(sw["buy_shares"]), float(sw["sell_shares"])
++        cost = sw.get("cost_gbp") or bn * float(sw["buy_px_p"]) / 100
++        proc = sw.get("proceeds_gbp") or sn * float(sw["sell_px_p"]) / 100
++    except Exception as e:
++        notes.append(f"swap:terms:{type(e).__name__}"); return None
++    pb, ps = live_pence.get(bk), live_pence.get(sk)
++    if not (pb and ps):
++        notes.append("swap:no_live_price")
++        return {"pl_gbp": None, "stale": True}
++    deal = getattr(C, "AJBELL_DEAL_GBP", 5.0) * getattr(C, "SWAP_DEALS", 2)
++    stamp = getattr(C, "SWAP_STAMP_PCT", 0.0) * cost
++    pl = bn * pb / 100 - sn * ps / 100 + (proc - cost) - deal - stamp
++    return {"pl_gbp": round(pl), "costs_gbp": round(deal + stamp, 2), "stale": False}
++
++
+ def main():
+     manual = json.load(open(os.path.join(DATA, "manual_inputs.json")))
+     snap = json.load(open(os.path.join(DATA, "model_snapshot.json")))
+@@ -735,6 +957,10 @@ def main():
+         notes.append(f"gold_daily:{type(e).__name__}"); gold_bars = None
+     oc = opportunity_cost(notes, gold_bars)
+     px["oc_gap_1m"], px["oc_gap_3m"] = oc["gap_1m"], oc["gap_3m"]
++    try:
++        bm = basis_monitor(manual, gold_bars, notes)
++    except Exception as e:               # diagnostic must never block the run
++        notes.append(f"basis:{type(e).__name__}"); bm = None
+     gold = px.get("gold") or manual.get("gold_fallback", 4360)
+     px["gold"] = gold
+     trail, n_months = trailing_24m(manual, notes, gold_bars)
+@@ -771,7 +997,11 @@ def main():
+             f"COT {round(cot_v*100,1)}% OI",
+             f"CB {mm['wgc_cb_purchases_t']['value']} t/qtr",
+         ]),
+-        "macro_rates": slope_txt,
++        "macro_rates": " . ".join([
++            (f"deficit {fred['deficit_gdp']:+.1f}% GDP" if fred.get("deficit_gdp") is not None
++             else f"deficit -{mm['deficit_pct_gdp']['value']}% GDP"),
++            slope_txt + " (unscored)",
++        ]),
+         "usd_geo": " . ".join([
+             (f"DXY {round(px.get('dxy') or 0,1)} ({px['_chg_dxy']:+.1f} 20d)"
+              if px.get("_chg_dxy") is not None else f"DXY {round(px.get('dxy') or 0,1)}"),
+@@ -789,10 +1019,11 @@ def main():
+ 
+     # Holdings -> GBP value + %, anonymised. No shares, no per-share price published.
+     H = load_holdings(notes)
+-    vals, liq = {}, {}
++    vals, liq, live_px = {}, {}, {}
+     for key in ("africa", "asia"):
+         h = H.get(key, {})
+         live = fetch_holding_price(h["ticker"], notes) if h.get("ticker") else None
++        live_px[key] = live
+         pence = live if live else h.get("px_fallback")
+         vals[key] = round(h.get("shares", 0) * pence / 100) if (h.get("shares") and pence) else None
+         liq[key] = liquidity_profile(h.get("ticker"), h.get("shares"), pence, notes)
+@@ -841,6 +1072,10 @@ def main():
+         }
+ 
+     inc = exit_income(snap, manual, notes)
++    try:
++        swp = swap_pl(load_swap(notes), live_px, notes)
++    except Exception as e:               # display tile must never block the run
++        notes.append(f"swap:{type(e).__name__}"); swp = None
+ 
+     out = {
+         "as_of": datetime.date.today().isoformat(),
+@@ -854,6 +1089,8 @@ def main():
+         "divergence": div,
+         "real_curve_slope": slope,
+         "opportunity_cost": oc,
++        "basis_monitor": bm,
++        "swap": swp,
+         "portfolio": {"current": total or None,
+                       "v2029_base": snap["scenarios"]["2029"]["base"],
+                       "income_2029": (inc["income"] if inc else None),
