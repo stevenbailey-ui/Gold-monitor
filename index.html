@@ -25,7 +25,8 @@
   .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0 12px}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
   .grid6{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
-  @media(max-width:560px){.grid3,.grid6{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0 12px}
+  @media(max-width:560px){.grid3,.grid6,.grid4{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
   .metric{background:var(--surface2);border-radius:8px;padding:12px 14px}
   .metric .k{font-size:12px;color:var(--t2)}.metric .v{font-size:23px;font-weight:600;margin-top:1px}.metric .s{font-size:11px;color:var(--t3)}
   .card{background:var(--surface);border:.5px solid var(--line);border-radius:12px;padding:14px 16px}
@@ -149,6 +150,40 @@ function render(D){
   })();
 
 
+  const bmBlock=(()=>{
+    const b=D.basis_monitor,sgn=(n,d=2)=>n==null?"\u2014":(n>0?"+":"")+Number(n).toFixed(d);
+    if(!b) return `<div class="card" style="margin-bottom:12px"><div class="row">
+      <span style="font-size:13px;font-weight:600">Futures vs physical \u00b7 suppression test</span>
+      <span class="pill sm p-base">N/A</span></div>
+      <div class="sub" style="margin-top:6px">Awaiting first run of the basis feeds.</div></div>`;
+    const pill={bad:"p-bear",good:"p-bull",warn:"p-amber",flat:"p-base"}[b.tone]||"p-base";
+    const e=b.efp,c=b.calendar,q=b.positioning,ph=b.physical||{};
+    const yn=v=>v?"<b style='color:var(--neg)'>YES</b>":"no";
+    return `<div class="card" style="margin-bottom:12px">
+      <div class="row">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:13px;color:var(--t2)">Futures vs physical \u00b7 suppression test</span>
+          <span class="pill ${pill}">${b.headline}</span>
+        </div>
+        <span class="sub">diagnostic \u00b7 weight 0 \u00b7 not scored</span>
+      </div>
+      <div class="sub" style="margin-top:6px;font-size:14px;color:var(--t1)">${b.plain}</div>
+      <div class="grid4" style="margin-top:10px">
+        <div class="metric"><div class="k">COMEX vs LBMA PM</div>
+          <div class="v" style="font-size:17px">${e?sgn(e.prem_q1_pct)+"% \u00b7 "+sgn(e.prem_q2_pct)+"%":"\u2014"}</div>
+          <div class="s">qtr means (latest \u00b7 prior) \u00b7 discount 2Q: ${e?yn(e.discount_sustained):"\u2014"}</div></div>
+        <div class="metric"><div class="k">Calendar ${c?c.front+"/"+c.next:""}</div>
+          <div class="v" style="font-size:17px">${c&&c.lease_pct!=null?"lease "+sgn(c.lease_pct)+"%":(c?"carry "+sgn(c.carry_pct)+"%":"\u2014")}</div>
+          <div class="s">${c?"carry "+sgn(c.carry_pct)+"% \u00b7 backwardation: "+yn(c.backwardation):"\u2014"}</div></div>
+        <div class="metric"><div class="k">Swap dealers net short</div>
+          <div class="v" style="font-size:17px">${q?q.swap_net_short_pct_oi+"% OI":"\u2014"}</div>
+          <div class="s">${q?"10y pctl "+q.swap_pctl_q1+" \u00b7 "+q.swap_pctl_q2+(q.mm_extreme?" \u00b7 MM extreme":"")+" \u00b7 excess: "+yn(q.excess_short):"\u2014"}</div></div>
+        <div class="metric"><div class="k">Physical (manual)</div>
+          <div class="v" style="font-size:17px">${ph.entered?(ph.registered_3m_chg_pct!=null?sgn(ph.registered_3m_chg_pct,1)+"%":"\u2014")+" \u00b7 "+(ph.sge_premium_usd!=null?"$"+ph.sge_premium_usd:"\u2014"):"\u2014"}</div>
+          <div class="s">${ph.entered?"COMEX reg 3m \u00b7 SGE prem \u00b7 tight: "+yn(ph.tight):"not entered \u2014 edit inputs"}</div></div>
+      </div></div>`;
+  })();
+
   const rotBlock=(()=>{
     const r=D.rotation,ha=h.africa||{},hb=h.asia||{},sgn=n=>n==null?"\u2014":(n>0?"+":"")+n;
     const bx=(o)=>o.beta_up!=null&&o.beta_down!=null?`${o.beta_up}\u00d7 up \u00b7 ${o.beta_down}\u00d7 down`:(o.beta!=null?o.beta+"\u00d7":"\u2014");
@@ -182,18 +217,26 @@ function render(D){
       </div></div>`;
   })();
 
+  const swTile=(()=>{const w=D.swap;if(!w) return "";
+    const v=w.pl_gbp,col=v==null?"var(--t3)":v>=0?"var(--pos)":"var(--neg)";
+    const txt=v==null?"\u2014":(v>=0?"+\u00a3":"\u2212\u00a3")+f0(Math.abs(v));
+    return `<div class="metric"><div class="k">Sep swap P/L</div>
+      <div class="v" style="color:${col}">${txt}</div>
+      <div class="s">${w.stale?"live price unavailable":"vs holding \u00b7 after \u00a3"+f0(w.costs_gbp)+" dealing"}</div></div>`;})();
+
   document.getElementById("app").innerHTML=`
     <div class="row" style="margin-bottom:12px">
       <h1>Gold-miner portfolio monitor</h1>
       <div class="sub">Model <b style="color:var(--t2)">${D.model_as_of||"\u2014"}</b> \u00b7 manual <b style="color:var(--t2)">${D.manual_as_of||"\u2014"}</b> \u00b7 prices <b style="color:var(--t2)">${D.as_of||"\u2014"}</b></div>
     </div>
-    <div class="grid3">
+    <div class="${D.swap?"grid4":"grid3"}">
       <div class="metric"><div class="k">Current value (mark-to-market)</div><div class="v">${p.current!=null?"\u00a3"+f0(p.current):"\u2014"}</div>
         <div class="s">two holdings</div></div>
       <div class="metric"><div class="k">2029 value \u00b7 base</div><div class="v">\u00a3${Number(p.v2029_base).toFixed(2)}m</div>
         <div class="s">blended NPV / P-FCF</div></div>
       <div class="metric"><div class="k">2029 income \u00b7 exit plan</div><div class="v">${p.income_2029!=null?"\u00a3"+f0(p.income_2029):"\u2014"}</div>
         <div class="s">${p.income_yield!=null?p.income_yield+"% \u00b7 "+(p.income_transfer_pct!=null?p.income_transfer_pct+"% to funds @ "+p.income_fund_yield_pct+"% \u00b7 miners "+p.income_miner_yield_pct+"%":"miner dividends only"):"\u2014"}</div></div>
+      ${swTile}
     </div>
     <div class="card" style="margin-bottom:12px">
       <div class="row">
@@ -215,6 +258,7 @@ function render(D){
     </div>
     ${dvBlock}
     ${ocBlock}
+    ${bmBlock}
     ${rotBlock}
     <div class="sec">Six thesis drivers</div>
     <div class="grid6">${drivers}</div>
