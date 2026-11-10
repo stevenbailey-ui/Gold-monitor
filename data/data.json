@@ -1,11 +1,11 @@
 {
-  "as_of": "2026-11-07",
+  "as_of": "2026-11-10",
   "manual_as_of": "2026-11-06",
   "model_as_of": "2026-08-31",
   "gold": {
-    "spot": 4080,
+    "spot": 4124,
     "trailing24": 3837,
-    "ratio": 1.06,
+    "ratio": 1.07,
     "forecast_2029": 5282,
     "trailing_months": 24,
     "verdict": "Bullish",
@@ -23,49 +23,49 @@
       "id": "macro_rates",
       "label": "Macro & rates",
       "signal": "base",
-      "reading": "deficit -5.8% GDP . real slope +0.45pp (-10bp 3m) (unscored)"
+      "reading": "deficit -5.8% GDP . real slope +0.44pp (-12bp 3m) (unscored)"
     },
     {
       "id": "usd_geo",
       "label": "USD & geopolitics",
       "signal": "base",
-      "reading": "DXY 102.3 (+0.1 20d) . Brent $98 (+11% 3m)"
+      "reading": "DXY 101.7 (-0.5 20d) . Brent $92 (+3% 3m)"
     },
     {
       "id": "mining_equities",
       "label": "Sector re-rate",
       "signal": "bull",
-      "reading": "spot/24m 1.06 . GDXJ/gold 0.026"
+      "reading": "spot/24m 1.07 . GDXJ/gold 0.027"
     }
   ],
   "divergence": {
-    "d_real_yield_bp": -4.0,
-    "real_yield_level": 2.6,
-    "real_yield_as_of": "2026-11-05",
+    "d_real_yield_bp": 3.0,
+    "real_yield_level": 2.63,
+    "real_yield_as_of": "2026-11-06",
     "rates_stale": false,
-    "d_dxy_pct": 0.29,
-    "expected_gold_pct": 0.14,
-    "actual_gold_pct": 0.14,
-    "residual_pp": -0.0,
-    "verdict": "Tracking textbook within 0.0pp",
-    "signal": "textbook"
+    "d_dxy_pct": -0.56,
+    "expected_gold_pct": 0.2,
+    "actual_gold_pct": 1.09,
+    "residual_pp": 0.88,
+    "verdict": "Gold outperforming textbook by 0.9pp",
+    "signal": "structural_bid"
   },
   "real_curve_slope": {
-    "as_of": "2026-11-05",
-    "prior_as_of": "2026-08-06",
-    "slope_now_pp": 0.45,
-    "slope_prior_pp": 0.55,
-    "change_bp": -10.0
+    "as_of": "2026-11-06",
+    "prior_as_of": "2026-08-07",
+    "slope_now_pp": 0.44,
+    "slope_prior_pp": 0.56,
+    "change_bp": -12.0
   },
   "opportunity_cost": {
-    "gap_1m": -10.3,
-    "gap_3m": -1.2,
-    "ndx_1m": -12.2,
-    "gold_1m": -1.9,
-    "ndx_3m": -8.9,
+    "gap_1m": -8.1,
+    "gap_3m": 2.2,
+    "ndx_1m": -9.6,
+    "gold_1m": -1.6,
+    "ndx_3m": -5.5,
     "gold_3m": -7.7,
-    "gdxj_3m": -9.3,
-    "verdict": "Gap -1pp 3m / -10pp 1m - no extreme",
+    "gdxj_3m": -4.7,
+    "verdict": "Gap +2pp 3m / -8pp 1m - no extreme",
     "signal": "base"
   },
   "basis_monitor": {
@@ -76,11 +76,11 @@
     "calendar": {
       "front": "Z26",
       "next": "G27",
-      "front_px": 4079.5,
-      "next_px": 4112.3,
-      "carry_pct": 4.83,
-      "sofr_pct": 3.92,
-      "lease_pct": -0.91,
+      "front_px": 4124.2,
+      "next_px": 4157.9,
+      "carry_pct": 4.91,
+      "sofr_pct": 3.89,
+      "lease_pct": -1.02,
       "backwardation": false,
       "stress": false
     },
@@ -104,12 +104,12 @@
     "scored": false
   },
   "swap": {
-    "pl_gbp": -7943,
+    "pl_gbp": -7266,
     "costs_gbp": 10.0,
     "stale": false
   },
   "portfolio": {
-    "current": 401854,
+    "current": 404527,
     "v2029_base": 1.01,
     "income_2029": 43430,
     "income_yield": 4.3,
@@ -122,62 +122,62 @@
     "africa": {
       "name": "Africa",
       "desc": "Gold producer + developer",
-      "value": 328740,
-      "pct": 81.8,
+      "value": 331901,
+      "pct": 82.0,
       "npv": "1.032 - 3.655",
       "jur": "6% disc",
       "jsig": "base",
       "lens": "0.62\u00d7 P/FCF \u00b7 100/0 NPV/P-FCF",
       "next": "New mine FID",
-      "liq": "6.9d @ 20% ADV",
-      "beta": 1.68,
-      "beta_up": 1.54,
-      "beta_down": 1.68,
-      "beta_r2": 0.56,
+      "liq": "7d @ 20% ADV",
+      "beta": 1.53,
+      "beta_up": 1.86,
+      "beta_down": 1.12,
+      "beta_r2": 0.51,
       "beta_adverse": false,
       "lsig": "base",
-      "adtv": 238404,
-      "ltrend": 0.98
+      "adtv": 235452,
+      "ltrend": 0.97
     },
     "asia": {
       "name": "Asia",
       "desc": "Gold developer (construction)",
-      "value": 73114,
-      "pct": 18.2,
+      "value": 72626,
+      "pct": 18.0,
       "npv": "0.338 - 1.059",
       "jur": "6% disc",
       "jsig": "base",
       "lens": "0.44\u00d7 P/FCF \u00b7 100/0 NPV/P-FCF",
       "next": "Flagship first gold",
       "liq": "0.8d @ 20% ADV",
-      "beta": 1.01,
-      "beta_up": 0.59,
-      "beta_down": 1.12,
-      "beta_r2": 0.293,
+      "beta": 1.06,
+      "beta_up": 1.68,
+      "beta_down": 1.33,
+      "beta_r2": 0.333,
       "beta_adverse": false,
       "lsig": "bull",
-      "adtv": 477898,
-      "ltrend": 1.22
+      "adtv": 484166,
+      "ltrend": 1.25
     }
   },
   "rotation": {
     "sessions": 5,
     "regime": "up",
-    "r_africa_pct": 5.05,
-    "r_asia_pct": -5.66,
-    "r_gold_gbp_pct": 0.91,
-    "beta_spread": 0.95,
-    "r_gold_usd_pct": 2.04,
+    "r_africa_pct": 11.7,
+    "r_asia_pct": -5.1,
+    "r_gold_gbp_pct": 3.91,
+    "beta_spread": 0.18,
+    "r_gold_usd_pct": 4.51,
     "regime_fx_driven": false,
-    "expected_spread_pct": 0.86,
-    "residual_pp": 9.85,
+    "expected_spread_pct": 0.7,
+    "residual_pp": 16.09,
     "threshold_pp": 5.0,
     "signal": "bear",
     "low_confidence": false,
-    "verdict": "Africa ahead of beta by 9.8pp over 5 sessions (up-tape)",
+    "verdict": "Africa ahead of beta by 16.1pp over 5 sessions (up-tape)",
     "headline": "ENTRY WINDOW - AFRICA RICH",
     "tone": "good",
-    "plain": "Africa +5.0%, Asia -5.7% over 5 sessions. Gold in GBP +0.9% implied Africa ahead by +0.9pp; it finished 9.8pp further ahead of that.",
+    "plain": "Africa +11.7%, Asia -5.1% over 5 sessions. Gold in GBP +3.9% implied Africa ahead by +0.7pp; it finished 16.1pp further ahead of that.",
     "implication": "Africa is rich against Asia beyond the band. Favourable to sell into.",
     "gap_to_trigger_pp": 0.0
   },
@@ -255,8 +255,8 @@
     "basis:lbma:HTTPError"
   ],
   "_raw": {
-    "real_yield": 2.6,
-    "real_yield_date": "2026-11-05",
-    "dxy": 102.27899932861328
+    "real_yield": 2.63,
+    "real_yield_date": "2026-11-06",
+    "dxy": 101.72200012207031
   }
 }
