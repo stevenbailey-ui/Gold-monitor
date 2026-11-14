@@ -1,16 +1,16 @@
 {
-  "as_of": "2026-11-13",
+  "as_of": "2026-11-14",
   "manual_as_of": "2026-11-06",
   "model_as_of": "2026-08-31",
   "gold": {
-    "spot": 3894,
+    "spot": 3888,
     "trailing24": 3837,
     "ratio": 1.01,
     "forecast_2029": 5282,
     "trailing_months": 24,
     "verdict": "Bullish",
     "tag": "BULL",
-    "composite": 16
+    "composite": 27
   },
   "themes": [
     {
@@ -23,49 +23,49 @@
       "id": "macro_rates",
       "label": "Macro & rates",
       "signal": "base",
-      "reading": "deficit -5.8% GDP . real slope +0.39pp (-18bp 3m) (unscored)"
+      "reading": "deficit -5.8% GDP . real slope +0.38pp (-19bp 3m) (unscored)"
     },
     {
       "id": "usd_geo",
       "label": "USD & geopolitics",
       "signal": "base",
-      "reading": "DXY 103.2 (+1.2 20d) . Brent $95 (+8% 3m)"
+      "reading": "DXY 103.4 (+1.6 20d) . Brent $96 (+6% 3m)"
     },
     {
       "id": "mining_equities",
       "label": "Sector re-rate",
       "signal": "bull",
-      "reading": "spot/24m 1.01 . GDXJ/gold 0.027"
+      "reading": "spot/24m 1.01 . GDXJ/gold 0.025"
     }
   ],
   "divergence": {
-    "d_real_yield_bp": 12.0,
-    "real_yield_level": 2.78,
-    "real_yield_as_of": "2026-11-10",
+    "d_real_yield_bp": 8.0,
+    "real_yield_level": 2.86,
+    "real_yield_as_of": "2026-11-12",
     "rates_stale": false,
-    "d_dxy_pct": 0.32,
-    "expected_gold_pct": -1.49,
-    "actual_gold_pct": -2.36,
-    "residual_pp": -0.87,
-    "verdict": "Gold lagging textbook by 0.9pp",
-    "signal": "gold_lagging"
+    "d_dxy_pct": 0.24,
+    "expected_gold_pct": -1.01,
+    "actual_gold_pct": -0.16,
+    "residual_pp": 0.85,
+    "verdict": "Gold outperforming textbook by 0.8pp",
+    "signal": "structural_bid"
   },
   "real_curve_slope": {
-    "as_of": "2026-11-10",
-    "prior_as_of": "2026-08-11",
-    "slope_now_pp": 0.39,
+    "as_of": "2026-11-12",
+    "prior_as_of": "2026-08-12",
+    "slope_now_pp": 0.38,
     "slope_prior_pp": 0.57,
-    "change_bp": -18.0
+    "change_bp": -19.0
   },
   "opportunity_cost": {
-    "gap_1m": -0.3,
-    "gap_3m": 6.4,
-    "ndx_1m": -5.5,
-    "gold_1m": -5.2,
-    "ndx_3m": -5.8,
-    "gold_3m": -12.3,
-    "gdxj_3m": -9.8,
-    "verdict": "Gap +6pp 3m / -0pp 1m - no extreme",
+    "gap_1m": 0.1,
+    "gap_3m": 6.3,
+    "ndx_1m": -6.7,
+    "gold_1m": -6.8,
+    "ndx_3m": -6.8,
+    "gold_3m": -13.1,
+    "gdxj_3m": -17.7,
+    "verdict": "Gap +6pp 3m / +0pp 1m - no extreme",
     "signal": "base"
   },
   "basis_monitor": {
@@ -76,11 +76,11 @@
     "calendar": {
       "front": "Z26",
       "next": "G27",
-      "front_px": 3893.2,
-      "next_px": 3925.8,
-      "carry_pct": 5.03,
-      "sofr_pct": 3.89,
-      "lease_pct": -1.14,
+      "front_px": 3887.6,
+      "next_px": 3917.5,
+      "carry_pct": 4.61,
+      "sofr_pct": 3.9,
+      "lease_pct": -0.71,
       "backwardation": false,
       "stress": false
     },
@@ -104,12 +104,12 @@
     "scored": false
   },
   "swap": {
-    "pl_gbp": -5305,
+    "pl_gbp": -6289,
     "costs_gbp": 10.0,
     "stale": false
   },
   "portfolio": {
-    "current": 427629,
+    "current": 408221,
     "v2029_base": 1.01,
     "income_2029": 43430,
     "income_yield": 4.3,
@@ -122,62 +122,62 @@
     "africa": {
       "name": "Africa",
       "desc": "Gold producer + developer",
-      "value": 354028,
-      "pct": 82.8,
+      "value": 336326,
+      "pct": 82.4,
       "npv": "1.032 - 3.655",
       "jur": "6% disc",
       "jsig": "base",
       "lens": "0.62\u00d7 P/FCF \u00b7 100/0 NPV/P-FCF",
       "next": "New mine FID",
-      "liq": "7.3d @ 20% ADV",
-      "beta": 1.67,
-      "beta_up": 1.85,
-      "beta_down": 0.99,
-      "beta_r2": 0.575,
+      "liq": "7.5d @ 20% ADV",
+      "beta": 1.7,
+      "beta_up": 1.59,
+      "beta_down": 1.68,
+      "beta_r2": 0.563,
       "beta_adverse": false,
       "lsig": "base",
-      "adtv": 242987,
-      "ltrend": 1.05
+      "adtv": 225249,
+      "ltrend": 1.08
     },
     "asia": {
       "name": "Asia",
       "desc": "Gold developer (construction)",
-      "value": 73601,
-      "pct": 17.2,
+      "value": 71895,
+      "pct": 17.6,
       "npv": "0.338 - 1.059",
       "jur": "6% disc",
       "jsig": "base",
       "lens": "0.44\u00d7 P/FCF \u00b7 100/0 NPV/P-FCF",
       "next": "Flagship first gold",
       "liq": "0.7d @ 20% ADV",
-      "beta": 0.91,
-      "beta_up": 0.2,
-      "beta_down": 1.38,
-      "beta_r2": 0.196,
+      "beta": 0.99,
+      "beta_up": 0.54,
+      "beta_down": 1.12,
+      "beta_r2": 0.275,
       "beta_adverse": true,
       "lsig": "bull",
-      "adtv": 510175,
+      "adtv": 498350,
       "ltrend": 1.15
     }
   },
   "rotation": {
     "sessions": 5,
     "regime": "down",
-    "r_africa_pct": 14.29,
-    "r_asia_pct": 0.0,
-    "r_gold_gbp_pct": -1.15,
-    "beta_spread": -0.39,
-    "r_gold_usd_pct": -1.78,
+    "r_africa_pct": 2.31,
+    "r_asia_pct": -1.67,
+    "r_gold_gbp_pct": -4.12,
+    "beta_spread": 0.56,
+    "r_gold_usd_pct": -5.55,
     "regime_fx_driven": false,
-    "expected_spread_pct": 0.45,
-    "residual_pp": 13.84,
+    "expected_spread_pct": -2.31,
+    "residual_pp": 6.28,
     "threshold_pp": 5.0,
     "signal": "bear",
     "low_confidence": false,
-    "verdict": "Africa ahead of beta by 13.8pp over 5 sessions (down-tape)",
+    "verdict": "Africa ahead of beta by 6.3pp over 5 sessions (down-tape)",
     "headline": "ENTRY WINDOW - AFRICA RICH",
     "tone": "good",
-    "plain": "Africa +14.3%, Asia +0.0% over 5 sessions. Gold in GBP -1.1% implied Africa ahead by +0.5pp; it finished 13.8pp further ahead of that.",
+    "plain": "Africa +2.3%, Asia -1.7% over 5 sessions. Gold in GBP -4.1% implied Africa ahead by -2.3pp; it finished 6.3pp further ahead of that.",
     "implication": "Africa is rich against Asia beyond the band. Favourable to sell into.",
     "gap_to_trigger_pp": 0.0
   },
@@ -255,8 +255,8 @@
     "basis:lbma:HTTPError"
   ],
   "_raw": {
-    "real_yield": 2.78,
-    "real_yield_date": "2026-11-10",
-    "dxy": 103.17500305175781
+    "real_yield": 2.86,
+    "real_yield_date": "2026-11-12",
+    "dxy": 103.41100311279297
   }
 }
