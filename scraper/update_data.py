@@ -1056,8 +1056,10 @@ def main():
             "npv": f"{val[key]['npv_bear']} - {val[key]['npv_bull']}",
             "jur": (f"{round(val[key]['disc']*100)}% disc" if val[key].get("disc") is not None else "\u2014"),
             "jsig": ("base" if (val[key].get("disc") or 0) <= 0.09 else "bear"),
-            "lens": (f"{val[key]['pfcf_mult']:g}\u00d7 P/FCF \u00b7 {round(val[key]['npv_wt']*100)}/{round(val[key]['pfcf_wt']*100)} NPV/P-FCF"
-                     if None not in (val[key].get("pfcf_mult"), val[key].get("npv_wt"), val[key].get("pfcf_wt")) else ""),
+            # pfcf_mult carries the 2030 base P/NAV (importer v22+); label it as such.
+            "lens": (f"{val[key]['pfcf_mult']:g}\u00d7 P/NAV 2030 \u00b7 {round(val[key]['haircut']*100)}% haircut"
+                     if val[key].get("pfcf_mult") is not None and val[key].get("haircut") is not None
+                     else (f"{val[key]['pfcf_mult']:g}\u00d7 P/NAV 2030" if val[key].get("pfcf_mult") is not None else "")),
             "next": manual["catalysts"][0]["label"] if key == "africa" else manual["catalysts"][1]["label"],
             "liq": (f"{liq[key]['days_to_exit']:g}d @ {round(liq[key]['participation']*100)}% ADV"
                     if (liq[key] and liq[key].get("days_to_exit") is not None) else "\u2014"),

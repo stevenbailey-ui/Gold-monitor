@@ -1,35 +1,45 @@
 #!/usr/bin/env python3
 """
-Local model importer — v22 layout.
+Local model importer — v25 layout (portfolio_dashboard_v23/v24/v25 family).
 
 Reads the portfolio model (.xlsx) and writes data/model_snapshot.json: the valuation
 layer the scraper merges into the public dashboard (NAV £/share, the scenario £m grid,
-the 2029 gold deck, and 2029 exit income/yield).
+the 2029 gold assumption, and 2029 exit income/yield).
 
 Runs LOCALLY only — never in the GitHub Action — so the spreadsheet never leaves your
 machine. Requires openpyxl.
 
-    python scraper/import_model.py /path/to/portfolio_v22.xlsx
+    python scraper/import_model.py /path/to/portfolio_dashboard_v25.xlsx
 
-CHANGED FROM THE v21 IMPORTER
+CHANGED FROM THE v22 IMPORTER
 -----------------------------
-v21 was read from Summary / NPV Model / Assumptions. v22 has none of those sheets, so
-every cell reference below is new. Specifically:
+v22 had THX_NAV / MTL_NAV / Forecast / Portfolio / Valuation sheets. The v23+ model has
+Dashboard / Inputs / THX DCF / MTL DCF / FCF Cross-check / Notes, so every cell
+reference below is new:
 
-  * Scenario column order INVERTED. v21 Summary ran B=bull C=base D=bear.
-    v22 runs B=Bear C=Base D=Bull. Reading the old order silently swaps bull and bear.
-  * Discount rates now live on Inputs, and are EQUAL at 6% for both holdings. The old
-    8%/12% split double-counted jurisdiction risk already carried by the delivery
-    probabilities, the seizure residual and the P/NAV path.
-  * v22 is NAV-only — there is no P/FCF leg. The `pfcf_mult` key is retained for
-    front-end compatibility and now carries the 2030 terminal P/NAV multiple, which is
-    where jurisdiction risk is expressed under the new framing. npv_wt is pinned to 1.0
-    and pfcf_wt to 0.0.
-  * 2029 income is no longer a model cell. It is computed here from the 2029 base
-    portfolio value and the exit_plan block in data/manual_inputs.json.
+  * NAV per share (£) now — 'THX DCF' / 'MTL DCF' C34:C36 (Bear/Base/Bull, by ROW,
+    not by column as in v22).
+  * Discount rate — single flat rate for both names, Inputs C11 (8%). Jurisdiction
+    risk is an explicit NAV haircut (Inputs C23 / C33), not a rate premium.
+  * `pfcf_mult` keeps its v22 meaning for front-end compatibility: the 2030 BASE
+    P/NAV multiple (Inputs G56 / G62). npv_wt pinned to 1.0, pfcf_wt to 0.0.
+  * `pnav_anchor` — today's P/NAV, self-calibrated to the live price (Inputs C56 / C62).
+  * Scenario £ grid — Dashboard C59:G61 (rows Bear/Base/Bull, cols Now/2027/2028/2029/
+    2030). "Now" is published under the key "2026" so the dashboard's year ordering holds.
+  * 2029 gold — v25 uses a FLAT nominal gold deck (a settled modelling decision), so the
+    2029 figure is the base-case deck, Inputs C7.
+  * Rotation — Dashboard H4 (THX P/NAV ÷ MTL P/NAV) vs tranche-1 trigger Inputs D45.
+    The v25 model notes the trigger as FROZEN pending the Segilola resource update and
+    La India first pour; that flag is carried into the snapshot.
+  * 2029 income is computed here, as before, from the 2029 base portfolio value and the
+    exit_plan block in data/manual_inputs.json.
+
+The scenario £ grid uses the share counts typed on the Inputs sheet (HOLDINGS & PRICES).
+Update those to match the HOLDINGS secret before importing, or the £ grid will not
+match the live holdings.
 
 Cells that read #VALUE!/blank are skipped and the previous snapshot value is kept.
-Open + recalculate the model before importing.
+Open + recalculate the model in Excel and save before importing.
 """
 import json, os, sys, datetime
 
@@ -41,42 +51,43 @@ MANUAL = os.path.join(DATA, "manual_inputs.json")
 # Anonymised holding keys. No tickers, no jurisdictions, no share counts in this file.
 HOLD = ["africa", "asia"]
 
-# --- v22 cell map -----------------------------------------------------------
-# Scenario NAV per share (£). Columns B/C/D = Bear/Base/Bull.
-NAV_SHEET = {"africa": "THX_NAV", "asia": "MTL_NAV"}
-NAV_ROW = 67
-NAV_COL = {"bear": "B", "base": "C", "bull": "D"}
+# --- v25 cell map -----------------------------------------------------------
+REQUIRED = ("Dashboard", "Inputs", "THX DCF", "MTL DCF")
 
-# Inputs sheet scalars.
-DISC_CELL = {"africa": "B15", "asia": "B16"}
-TERM_PNAV = {"africa": "B65", "asia": "C65"}      # 2030 P/NAV — risk now lives here
-ANCHOR_PNAV = {"africa": "B61", "asia": "C61"}    # 2026 P/NAV, auto-calibrated to price
+DCF_SHEET = {"africa": "THX DCF", "asia": "MTL DCF"}
+NAV_NOW = {"bear": "C34", "base": "C35", "bull": "C36"}          # £/share, valuation date Now
 
-# Portfolio sheet: scenario value grid, £. Rows Bear/Base/Bull, cols B..F = 2026..2030.
-SCEN_ROW = {"bear": 20, "base": 21, "bull": 22}
-SCEN_COL = {"2026": "B", "2027": "C", "2028": "D", "2029": "E", "2030": "F"}
+DISC_CELL = "C11"                                                # Inputs, both names
+HAIRCUT_CELL = {"africa": "C23", "asia": "C33"}                  # Inputs, jurisdiction haircut
+TERM_PNAV = {"africa": "G56", "asia": "G62"}                     # Inputs, 2030 base P/NAV
+ANCHOR_PNAV = {"africa": "C56", "asia": "C62"}                   # Inputs, today's P/NAV
 
-# Forecast sheet: gold deck by scenario. Rows 5/6/7 = Bear/Base/Bull, col E = 2029.
-GOLD_ROW = {"bear": 5, "base": 6, "bull": 7}
-GOLD_2029_COL = "E"
+SCEN_ROW = {"bear": 59, "base": 60, "bull": 61}                  # Dashboard, £
+SCEN_COL = {"2026": "C", "2027": "D", "2028": "E", "2029": "F", "2030": "G"}
 
-# Valuation sheet: rotation trigger.
-CROSS_CELL, CROSS_THRESH_SHEET, CROSS_THRESH_CELL = "B15", "Inputs", "B75"
+GOLD_BASE_CELL = "C7"                                            # Inputs, flat base deck
+CROSS_CELL = "H4"                                                # Dashboard
+THRESH_CELL = "D45"                                              # Inputs, tranche-1 trigger
+SEGI_CASE_CELL = "C24"                                           # Inputs (v25+), 1 or 2
 
 FELL_BACK = []
 
 
 def num(ws, coord, prior, allow_zero=True):
     v = ws[coord].value
-    if isinstance(v, (int, float)) and (allow_zero or v != 0):
+    if isinstance(v, (int, float)) and not isinstance(v, bool) and (allow_zero or v != 0):
         return float(v)
     FELL_BACK.append(f"{ws.title}!{coord}")
     return prior
 
 
+def rnd(v, n):
+    return round(v, n) if isinstance(v, (int, float)) else v
+
+
 def main():
     if len(sys.argv) < 2:
-        sys.exit("usage: python scraper/import_model.py /path/to/portfolio_v22.xlsx")
+        sys.exit("usage: python scraper/import_model.py /path/to/portfolio_dashboard_v25.xlsx")
     try:
         import openpyxl
     except ImportError:
@@ -85,30 +96,31 @@ def main():
     path = sys.argv[1]
     wb = openpyxl.load_workbook(path, data_only=True)
 
-    missing = [s for s in ("Inputs", "THX_NAV", "MTL_NAV", "Forecast", "Portfolio", "Valuation")
-               if s not in wb.sheetnames]
+    missing = [s for s in REQUIRED if s not in wb.sheetnames]
     if missing:
-        sys.exit(f"not a v22 model — missing sheet(s): {', '.join(missing)}. "
-                 "The v21 importer read Summary/NPV Model/Assumptions; that map no longer applies.")
+        sys.exit(f"not a v23+ model — missing sheet(s): {', '.join(missing)}. "
+                 "The v22 importer read THX_NAV/MTL_NAV/Portfolio; that map no longer applies.")
 
-    inp = wb["Inputs"]; fc = wb["Forecast"]; pf = wb["Portfolio"]; vl = wb["Valuation"]
+    inp, dash = wb["Inputs"], wb["Dashboard"]
 
     prior = json.load(open(SNAP)) if os.path.exists(SNAP) else {}
     pv = prior.get("valuation", {})
     ps = prior.get("scenarios", {})
 
+    disc = num(inp, DISC_CELL, None)
     val = {}
     for key in HOLD:
-        ws = wb[NAV_SHEET[key]]
+        ws = wb[DCF_SHEET[key]]
         p = pv.get(key, {})
         val[key] = {
-            "npv_bull": round(num(ws, f"{NAV_COL['bull']}{NAV_ROW}", p.get("npv_bull")), 3),
-            "npv_base": round(num(ws, f"{NAV_COL['base']}{NAV_ROW}", p.get("npv_base")), 3),
-            "npv_bear": round(num(ws, f"{NAV_COL['bear']}{NAV_ROW}", p.get("npv_bear")), 3),
-            "disc": round(num(inp, DISC_CELL[key], p.get("disc")), 4),
-            # Retained key, new meaning: terminal P/NAV, not a P/FCF multiple.
-            "pfcf_mult": round(num(inp, TERM_PNAV[key], p.get("pfcf_mult")), 3),
-            "pnav_anchor": round(num(inp, ANCHOR_PNAV[key], p.get("pnav_anchor")), 3),
+            "npv_bull": rnd(num(ws, NAV_NOW["bull"], p.get("npv_bull")), 3),
+            "npv_base": rnd(num(ws, NAV_NOW["base"], p.get("npv_base")), 3),
+            "npv_bear": rnd(num(ws, NAV_NOW["bear"], p.get("npv_bear")), 3),
+            "disc": rnd(disc if disc is not None else p.get("disc"), 4),
+            "haircut": rnd(num(inp, HAIRCUT_CELL[key], p.get("haircut")), 3),
+            # Retained key, v22 meaning: terminal (2030) base P/NAV, not a P/FCF multiple.
+            "pfcf_mult": rnd(num(inp, TERM_PNAV[key], p.get("pfcf_mult")), 3),
+            "pnav_anchor": rnd(num(inp, ANCHOR_PNAV[key], p.get("pnav_anchor")), 3),
             "npv_wt": 1.0,
             "pfcf_wt": 0.0,
         }
@@ -118,12 +130,11 @@ def main():
         pp = ps.get(yr, {})
         row = {}
         for s in ("bear", "base", "bull"):
-            v = num(pf, f"{col}{SCEN_ROW[s]}", None)
+            v = num(dash, f"{col}{SCEN_ROW[s]}", None)
             row[s] = round(v / 1e6, 2) if v is not None else pp.get(s)
         scen[yr] = row
 
-    gold_fc = num(fc, f"{GOLD_2029_COL}{GOLD_ROW['base']}", prior.get("gold_2029_forecast"),
-                  allow_zero=False)
+    gold_fc = num(inp, GOLD_BASE_CELL, prior.get("gold_2029_forecast"), allow_zero=False)
 
     # 2029 exit income, computed here rather than read from a model cell.
     inc = prior.get("income_2029_base")
@@ -142,13 +153,20 @@ def main():
     except Exception as e:
         FELL_BACK.append(f"exit_plan ({e})")
 
-    cross = num(vl, CROSS_CELL, None)
-    thresh = num(inp, CROSS_THRESH_CELL, None)
+    cross = num(dash, CROSS_CELL, None)
+    thresh = num(inp, THRESH_CELL, None)
+    segi = inp[SEGI_CASE_CELL].value
+    segi_case = int(segi) if isinstance(segi, (int, float)) and segi in (1, 2) else None
+    frozen = segi_case is not None          # v25+ model: trigger frozen pending resource update
+
+    signal = None
+    if cross and thresh:
+        signal = "ROTATE" if cross >= thresh else "HOLD"
 
     out = {
         "model_as_of": datetime.date.today().isoformat(),
         "source": os.path.basename(path),
-        "schema": "v22",
+        "schema": "v25",
         "valuation": val,
         "scenarios": scen,
         "gold_2029_forecast": round(gold_fc) if gold_fc else prior.get("gold_2029_forecast"),
@@ -157,23 +175,29 @@ def main():
         "rotation": {
             "cross_ratio": round(cross, 3) if cross else None,
             "threshold": round(thresh, 3) if thresh else None,
-            "signal": ("ROTATE" if (cross and thresh and cross >= thresh) else "HOLD")
-                      if (cross and thresh) else None,
+            "signal": signal,
+            "frozen": frozen,
         },
+        "producer_case": ({1: "documented ounces only", 2: "mine-life target case (unproven)"}
+                          .get(segi_case) if segi_case else None),
         "method_note": (
-            "Both holdings discounted at a common 6%. Jurisdiction and delivery risk are "
-            "expressed once, in the delivery probability and the P/NAV path, not in the rate."
-        ),
+            "Both holdings discounted at a flat {}. Jurisdiction risk is an explicit NAV haircut "
+            "(africa {}, asia {}), not a rate premium. Flat nominal gold deck. Rotation trigger "
+            "frozen in the model pending the producer resource update and the developer's first pour."
+        ).format(f"{round(disc*100)}%" if disc else "rate",
+                 f"{round(val['africa']['haircut']*100)}%" if val['africa'].get('haircut') is not None else "n/a",
+                 f"{round(val['asia']['haircut']*100)}%" if val['asia'].get('haircut') is not None else "n/a"),
     }
     json.dump(out, open(SNAP, "w"), indent=2)
 
     n = len(FELL_BACK)
-    print(f"wrote model_snapshot.json from {out['source']} (schema v22) — "
+    print(f"wrote model_snapshot.json from {out['source']} (schema v25) — "
           + ("all cells resolved." if n == 0 else
              f"{n} unresolved: {', '.join(FELL_BACK[:6])}. Recalculate the model and re-run."))
     if out["rotation"]["signal"]:
         print(f"  rotation: cross {out['rotation']['cross_ratio']} vs threshold "
-              f"{out['rotation']['threshold']} -> {out['rotation']['signal']}")
+              f"{out['rotation']['threshold']} -> {out['rotation']['signal']}"
+              + ("  (FROZEN in model)" if frozen else ""))
 
 
 if __name__ == "__main__":
