@@ -180,6 +180,12 @@ MM_EXTREME_PCTL = 0.90          # MM net long percentile above this = mirror, no
 REG_DRAW_TIGHT_PCT = -10.0      # COMEX registered 3m change <= this = tight
 SGE_PREM_TIGHT_USD = 15.0       # Shanghai premium over London >= this ($/oz) = tight
 LBMA_PM_URL = "https://prices.lbma.org.uk/json/gold_pm.json"
+# EFP leg RETIRED 20 Nov 2026. LBMA moved historical benchmark tables behind its
+# Members' Portal (week of 24 Nov 2025); gold/silver use requires an IBA licence.
+# The JSON feed above returns 4xx. Leg 1 of the test now runs on the calendar
+# leg only (backwardation / implied lease >= LEASE_FLAG_PP), as the leg-1
+# definition above already allows. Set True only with a licensed spot source.
+EFP_ENABLED = False
 
 # ---------------------------------------------------------------------------
 # Swap P/L tile (added v24). Display only - never scored.
