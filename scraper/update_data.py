@@ -754,6 +754,8 @@ def _pctl(hist, x):
 def _efp_leg(gold_bars, notes):
     """COMEX front-month premium to LBMA PM, two quarter-block means."""
     nq = getattr(C, "BASIS_Q_SESSIONS", 63)
+    if not getattr(C, "EFP_ENABLED", True):
+        return None                                  # retired - see config.EFP_ENABLED
     try:
         lb = json.loads(_get(C.LBMA_PM_URL, timeout=15))
         fix = {datetime.date.fromisoformat(r["d"]): float(r["v"][0])
