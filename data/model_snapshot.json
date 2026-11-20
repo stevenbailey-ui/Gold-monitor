@@ -1,63 +1,67 @@
 {
-  "model_as_of": "2026-08-31",
-  "source": "portfolio_v22.xlsx",
-  "schema": "v22",
+  "model_as_of": "2026-11-20",
+  "source": "portfolio_dashboard_v25.xlsx",
+  "schema": "v25",
   "valuation": {
     "africa": {
-      "npv_bull": 3.655,
-      "npv_base": 2.116,
-      "npv_bear": 1.032,
-      "disc": 0.06,
-      "pfcf_mult": 0.62,
-      "pnav_anchor": 0.269,
+      "npv_bull": 1.659,
+      "npv_base": 1.13,
+      "npv_bear": 0.513,
+      "disc": 0.08,
+      "haircut": 0.1,
+      "pfcf_mult": 0.8,
+      "pnav_anchor": 0.423,
       "npv_wt": 1.0,
       "pfcf_wt": 0.0
     },
     "asia": {
-      "npv_bull": 1.059,
-      "npv_base": 0.636,
-      "npv_bear": 0.338,
-      "disc": 0.06,
-      "pfcf_mult": 0.44,
-      "pnav_anchor": 0.198,
+      "npv_bull": 0.465,
+      "npv_base": 0.32,
+      "npv_bear": 0.154,
+      "disc": 0.08,
+      "haircut": 0.2,
+      "pfcf_mult": 0.75,
+      "pnav_anchor": 0.396,
       "npv_wt": 1.0,
       "pfcf_wt": 0.0
     }
   },
   "scenarios": {
     "2026": {
-      "bear": 0.21,
-      "base": 0.42,
-      "bull": 0.72
+      "bear": 0.15,
+      "base": 0.33,
+      "bull": 0.49
     },
     "2027": {
-      "bear": 0.28,
-      "base": 0.57,
-      "bull": 0.99
+      "bear": 0.15,
+      "base": 0.45,
+      "bull": 0.87
     },
     "2028": {
-      "bear": 0.39,
-      "base": 0.78,
-      "bull": 1.35
+      "bear": 0.17,
+      "base": 0.59,
+      "bull": 1.21
     },
     "2029": {
-      "bear": 0.5,
-      "base": 1.01,
-      "bull": 1.74
+      "bear": 0.2,
+      "base": 0.77,
+      "bull": 1.53
     },
     "2030": {
-      "bear": 0.6,
-      "base": 1.22,
-      "bull": 2.1
+      "bear": 0.21,
+      "base": 0.88,
+      "bull": 1.72
     }
   },
-  "gold_2029_forecast": 5282,
-  "income_2029_base": 41410,
+  "gold_2029_forecast": 4650,
+  "income_2029_base": 31570,
   "income_2029_yield": 4.1,
   "rotation": {
-    "cross_ratio": 1.361,
+    "cross_ratio": 1.067,
     "threshold": 1.15,
-    "signal": "ROTATE"
+    "signal": "HOLD",
+    "frozen": true
   },
-  "method_note": "Both holdings discounted at a common 6%. Jurisdiction and delivery risk are expressed once, in the delivery probability and the P/NAV path, not in the rate."
+  "producer_case": "mine-life target case (unproven)",
+  "method_note": "Both holdings discounted at a flat 8%. Jurisdiction risk is an explicit NAV haircut (africa 10%, asia 20%), not a rate premium. Flat nominal gold deck. Rotation trigger frozen in the model pending the producer resource update and the developer's first pour."
 }
