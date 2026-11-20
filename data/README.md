@@ -41,7 +41,7 @@ Offline / no FRED key: every fetch falls back to the manual signal, and the run 
 
 1. Push this folder to a repo; enable **Pages** (deploy from the branch root).
 2. Optional: add repo secret `FRED_API_KEY` (free from FRED) for live rate metrics. Without it, rate metrics use their manual fallback.
-3. The workflow runs weekdays at 21:30 UTC and on the **Run workflow** button. It commits `data/data.json`; Pages redeploys automatically.
+3. The workflow is scheduled weekdays at 20:30 UTC (clear of the CME Globex halt; GitHub usually starts scheduled runs late, so commits land ~00:00-03:00 UTC) and on the **Run workflow** button. It commits `data/data.json`; Pages redeploys automatically.
 
 ## Keeping future edits compatible
 
