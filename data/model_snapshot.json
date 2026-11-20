@@ -56,6 +56,8 @@
   "gold_2029_forecast": 4650,
   "income_2029_base": 31570,
   "income_2029_yield": 4.1,
+  "miner_net_yield": 0.037,
+  "miner_net_yield_bear": 0.02,
   "rotation": {
     "cross_ratio": 1.067,
     "threshold": 1.15,
