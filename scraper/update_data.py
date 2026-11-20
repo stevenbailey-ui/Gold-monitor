@@ -484,7 +484,13 @@ def exit_income(snap, manual, notes):
         notes.append("income:no_2029_scenario")
         return None
     V = v * 1e6
-    miner_net = (inc_net / V) if inc_net else None
+    # Miner net yield: the snapshot's own field (workbook Inputs C51), else the manual
+    # exit_plan value. Never inc_net / V - that figure is already blended with the fund
+    # yield, so re-blending it double-counted (fixed 20 Nov 2026).
+    miner_net = snap.get("miner_net_yield") or ex.get("miner_net_yield")
+    if miner_net is None and inc_net:
+        miner_net = inc_net / V
+        notes.append("income:miner_yield_derived")
     if tr is None or fy is None or miner_net is None:
         # Fall back to the pure-miner figure rather than inventing a plan.
         return {"income": round(inc_net) if inc_net else None,

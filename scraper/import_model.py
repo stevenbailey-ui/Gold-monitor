@@ -31,8 +31,9 @@ reference below is new:
   * Rotation — Dashboard H4 (THX P/NAV ÷ MTL P/NAV) vs tranche-1 trigger Inputs D45.
     The v25 model notes the trigger as FROZEN pending the Segilola resource update and
     La India first pour; that flag is carried into the snapshot.
-  * 2029 income is computed here, as before, from the 2029 base portfolio value and the
-    exit_plan block in data/manual_inputs.json.
+  * 2029 income is computed here from the 2029 base portfolio value, the exit_plan block
+    in data/manual_inputs.json (transfer share, fund yield) and the workbook miner net
+    yield, Inputs C51 (base/bull) / D51 (bear) - published as miner_net_yield(_bear).
 
 The scenario £ grid uses the share counts typed on the Inputs sheet (HOLDINGS & PRICES).
 Update those to match the HOLDINGS secret before importing, or the £ grid will not
@@ -69,6 +70,7 @@ GOLD_BASE_CELL = "C7"                                            # Inputs, flat 
 CROSS_CELL = "H4"                                                # Dashboard
 THRESH_CELL = "D45"                                              # Inputs, tranche-1 trigger
 SEGI_CASE_CELL = "C24"                                           # Inputs (v25+), 1 or 2
+MINER_CELL = {"base": "C51", "bear": "D51"}                      # Inputs, miner net yield (post-WHT)
 
 FELL_BACK = []
 
@@ -144,7 +146,8 @@ def main():
         ep = man.get("exit_plan", {})
         share = float(ep.get("transfer_share", 0.5))
         fyield = float(ep.get("fund_yield", 0.045))
-        miner_yield = float(ep.get("miner_net_yield", 0.037))
+        # Miner net yield comes from the workbook (single source); manual/default only as fallback.
+        miner_yield = num(inp, MINER_CELL["base"], float(ep.get("miner_net_yield", 0.037)))
         v29 = scen["2029"]["base"]
         if v29:
             gross = v29 * 1e6 * (share * fyield + (1 - share) * miner_yield)
@@ -172,6 +175,8 @@ def main():
         "gold_2029_forecast": round(gold_fc) if gold_fc else prior.get("gold_2029_forecast"),
         "income_2029_base": inc,
         "income_2029_yield": yld,
+        "miner_net_yield": rnd(num(inp, MINER_CELL["base"], prior.get("miner_net_yield")), 4),
+        "miner_net_yield_bear": rnd(num(inp, MINER_CELL["bear"], prior.get("miner_net_yield_bear")), 4),
         "rotation": {
             "cross_ratio": round(cross, 3) if cross else None,
             "threshold": round(thresh, 3) if thresh else None,
